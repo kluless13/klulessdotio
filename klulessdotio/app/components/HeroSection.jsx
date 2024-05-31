@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 const HeroSection = () => {
   return (
-    <section className="flex flex-col items-center justify-center min-h-screen text-center">
+    <section className="flex flex-col items-center justify-center text-center">
         <h1 className="text-white">Illuminated by God</h1>
         <h1 className="text-white">Filho do céu</h1>
         <h1 className="text-white">благословленный небесами</h1>
