@@ -13,8 +13,7 @@ const HeroSection = () => {
             strings: [
               "Filho do céu",
               "благословленный небесами",
-              "विश्व रक्षक",
-              "சொர்க்கத்தின் மகன்"
+              "विश्व रक्षक"
             ],
           autoStart: true,
           loop: true,
