@@ -7,13 +7,13 @@ require('dotenv').config({ path: '.env.local' });
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDDTOc1l8KMvIwgoGoWvRR9OOIuHDfmTp0",
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "pets-6c1e4.firebaseapp.com",
-  projectId: process.env.FIREBASE_PROJECT_ID || "pets-6c1e4",
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "pets-6c1e4.firebasestorage.app",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "850772296091",
-  appId: process.env.FIREBASE_APP_ID || "1:850772296091:web:6543626e32db97885ca13e",
-  measurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-M3KHDRSMH3"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 
 async function migrateMessages() {

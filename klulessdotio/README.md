@@ -2,12 +2,11 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, set up your database connections:
+First, set up your environment variables:
 
 1. Create a `.env.local` file in the root directory based on `.env.local.example`
-2. Set up a MongoDB Atlas account and create a cluster
-3. Add your MongoDB connection string to the `.env.local` file
-4. Firebase configuration is already included in the code
+2. Add your Firebase project credentials to the `.env.local` file
+3. These credentials are used for storing and retrieving messages
 
 Then, install dependencies:
 
