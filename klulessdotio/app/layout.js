@@ -20,6 +20,20 @@ const workSans = Work_Sans({
 export const metadata = {
   title: "kluless",
   description: "Interactive portfolio with folder navigation",
+  icons: {
+    icon: [
+      {
+        url: '/icons/tradrAI.png',
+        type: 'image/png',
+      }
+    ],
+    apple: [
+      {
+        url: '/icons/tradrAI.png',
+        type: 'image/png',
+      }
+    ]
+  }
 }
 
 export default function RootLayout({ children }) {
