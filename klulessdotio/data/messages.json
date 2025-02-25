@@ -1,0 +1,53 @@
+{
+  "messages": [
+    {
+      "id": "1",
+      "name": "Anonymous Fan",
+      "message": "Love your portfolio! The design is so clean and modern.",
+      "timestamp": "2024-04-15T12:30:45Z",
+      "color": "yellow"
+    },
+    {
+      "id": "2",
+      "name": "Coding Enthusiast",
+      "message": "Your projects are inspiring. Would love to collaborate sometime!",
+      "timestamp": "2024-04-14T10:22:15Z",
+      "color": "blue"
+    },
+    {
+      "id": "3",
+      "name": "Tech Recruiter",
+      "message": "Impressive skills! Are you open to new opportunities?",
+      "timestamp": "2024-04-13T15:45:30Z",
+      "color": "green"
+    },
+    {
+      "id": "4",
+      "name": "Fellow Developer",
+      "message": "The way you've structured your code is really elegant. Thanks for sharing!",
+      "timestamp": "2024-04-12T09:12:18Z",
+      "color": "pink"
+    },
+    {
+      "id": "5",
+      "name": "Curious Visitor",
+      "message": "I found your book recommendations super helpful. Just ordered 'Clean Code'!",
+      "timestamp": "2024-04-11T17:33:41Z",
+      "color": "orange"
+    },
+    {
+      "id": "1740477285839",
+      "name": "klu",
+      "message": "testing",
+      "timestamp": "2025-02-25T09:54:45.839Z",
+      "color": "blue"
+    },
+    {
+      "id": "1740477709157",
+      "name": "hihi",
+      "message": "hihi",
+      "timestamp": "2025-02-25T10:01:49.157Z",
+      "color": "pink"
+    }
+  ]
+}

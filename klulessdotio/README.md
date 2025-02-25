@@ -2,7 +2,26 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+First, set up your database connections:
+
+1. Create a `.env.local` file in the root directory based on `.env.local.example`
+2. Set up a MongoDB Atlas account and create a cluster
+3. Add your MongoDB connection string to the `.env.local` file
+4. Firebase configuration is already included in the code
+
+Then, install dependencies:
+
+```bash
+npm install
+# or
+yarn
+# or
+pnpm install
+# or
+bun install
+```
+
+Next, run the development server:
 
 ```bash
 npm run dev
@@ -16,9 +35,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Database Migration
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+To migrate your existing messages from the JSON file to MongoDB and Firebase:
+
+```bash
+# First, make sure you've set up your .env.local file with MongoDB connection
+node scripts/migrateMessages.js
+```
+
+## Production Deployment
+
+For production deployment, make sure to:
+
+1. Set up environment variables in your hosting platform (Vercel, Netlify, etc.)
+2. Run the migration script if you want to preserve existing messages
+3. Deploy your application
+
+This setup ensures your messages will persist in production environments, with redundancy across both MongoDB and Firebase.
 
 ## Learn More
 

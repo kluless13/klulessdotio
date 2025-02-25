@@ -4,30 +4,246 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-start-rgb: 240, 248, 240; /* Light green start */
+  --background-end-rgb: 225, 240, 230; /* Slightly darker green end */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 15, 15, 15; /* Near black start */
+  --background-end-rgb: 25, 20, 15; /* Very subtle dark orange tint end */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: linear-gradient(to bottom, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
+  min-height: 100vh;
+}
+
+/* Theme-specific body backgrounds */
+body.light-theme {
+  color: rgb(0, 0, 0);
+  background: linear-gradient(to bottom, rgb(240, 248, 240), rgb(225, 240, 230));
+}
+
+body.dark-theme {
+  color: rgb(255, 255, 255);
+  background: linear-gradient(to bottom, rgb(15, 15, 15), rgb(25, 20, 15));
+}
+
+/* Custom background class for light theme */
+.bg-mint-50 {
+  background-color: rgb(240, 248, 240);
+}
+
+/* Draggable post-it notes styling */
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grabbing {
+  cursor: grabbing !important;
+}
+
+/* Prevent text selection during drag operations */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* Typography - Font Styling */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-worksans);
+    @apply font-normal leading-tight mb-3;
+  }
+  
+  body, p, span, a, div, button, input, textarea, select {
+    font-family: var(--font-poppins);
+    @apply leading-relaxed;
+  }
+  
+  /* Additional typography refinements */
+  h1 {
+    letter-spacing: -0.025em;
+    @apply text-4xl md:text-5xl font-normal;
+  }
+  
+  h2, h3 {
+    letter-spacing: -0.0125em;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  p {
+    @apply mb-4;
+  }
+  
+  /* Emphasis for Work Sans */
+  .heading-accent {
+    @apply font-worksans text-primary font-normal;
+  }
+}
+
+/* Card styles */
+.card {
+  border: 2px solid;
+  border-color: theme('colors.gray.300');
+  padding: 20px;
+  margin: 10px;
+  transition: transform 0.3s, all 0.6s;
+  width: 100%;
+  max-width: 300px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+  cursor: pointer;
+  perspective: 1000px;
+}
+
+.dark .card {
+  border-color: theme('colors.gray.800');
+  background-color: theme('colors.black');
+  color: theme('colors.white');
+}
+
+.card:hover {
+  transform: scale(1.05);
+  border-color: theme('colors.orange.400');
+}
+
+.card-content {
+  text-align: center;
+  position: absolute;
+  backface-visibility: hidden;
+}
+
+.additional-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+@media (min-width: 768px) {
+  .card {
+    margin: 20px;
+  }
+}
+
+/* Once UI Theming */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 25 95% 53%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 25 95% 53%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Theme-aware styles */
+  .dark .bg-white, .dark .bg-gray-100, .dark .bg-gray-200, .dark .bg-gray-300 {
+    @apply bg-black;
+  }
+  
+  .dark .text-black, .dark .text-gray-800, .dark .text-gray-900 {
+    @apply text-white;
+  }
+  
+  .dark .text-gray-700, .dark .text-gray-600 {
+    @apply text-gray-300;
+  }
+  
+  /* Accent colors */
+  .accent-color {
+    @apply text-primary;
+  }
+  
+  /* Interactive elements */
+  button, a {
+    @apply hover:text-primary transition-colors;
   }
 }
