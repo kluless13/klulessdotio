@@ -43,7 +43,7 @@ export default function Projects() {
       </Link>
       <h1 className={`text-4xl font-bold mb-6 ${theme.primary}`}>My Projects</h1>
       <p className={`mb-8 ${theme.foreground}`}>
-        Here's a collection of projects I've built that showcase my skills and interests in software development, 
+        Here&apos;s a collection of projects I&apos;ve built that showcase my skills and interests in software development, 
         machine learning, and web technologies. Each project represents a unique challenge and learning opportunity.
       </p>
       

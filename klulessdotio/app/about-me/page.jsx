@@ -15,10 +15,10 @@ export default function AboutMe() {
       <section className={`mb-8 ${theme.foreground}`}>
         <h2 className={`text-2xl font-semibold mb-4 ${theme.primary}`}>Who I Am</h2>
         <p className="mb-4">
-          I'm a passionate software engineer and technology enthusiast with a deep interest in building innovative solutions that solve real-world problems. With a background in computer science and several years of industry experience, I've developed expertise in full-stack development, machine learning, and cloud architecture.
+          I&apos;m a passionate software engineer and technology enthusiast with a deep interest in building innovative solutions that solve real-world problems. With a background in computer science and several years of industry experience, I&apos;ve developed expertise in full-stack development, machine learning, and cloud architecture.
         </p>
         <p className="mb-4">
-          When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing my knowledge through technical writing and mentoring.
+          When I&apos;m not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing my knowledge through technical writing and mentoring.
         </p>
       </section>
       
@@ -63,7 +63,7 @@ export default function AboutMe() {
       <section className={`${theme.foreground}`}>
         <h2 className={`text-2xl font-semibold mb-4 ${theme.primary}`}>Get In Touch</h2>
         <p className="mb-4">
-          I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision. Feel free to reach out through any of the platforms below.
+          I&apos;m always open to discussing new projects, creative ideas, or opportunities to be part of your vision. Feel free to reach out through any of the platforms below.
         </p>
         <div className="flex space-x-4">
           <a href="https://github.com/" target="_blank" rel="noopener noreferrer" className={`${theme.primary} hover:underline`}>GitHub</a>

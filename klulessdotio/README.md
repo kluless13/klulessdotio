@@ -36,22 +36,22 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Database Migration
 
-To migrate your existing messages from the JSON file to MongoDB and Firebase:
+To migrate your existing messages from the JSON file to Firebase:
 
 ```bash
-# First, make sure you've set up your .env.local file with MongoDB connection
-node scripts/migrateMessages.js
+# First, make sure you've set up your .env.local file with Firebase credentials
+npm run migrate
 ```
 
 ## Production Deployment
 
 For production deployment, make sure to:
 
-1. Set up environment variables in your hosting platform (Vercel, Netlify, etc.)
+1. Set up Firebase environment variables in your hosting platform (Vercel, Netlify, etc.)
 2. Run the migration script if you want to preserve existing messages
 3. Deploy your application
 
-This setup ensures your messages will persist in production environments, with redundancy across both MongoDB and Firebase.
+This setup ensures your messages will persist in production environments using Firebase Firestore.
 
 ## Learn More
 

@@ -102,75 +102,74 @@ export default function PostItNote({ message, style }) {
     });
   };
   
-  // Calculate new position while dragging
-  const handleMouseMove = (e) => {
-    if (!isDragging || !noteRef.current || !noteRef.current.parentElement) return;
-    
-    const dx = e.clientX - initialMousePos.x;
-    const dy = e.clientY - initialMousePos.y;
-    
-    // Get parent container dimensions
-    const parentRect = noteRef.current.parentElement.getBoundingClientRect();
-    const noteRect = noteRef.current.getBoundingClientRect();
-    
-    // Calculate new position
-    let newX = initialPos.x + dx;
-    let newY = initialPos.y + dy;
-    
-    // Constrain to parent boundaries
-    newX = Math.max(0, Math.min(parentRect.width - noteRect.width, newX));
-    newY = Math.max(0, Math.min(parentRect.height - noteRect.height, newY));
-    
-    setPosition({
-      x: newX,
-      y: newY
-    });
-    
-    setHasBeenDragged(true);
-  };
-  
-  // Calculate new position while dragging (touch)
-  const handleTouchMove = (e) => {
-    if (!isDragging || !noteRef.current || !noteRef.current.parentElement) return;
-    
-    const touch = e.touches[0];
-    const dx = touch.clientX - initialMousePos.x;
-    const dy = touch.clientY - initialMousePos.y;
-    
-    // Get parent container dimensions
-    const parentRect = noteRef.current.parentElement.getBoundingClientRect();
-    const noteRect = noteRef.current.getBoundingClientRect();
-    
-    // Calculate new position
-    let newX = initialPos.x + dx;
-    let newY = initialPos.y + dy;
-    
-    // Constrain to parent boundaries
-    newX = Math.max(0, Math.min(parentRect.width - noteRect.width, newX));
-    newY = Math.max(0, Math.min(parentRect.height - noteRect.height, newY));
-    
-    setPosition({
-      x: newX,
-      y: newY
-    });
-    
-    setHasBeenDragged(true);
-  };
-  
-  // Stop dragging
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    document.body.style.cursor = 'default';
-  };
-  
-  // Add global event listeners for move and up events
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove, { passive: false });
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleTouchMove, { passive: false });
-      window.addEventListener('touchend', handleMouseUp);
-    }
+    if (!isDragging) return;
+
+    const handleMouseMove = (e) => {
+      if (!isDragging || !noteRef.current || !noteRef.current.parentElement) return;
+      
+      const dx = e.clientX - initialMousePos.x;
+      const dy = e.clientY - initialMousePos.y;
+      
+      // Get parent container dimensions
+      const parentRect = noteRef.current.parentElement.getBoundingClientRect();
+      const noteRect = noteRef.current.getBoundingClientRect();
+      
+      // Calculate new position
+      let newX = initialPos.x + dx;
+      let newY = initialPos.y + dy;
+      
+      // Constrain to parent boundaries
+      newX = Math.max(0, Math.min(parentRect.width - noteRect.width, newX));
+      newY = Math.max(0, Math.min(parentRect.height - noteRect.height, newY));
+      
+      setPosition({
+        x: newX,
+        y: newY
+      });
+      
+      setHasBeenDragged(true);
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isDragging || !noteRef.current || !noteRef.current.parentElement || !e.touches[0]) return;
+      
+      const touch = e.touches[0];
+      const dx = touch.clientX - initialMousePos.x;
+      const dy = touch.clientY - initialMousePos.y;
+      
+      // Get parent container dimensions
+      const parentRect = noteRef.current.parentElement.getBoundingClientRect();
+      const noteRect = noteRef.current.getBoundingClientRect();
+      
+      // Calculate new position
+      let newX = initialPos.x + dx;
+      let newY = initialPos.y + dy;
+      
+      // Constrain to parent boundaries
+      newX = Math.max(0, Math.min(parentRect.width - noteRect.width, newX));
+      newY = Math.max(0, Math.min(parentRect.height - noteRect.height, newY));
+      
+      setPosition({
+        x: newX,
+        y: newY
+      });
+      
+      setHasBeenDragged(true);
+      
+      // Prevent scrolling while dragging
+      e.preventDefault();
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      document.body.style.cursor = 'default';
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: false });
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleMouseUp);
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);

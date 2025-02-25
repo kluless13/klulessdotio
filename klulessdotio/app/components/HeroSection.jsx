@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { LetterFx } from './LetterFx';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -12,11 +12,11 @@ const HeroSection = () => {
   const timeoutRef = useRef(null);
   const { theme } = useTheme();
 
-  const phrases = [
+  const phrases = useMemo(() => [
     "Filho do céu",
     "благословленный небесами",
     "विश्व रक्षक"
-  ];
+  ], []);
 
   // Trigger the main heading animation on load ONCE
   useEffect(() => {
