@@ -91,11 +91,17 @@ export default function MessageWall() {
   const handleMessageAdded = (newMessage) => {
     setMessages(prev => [newMessage, ...prev]);
     setShowForm(false);
+    // Smooth scroll to top after message is added
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handle toggling the form visibility
   const toggleForm = () => {
     setShowForm(prev => !prev);
+    // If closing form, reset scroll position smoothly
+    if (showForm) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Hide drag hint after user interaction
@@ -116,15 +122,15 @@ export default function MessageWall() {
 
   return (
     <div className="w-full max-w-6xl mx-auto mt-12 mb-16 relative">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
         <h2 className={`text-2xl font-semibold ${theme.primary}`}>Message Board</h2>
-        <div className="flex space-x-3">
-          <Link href="/messages" className={`${theme.primary} hover:underline px-3 py-2`}>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/messages" className={`${theme.primary} hover:underline px-3 py-2 text-center`}>
             View All
           </Link>
           <button 
             onClick={toggleForm}
-            className={`group px-4 py-2 rounded-md ${theme.button} transition-colors duration-300 flex items-center`}
+            className={`group px-4 py-2 rounded-md ${theme.button} transition-colors duration-300 flex items-center justify-center flex-1 sm:flex-auto`}
           >
             {showForm ? 'Hide Form' : (
               <>
@@ -151,12 +157,12 @@ export default function MessageWall() {
         </div>
       )}
 
-      {/* Message form */}
-      {showForm && (
+      {/* Message form - with smooth transition */}
+      <div className={`transition-all duration-300 ease-in-out ${showForm ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
         <div className="mb-8">
           <MessageForm onMessageAdded={handleMessageAdded} />
         </div>
-      )}
+      </div>
 
       {/* Messages display area */}
       <div className="relative w-full border border-transparent rounded-lg" style={{ height: '500px', touchAction: 'none' }}>

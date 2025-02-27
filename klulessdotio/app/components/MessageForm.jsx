@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function MessageForm({ onMessageAdded }) {
@@ -9,6 +9,13 @@ export default function MessageForm({ onMessageAdded }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Reset scroll position when form is submitted successfully
+  useEffect(() => {
+    if (success) {
+      window.scrollTo(0, 0);
+    }
+  }, [success]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +46,7 @@ export default function MessageForm({ onMessageAdded }) {
         throw new Error(data.error || 'Failed to send message');
       }
 
-      // Clear form
+      // Clear form and show success
       setName('');
       setMessage('');
       setSuccess('Your message has been posted!');
@@ -47,6 +54,11 @@ export default function MessageForm({ onMessageAdded }) {
       // Notify parent component
       if (onMessageAdded) {
         onMessageAdded(data.message);
+      }
+
+      // Reset any zoomed state on mobile
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
       }
     } catch (err) {
       setError(err.message);
@@ -59,9 +71,9 @@ export default function MessageForm({ onMessageAdded }) {
     <div className={`border ${theme.accent} rounded-lg p-4 sm:p-6 md:p-8 shadow-md w-full max-w-md mx-auto`}>
       <h2 className={`text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 md:mb-6 ${theme.primary}`}>Leave a Message</h2>
       
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3 sm:mb-4 md:mb-6">
-          <label htmlFor="name" className={`block mb-1 sm:mb-2 text-xs sm:text-sm font-medium ${theme.foreground}`}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-1 sm:space-y-2">
+          <label htmlFor="name" className={`block text-sm font-medium ${theme.foreground}`}>
             Your Name (optional)
           </label>
           <input
@@ -70,12 +82,13 @@ export default function MessageForm({ onMessageAdded }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Anonymous"
-            className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
+            className="w-full px-3 py-2 text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
+            style={{ fontSize: '16px' }} // Prevents iOS zoom
           />
         </div>
 
-        <div className="mb-3 sm:mb-4 md:mb-6">
-          <label htmlFor="message" className={`block mb-1 sm:mb-2 text-xs sm:text-sm font-medium ${theme.foreground}`}>
+        <div className="space-y-1 sm:space-y-2">
+          <label htmlFor="message" className={`block text-sm font-medium ${theme.foreground}`}>
             Your Message*
           </label>
           <textarea
@@ -84,23 +97,24 @@ export default function MessageForm({ onMessageAdded }) {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share your thoughts..."
             rows="4"
-            className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
+            className="w-full px-3 py-2 text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
+            style={{ fontSize: '16px' }} // Prevents iOS zoom
             required
           ></textarea>
         </div>
 
         {error && (
-          <div className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-red-500">{error}</div>
+          <div className="text-sm text-red-500 mt-2">{error}</div>
         )}
 
         {success && (
-          <div className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-green-500">{success}</div>
+          <div className="text-sm text-green-500 mt-2">{success}</div>
         )}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-1.5 sm:py-2 md:py-3 text-sm sm:text-base rounded-md ${theme.button} transition-colors duration-300 flex justify-center items-center`}
+          className={`w-full py-3 text-base rounded-md ${theme.button} transition-colors duration-300 flex justify-center items-center mt-4`}
         >
           {isSubmitting ? (
             <span>Sending...</span>
