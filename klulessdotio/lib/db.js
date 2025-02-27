@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, orderBy, connectFirestoreEmulator } from 'firebase/firestore';
+import { enableIndexedDbPersistence } from 'firebase/firestore';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -14,13 +15,30 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let firebaseApp;
-if (!getApps().length) {
-  firebaseApp = initializeApp(firebaseConfig);
-} else {
-  firebaseApp = getApps()[0];
-}
+let firestore;
 
-const firestore = getFirestore(firebaseApp);
+try {
+  if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+  } else {
+    firebaseApp = getApps()[0];
+  }
+
+  firestore = getFirestore(firebaseApp);
+
+  // Enable offline persistence
+  if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(firestore).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+      } else if (err.code === 'unimplemented') {
+        console.warn('The current browser does not support persistence.');
+      }
+    });
+  }
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+}
 
 // Helper function to get a random color for the post-it note
 function getRandomColor() {

@@ -60,6 +60,16 @@ export const VerticalTimeline = () => {
   const observerRef = useRef(null)
   const { theme } = useTheme();
 
+  // Group events by year
+  const eventsByYear = personalEvents.reduce((acc, event) => {
+    const year = new Date(event.date).getFullYear();
+    if (!acc[year]) {
+      acc[year] = [];
+    }
+    acc[year].push(event);
+    return acc;
+  }, {});
+
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -84,24 +94,30 @@ export const VerticalTimeline = () => {
   }, [])
 
   return (
-    <div className={`container mx-auto px-4 md:px-4 py-8 md:py-8 ${theme.background}`}>
-      <div className="relative">
-        {/* Central line - updated to be visible in both light and dark modes */}
-        <div
-          className="absolute left-[4.5rem] sm:left-[4.5rem] md:left-1/2 transform md:-translate-x-1/2 w-0.5 h-full bg-orange-400/60"></div>
-
-        {/* Timeline items */}
-        {personalEvents
-          .slice()
-          .reverse()
-          .map((event, index) => (
-            <TimelineItem
-              key={event.id}
-              event={event}
-              isLeft={index % 2 === 0}
-              isVisible={visibleItems.has(event.id)}
-              observerRef={observerRef}
-              isRecent={index === 0} />
+    <div className={`container mx-auto px-4 md:px-6 py-8 ${theme.background}`}>
+      <div className="max-w-3xl mx-auto">
+        {Object.entries(eventsByYear)
+          .sort(([yearA], [yearB]) => Number(yearB) - Number(yearA))
+          .map(([year, events]) => (
+            <div key={year} className="mb-8">
+              {/* Year marker with sticky positioning */}
+              <div className={`sticky top-0 ${theme.background} py-4 z-10 backdrop-blur-sm bg-opacity-80`}>
+                <h2 className={`text-2xl font-light ${theme.primary}`}>{year}</h2>
+              </div>
+              
+              {/* Events list */}
+              <div className={`ml-4 border-l ${theme.name === 'dark' ? 'border-orange-400/30' : 'border-green-600/30'}`}>
+                {events.map((event) => (
+                  <TimelineItem
+                    key={event.id}
+                    event={event}
+                    isVisible={visibleItems.has(event.id)}
+                    observerRef={observerRef}
+                    isRecent={event === events[0] && year === String(new Date().getFullYear())}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
       </div>
     </div>

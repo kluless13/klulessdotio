@@ -187,14 +187,22 @@ export default function PostItNote({ message, style }) {
   return (
     <div 
       ref={noteRef}
-      className={`${backgroundClass} rounded-lg shadow-md p-4 transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDragging ? 'cursor-grabbing opacity-80' : 'cursor-grab'} select-none`}
+      className={`${backgroundClass} rounded-lg shadow-md p-3 sm:p-4 transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDragging ? 'cursor-grabbing opacity-80' : 'cursor-grab'} select-none`}
       style={{
         position: 'absolute',
         left: `${position.x}px`,
         top: `${position.y}px`,
         transform: `rotate(${randomRotation}deg)`,
-        maxWidth: '250px',
-        minHeight: '180px',
+        maxWidth: '180px',
+        minHeight: '120px',
+        '@media (min-width: 640px)': {
+          maxWidth: '220px',
+          minHeight: '160px',
+        },
+        '@media (min-width: 768px)': {
+          maxWidth: '250px',
+          minHeight: '180px',
+        },
         zIndex: isDragging ? 100 : (hasBeenDragged ? 50 : Math.floor(Math.random() * 10 + 10)),
         touchAction: 'none'
       }}
@@ -203,10 +211,10 @@ export default function PostItNote({ message, style }) {
     >
       <div className="flex flex-col h-full">
         <div className="flex-grow">
-          <p className="text-sm mb-3 italic line-clamp-6">{message.message}</p>
+          <p className="text-xs sm:text-sm mb-2 sm:mb-3 italic line-clamp-6">{message.message}</p>
         </div>
         <div className="mt-auto">
-          <p className={`text-xs font-semibold ${theme.name === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+          <p className={`text-xs sm:text-sm font-semibold ${theme.name === 'dark' ? 'text-white' : 'text-gray-800'}`}>
             — {message.name}
           </p>
           <p className={`text-xs ${theme.name === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>

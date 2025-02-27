@@ -56,12 +56,12 @@ export default function MessageForm({ onMessageAdded }) {
   };
 
   return (
-    <div className={`border ${theme.accent} rounded-lg p-6 shadow-md w-full max-w-md mx-auto`}>
-      <h2 className={`text-xl font-semibold mb-4 ${theme.primary}`}>Leave a Message</h2>
+    <div className={`border ${theme.accent} rounded-lg p-4 sm:p-6 md:p-8 shadow-md w-full max-w-md mx-auto`}>
+      <h2 className={`text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 md:mb-6 ${theme.primary}`}>Leave a Message</h2>
       
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="name" className={`block mb-2 text-sm font-medium ${theme.foreground}`}>
+        <div className="mb-3 sm:mb-4 md:mb-6">
+          <label htmlFor="name" className={`block mb-1 sm:mb-2 text-xs sm:text-sm font-medium ${theme.foreground}`}>
             Your Name (optional)
           </label>
           <input
@@ -70,12 +70,12 @@ export default function MessageForm({ onMessageAdded }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Anonymous"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
+            className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
           />
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="message" className={`block mb-2 text-sm font-medium ${theme.foreground}`}>
+        <div className="mb-3 sm:mb-4 md:mb-6">
+          <label htmlFor="message" className={`block mb-1 sm:mb-2 text-xs sm:text-sm font-medium ${theme.foreground}`}>
             Your Message*
           </label>
           <textarea
@@ -84,23 +84,23 @@ export default function MessageForm({ onMessageAdded }) {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share your thoughts..."
             rows="4"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
+            className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700"
             required
           ></textarea>
         </div>
 
         {error && (
-          <div className="mb-4 text-red-500 text-sm">{error}</div>
+          <div className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-red-500">{error}</div>
         )}
 
         {success && (
-          <div className="mb-4 text-green-500 text-sm">{success}</div>
+          <div className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-green-500">{success}</div>
         )}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-2 rounded-md ${theme.button} transition-colors duration-300 flex justify-center items-center`}
+          className={`w-full py-1.5 sm:py-2 md:py-3 text-sm sm:text-base rounded-md ${theme.button} transition-colors duration-300 flex justify-center items-center`}
         >
           {isSubmitting ? (
             <span>Sending...</span>

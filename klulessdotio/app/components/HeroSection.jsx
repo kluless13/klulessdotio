@@ -13,9 +13,9 @@ const HeroSection = () => {
   const { theme } = useTheme();
 
   const phrases = useMemo(() => [
-    "Nothing comes from nothin.",
-    "All is flux, nothing is stationary.",
-    "The only thing that is constant is change."
+    "Nothing comes from nothing.",
+    "Ex nihilo nihil fit.",
+    "Nothing is created, nothing is lost, everything is transformed."
   ], []);
 
   // Trigger the main heading animation on load ONCE

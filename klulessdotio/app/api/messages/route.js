@@ -28,15 +28,49 @@ export async function POST(req) {
       );
     }
 
-    // Add message to databases
-    const newMessage = await addMessage(name, message);
+    // Add message with timeout and retry logic
+    const addMessageWithRetry = async (retries = 3) => {
+      try {
+        return await addMessage(name, message);
+      } catch (error) {
+        if (retries > 0 && (error.code === 'unavailable' || error.code === 'deadline-exceeded')) {
+          // Wait for a short time before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return addMessageWithRetry(retries - 1);
+        }
+        throw error;
+      }
+    };
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Operation timed out')), 25000);
+    });
+
+    const messagePromise = addMessageWithRetry();
     
-    return NextResponse.json({ success: true, message: newMessage });
+    try {
+      const newMessage = await Promise.race([messagePromise, timeoutPromise]);
+      return NextResponse.json({ success: true, message: newMessage });
+    } catch (raceError) {
+      if (raceError.message === 'Operation timed out') {
+        return NextResponse.json(
+          { error: 'Request timed out. Please try again.' },
+          { status: 504 }
+        );
+      }
+      throw raceError;
+    }
   } catch (error) {
     console.error('Error adding message:', error);
+    const errorMessage = error.code === 'unavailable' 
+      ? 'Service temporarily unavailable. Please try again.'
+      : error.code === 'deadline-exceeded'
+      ? 'Request timed out. Please try again.'
+      : 'Failed to add message';
+    
     return NextResponse.json(
-      { error: 'Failed to add message' },
-      { status: 500 }
+      { error: errorMessage },
+      { status: error.code === 'unavailable' || error.code === 'deadline-exceeded' ? 503 : 500 }
     );
   }
 }
