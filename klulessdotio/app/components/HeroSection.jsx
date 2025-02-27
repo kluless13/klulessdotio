@@ -13,9 +13,9 @@ const HeroSection = () => {
   const { theme } = useTheme();
 
   const phrases = useMemo(() => [
-    "Filho do céu",
-    "благословленный небесами",
-    "विश्व रक्षक"
+    "Nothing comes from nothin.",
+    "All is flux, nothing is stationary.",
+    "The only thing that is constant is change."
   ], []);
 
   // Trigger the main heading animation on load ONCE
@@ -69,8 +69,8 @@ const HeroSection = () => {
   }, [displayText, isTyping, currentPhraseIndex, phrases]);
 
   return (
-    <section className={`flex flex-col items-center justify-center text-center py-20 ${theme.background}`}>
-      <h1 className={`${theme.foreground} text-4xl mb-2`}>
+    <section className={`flex flex-col items-center justify-center text-center py-12 md:py-20 px-4 ${theme.background}`}>
+      <h1 className={`${theme.foreground} text-2xl md:text-4xl mb-2 leading-tight`}>
         <LetterFx 
           trigger="custom" 
           speed="slow"
@@ -83,7 +83,7 @@ const HeroSection = () => {
         </LetterFx>
       </h1>
       <h1 className={`${theme.foreground} mb-2`}>-</h1>
-      <h1 className={`${theme.primary} text-2xl`}>
+      <h1 className={`${theme.primary} text-xl md:text-2xl`}>
         {displayText}
         <span className="animate-pulse">|</span>
       </h1>

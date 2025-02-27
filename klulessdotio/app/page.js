@@ -8,7 +8,7 @@ import { useTheme } from "./contexts/ThemeContext"
 const sections = [
   { name: "About Me", path: "about-me", icon: "📁" },
   { name: "Timeline", path: "timeline", icon: "📅" },
-  { name: "Books", path: "books", icon: "📚" },
+  { name: "Books", path: "books", icon: "📗" },
   { name: "Projects", path: "projects", icon: "📁" },
   { name: "Messages", path: "messages", icon: "💬" },
 ]
@@ -21,9 +21,13 @@ export default function HomePage() {
       <HeroSection />
       
       <div className="flex-1 flex flex-col justify-center items-center p-8 w-full">
-        <div className="grid grid-cols-5 gap-4 max-w-6xl mx-auto">
-          {sections.map((section) => (
-            <Link key={section.name} href={section.path}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 gap-y-8 max-w-6xl mx-auto">
+          {sections.map((section, index) => (
+            <Link 
+              key={section.name} 
+              href={section.path}
+              className={`flex justify-center ${index > 2 && index < 5 ? 'small-screen-bottom' : ''}`}
+            >
               <FolderIcon 
                 name={section.name} 
                 path={section.path} 

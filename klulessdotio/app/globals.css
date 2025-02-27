@@ -18,6 +18,7 @@ body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(to bottom, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
   min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scrolling on mobile */
 }
 
 /* Theme-specific body backgrounds */
@@ -103,6 +104,124 @@ body.dark-theme {
   }
 }
 
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Adjust card layout for mobile */
+  .card-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .card {
+    max-width: 100%;
+    margin: 0.5rem 0;
+  }
+  
+  /* Timeline specific mobile styles */
+  .timeline-item {
+    margin-bottom: 2rem;
+  }
+  
+  .timeline-content {
+    padding: 1rem;
+  }
+}
+
+/* Extra small screen optimizations */
+@media (max-width: 500px) {
+  /* Navigation grid layout - 3 on top, 2 on bottom */
+  .grid-cols-2 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* Position the last two items in the center */
+  .small-screen-bottom {
+    grid-column: span 1;
+  }
+  
+  /* First 3 items take the top row */
+  .grid-cols-2 > a:nth-child(-n+3) {
+    grid-row: 1;
+  }
+  
+  /* Last 2 items take the bottom row and are centered */
+  .grid-cols-2 > a:nth-child(4) {
+    grid-column: 1 / span 1;
+    grid-row: 2;
+    justify-self: end;
+    margin-right: 1rem;
+  }
+  
+  .grid-cols-2 > a:nth-child(5) {
+    grid-column: 3 / span 1;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 1rem;
+  }
+  
+  /* Timeline improvements for very small screens */
+  .timeline-card {
+    width: 75%;
+    margin-left: 0.75rem;
+  }
+  
+  /* Ensure text is fully visible */
+  .max-h-\[4\.5rem\] {
+    max-height: 4.5rem;
+  }
+  
+  /* Fix timeline line alignment on very small screens */
+  .absolute.left-\[4\.5rem\] {
+    left: 4.5rem !important; /* Force the line position */
+  }
+  
+  /* Ensure timeline items have proper spacing from the line */
+  .ml-8 {
+    margin-left: 2rem !important; /* Force consistent margin */
+  }
+  
+  /* Adjust timeline card width for better readability */
+  .w-\[65\%\] {
+    width: 65% !important; /* Ensure consistent width */
+  }
+}
+
+/* Timeline styles */
+@media (max-width: 768px) {
+  /* Ensure proper spacing between timeline items */
+  .timeline-container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  /* Adjust timeline card width and spacing */
+  .timeline-card {
+    width: 80%;
+    margin-left: 1rem;
+    padding: 1rem;
+  }
+}
+
 /* Card styles */
 .card {
   border: 2px solid;
@@ -120,6 +239,36 @@ body.dark-theme {
   border-radius: 15px;
   cursor: pointer;
   perspective: 1000px;
+}
+
+/* Card flip animation */
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-back {
+  transform: rotateY(180deg);
 }
 
 .dark .card {

@@ -23,17 +23,24 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: '/icons/tradrAI.png',
+        url: '/icons/tradrAI-removebg-preview.png',
         type: 'image/png',
       }
     ],
     apple: [
       {
-        url: '/icons/tradrAI.png',
+        url: '/icons/tradrAI-removebg-preview.png',
         type: 'image/png',
       }
     ]
   }
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 }
 
 export default function RootLayout({ children }) {

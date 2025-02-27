@@ -20,7 +20,7 @@ export default function FolderIcon({ name, path, icon }) {
       switch (icon) {
         case '📁': // Folder
           return '📂'; // Open folder
-        case '📚': // Books
+        case '📗': // Books
           return '📖'; // Open book
         case '📅': // Calendar/Timeline
           return '📆'; // Detailed calendar
