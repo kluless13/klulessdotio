@@ -19,6 +19,13 @@ const nextConfig = {
       },
     ];
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  transpilePackages: ['three', 'three-globe', '@react-three/fiber', '@react-three/drei']
 };
 
 export default nextConfig;

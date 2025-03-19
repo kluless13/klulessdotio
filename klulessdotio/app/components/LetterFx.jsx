@@ -76,6 +76,7 @@ const LetterFx = ({
   speed = "medium",
   charset = defaultCharset,
   onTrigger,
+  onComplete,
   className,
   style,
 }) => {
@@ -133,13 +134,19 @@ const LetterFx = ({
 
       setInProgress(false);
       setIsComplete(true);
+      
+      // Call onComplete callback when animation is done
+      if (onComplete && typeof onComplete === 'function') {
+        onComplete();
+      }
+      
       if (trigger === "instant") {
         setHasAnimated(true);
       }
     };
 
     runAnimation();
-  }, [inProgress, isComplete, speed, charset, trigger]);
+  }, [inProgress, isComplete, speed, charset, trigger, onComplete]);
 
   useEffect(() => {
     if (typeof children === "string") {

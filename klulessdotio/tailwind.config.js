@@ -75,6 +75,7 @@ module.exports = {
       animation: {
         glow: "glow 2s ease-in-out infinite alternate",
         fadeIn: "fadeIn 0.5s ease-in-out",
+        spotlight: "spotlight 2.5s ease-in-out 0.5s 1 forwards",
       },
       keyframes: {
         glow: {
@@ -90,6 +91,20 @@ module.exports = {
         fadeIn: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
+        },
+        spotlight: {
+          "0%": {
+            opacity: "0",
+            transform: "translate(-50%, -50%) scale(0.5)",
+          },
+          "20%": {
+            opacity: "0.2",
+            transform: "translate(-50%, -50%) scale(0.7)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translate(-50%, -50%) scale(1)",
+          },
         },
       },
     },

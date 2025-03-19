@@ -1,92 +1,54 @@
 'use client';
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { LetterFx } from './LetterFx';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Vortex } from '../../components/Vortex';
 
-const HeroSection = () => {
-  const [triggerMain, setTriggerMain] = useState(null);
-  const [hasTriggered, setHasTriggered] = useState(false);
-  const [displayText, setDisplayText] = useState('');
-  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
-  const timeoutRef = useRef(null);
+const HeroSection = ({ showText = true, onAnimationComplete }) => {
+  const [initialDelayComplete, setInitialDelayComplete] = useState(false);
   const { theme } = useTheme();
-
-  const phrases = useMemo(() => [
-    "Nothing comes from nothing.",
-    "Ex nihilo nihil fit.",
-    "Nothing is created, nothing is lost, everything is transformed."
-  ], []);
-
-  // Trigger the main heading animation on load ONCE
+  
+  // After initial load, wait 2 seconds and then signal completion
   useEffect(() => {
-    if (triggerMain && !hasTriggered) {
-      triggerMain();
-      setHasTriggered(true); // Mark as triggered so it won't happen again
-    }
-  }, [triggerMain, hasTriggered]);
-
-  // Typewriter effect for phrases
-  useEffect(() => {
-    const currentPhrase = phrases[currentPhraseIndex];
+    const timer = setTimeout(() => {
+      setInitialDelayComplete(true);
+    }, 3000); // Show vortex for 3 seconds
     
-    // Clear any existing timeouts to prevent memory leaks
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (isTyping) {
-      // If typing, add one character at a time
-      if (displayText.length < currentPhrase.length) {
-        timeoutRef.current = setTimeout(() => {
-          setDisplayText(currentPhrase.substring(0, displayText.length + 1));
-        }, 100);
-      } else {
-        // When we've typed the full phrase, wait before erasing
-        timeoutRef.current = setTimeout(() => {
-          setIsTyping(false);
-        }, 2000);
-      }
-    } else {
-      // If erasing, remove one character at a time
-      if (displayText.length > 0) {
-        timeoutRef.current = setTimeout(() => {
-          setDisplayText(displayText.substring(0, displayText.length - 1));
-        }, 50);
-      } else {
-        // When fully erased, move to next phrase and start typing again
-        setCurrentPhraseIndex((currentPhraseIndex + 1) % phrases.length);
-        setIsTyping(true);
-      }
+  // When initial delay is complete, trigger the animation completion
+  useEffect(() => {
+    if (initialDelayComplete && onAnimationComplete) {
+      onAnimationComplete();
     }
-
-    // Cleanup timeout on unmount or when dependencies change
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [displayText, isTyping, currentPhraseIndex, phrases]);
+  }, [initialDelayComplete, onAnimationComplete]);
 
   return (
-    <section className={`flex flex-col items-center justify-center text-center py-12 md:py-20 px-4 ${theme.background}`}>
-      <h1 className={`${theme.foreground} text-2xl md:text-4xl mb-2 leading-tight`}>
-        <LetterFx 
-          trigger="custom" 
-          speed="slow"
-          charset={["$", "O", "7", "#", "@", "N", "E", "9", "D", "5", "W", "L",
-            "6", "!", "^", "*", "h", "k", "4", "&"
-          ]}
-          onTrigger={(trigger) => setTriggerMain(trigger)}
-        >
-          Fortune, good night; smile once more, turn thy wheel.
-        </LetterFx>
-      </h1>
-      <h1 className={`${theme.foreground} mb-2`}>-</h1>
-      <h1 className={`${theme.primary} text-xl md:text-2xl`}>
-        {displayText}
-        <span className="animate-pulse">|</span>
-      </h1>
+    <section className="relative flex flex-col items-center justify-center text-center px-4 bg-black min-h-screen overflow-hidden">
+      <AnimatePresence>
+        {showText && (
+          <motion.div 
+            className="w-full h-full absolute inset-0"
+            initial={{ opacity: 1 }}
+            exit={{ 
+              opacity: 0,
+              transition: { duration: 0.6, ease: "easeOut" }
+            }}
+          >
+            <Vortex 
+              backgroundColor="#000000"
+              baseHue={20} // Orange
+              rangeHue={10}
+              baseSpeed={0.3}
+              rangeSpeed={1.0}
+              baseRadius={1.5}
+              rangeRadius={1.5}
+              particleCount={800}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

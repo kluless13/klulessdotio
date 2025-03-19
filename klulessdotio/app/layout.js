@@ -1,7 +1,7 @@
 import "./globals.css"
 import { Work_Sans, Poppins } from "next/font/google"
 import { ThemeProvider } from "./contexts/ThemeContext"
-import ThemeToggle from "./components/ThemeToggle"
+import { TracingBeam } from "../components/TracingBeam"
 
 // Load Poppins for body text
 const poppins = Poppins({ 
@@ -33,8 +33,7 @@ export const metadata = {
         type: 'image/png',
       }
     ]
-  },
-  viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no',
+  }
 }
 
 export const viewport = {
@@ -46,11 +45,12 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${poppins.variable} ${workSans.variable}`}>
-      <body className={`${poppins.className} min-h-screen`}>
+    <html lang="en" className={`dark ${poppins.variable} ${workSans.variable}`}>
+      <body className={`${poppins.className} min-h-screen bg-black dark-theme`}>
         <ThemeProvider>
-          {children}
-          <ThemeToggle />
+          <TracingBeam>
+            {children}
+          </TracingBeam>
         </ThemeProvider>
       </body>
     </html>

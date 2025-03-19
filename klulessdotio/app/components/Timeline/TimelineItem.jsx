@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react"
 import { useTheme } from "../../contexts/ThemeContext"
+import { GlowingEffect } from "@/components/GlowingEffect"
 
 export const TimelineItem = ({ event, isVisible, observerRef, isRecent }) => {
   const itemRef = useRef(null)
@@ -63,13 +64,12 @@ export const TimelineItem = ({ event, isVisible, observerRef, isRecent }) => {
       {/* Content card */}
       <div
         onClick={() => setExpanded(!expanded)}
-        className={`${theme.card} rounded-lg p-4 cursor-pointer
+        className={`${theme.card} relative rounded-lg p-4 cursor-pointer
           transition-all duration-300
-          ${getGlowColor()}
-          ${getHoverGlow()}
           ${expanded ? 'scale-102' : 'hover:scale-[1.01]'}
           ${isRecent ? theme.name === 'dark' ? 'border-orange-400/50' : 'border-green-600/50' : ''}`}
       >
+        <GlowingEffect disabled={false} glow={true} variant="default" />
         <div className="flex flex-col">
           <span className={`text-sm ${theme.secondary} mb-1`}>
             {formatDate(event.date)}

@@ -42,12 +42,15 @@ export default function FolderIcon({ name, path, icon }) {
   
   return (
     <div 
-      className="flex flex-col items-center justify-center hover:scale-110 transition-transform"
+      className="flex flex-col items-center justify-center group cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="text-6xl mb-2 transition-all duration-300">{displayIcon()}</div>
-      <span className={`font-normal ${getTextColor()} transition-colors duration-300`}>{name}</span>
+      <div className="relative p-4 rounded-lg bg-opacity-10 bg-white dark:bg-black transition-all duration-300 group-hover:bg-opacity-20 group-hover:scale-105">
+        <div className="text-6xl mb-2 transition-all duration-300">{displayIcon()}</div>
+        <div className="absolute inset-0 border-2 border-transparent group-hover:border-orange-400 dark:group-hover:border-green-400 rounded-lg transition-all duration-300"></div>
+      </div>
+      <span className={`font-normal ${getTextColor()} transition-colors duration-300 mt-2 text-center max-w-[120px] truncate`}>{name}</span>
     </div>
   );
 } 
