@@ -773,15 +773,14 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-4 text-primary">{">"} about</h2>
           <Card className="p-6 bg-card">
             <p className="leading-relaxed">
-              I like baking, data, lifting heavy and predicting the future. I am the founder of Kairos. As a founder, I keep on finding. 
-              I began my career as a marine scientist, getting my Master’s degree from James Cook University in Townsville, QLD, Australia, which is ranked first in the world for marine science and marine biology. 
-              My passion included working at the intersection of biology, robotics, and artificial intelligence. 
-              At a marine robotics firm (Flyingfish Technologies), I developed AI tools to automate fish counting and coral detection from underwater survey footage. 
-              This project, which became FishTally, streamlined the entire survey-data workflow, cutting >100 hours of manual labor each week and delivering real-time ecological insights from raw video. 
-              Besides this, I have also managed to scrape information across all companies listed on the ASX to generate succinct reports that accurately pinpoint which companies will need to purchase carbon and renewable energy credits to meet their quota. 
-              This feat saved renewable energy companies months of research work (the company MDs were astounded as to why they were not leveraging AI in house to this extent).
-              At Kairos, we are pushing the frontiers of prediction market infrastructure, building and predicting the future simultaneously.
-            </p>
+            I like baking, data, lifting heavy, and predicting the future. I’m the founder of Kairos, always exploring and building.
+            <br />
+            I began as a marine scientist, earning my Master’s at James Cook University, the world’s top-ranked program for marine science. My passion for biology, robotics, and AI led me to Flyingfish Technologies, where I built FishTally—an AI tool that automated fish counts and coral detection from underwater video, saving >100 hours of manual work each week and delivering real-time ecological insights.
+            <br />
+            Beyond marine robotics, I scraped data across all ASX-listed companies to identify those needing carbon and renewable credits—work that astonished energy executives and saved months of research.
+            <br />
+            At Kairos, we’re advancing prediction market infrastructure, building tools that let us not only forecast the future but shape it.
+              </p>
           </Card>
         </section>
 
