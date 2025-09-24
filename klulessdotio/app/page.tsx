@@ -17,7 +17,7 @@ interface Article {
 const sampleArticles: Article[] = [
   {
     id: "1",
-    title: "why do we predict? (the brain's native business model)",
+    title: "why we predict (brain's native business model)",
     date: "2025-08-18",
     content: `# the predictive brain
 
@@ -101,7 +101,7 @@ That’s why **prediction markets** matter: they’re a clear, collective mirror
   },
   {
     id: "2",
-    title: "how prediction markets win (if they win)",
+    title: "how PMs win (if they win)",
     date: "2025-08-21",
     content: `### prediction markets: not about the money
 
@@ -473,7 +473,7 @@ Where journals reward prestige, **markets reward accuracy**; where narratives do
 By **pricing truth**, we channel funding toward **robust** findings and away from fragile ones—saving money **and** accelerating discovery. When truth is priced, **breakthroughs compound faster**. (5)(7)(13)(16)`},
 {
     id: "4",
-    title: "networks needed for prediction markets",
+    title: "networks needed for PMs",
     date: "2025-08-25",
     content: `### why networks matter
 
@@ -695,7 +695,7 @@ const timelineItems = [
     year: "2024-now",
     title: "Founder of Kairos",
     company: "Kairos",
-    description: "Gave up PhD to start Kairos, where we build the future of prediction markets.",
+    description: "Gave up PhD to build out the future of Marine Science x AI. Started Kairos, where we build the future of prediction markets. Best bet ever.",
   },
     {
     year: "2023",
@@ -780,6 +780,7 @@ export default function Home() {
               This project, which became FishTally, streamlined the entire survey-data workflow, cutting >100 hours of manual labor each week and delivering real-time ecological insights from raw video. 
               Besides this, I have also managed to scrape information across all companies listed on the ASX to generate succinct reports that accurately pinpoint which companies will need to purchase carbon and renewable energy credits to meet their quota. 
               This feat saved renewable energy companies months of research work (the company MDs were astounded as to why they were not leveraging AI in house to this extent).
+              At Kairos, we are pushing the frontiers of prediction market infrastructure, building and predicting the future simultaneously.
             </p>
           </Card>
         </section>
