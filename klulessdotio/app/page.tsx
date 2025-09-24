@@ -704,12 +704,6 @@ const timelineItems = [
     description: "Got into the best university for marine biology to make a difference.",
   },
   {
-    year: "2023",
-    title: "Master's Degree in Marine Science",
-    company: "JCU, Townsville, QLD",
-    description: "Got into the best university for marine biology to make a difference.",
-  },
-  {
     year: "2021-22",
     title: "Home Baker & Crypto enthusiast",
     company: "baked",
