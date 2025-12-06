@@ -2,15 +2,72 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Github, Twitter, X } from "lucide-react"
 import ReactMarkdown from "react-markdown"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { MatrixRainTrigger } from "@/components/MatrixRain"
+import { SnakeGameTrigger } from "@/components/SnakeGame"
 
 interface Article {
   id: string
   title: string
   date: string
   content: string
+}
+
+type Language = "zh" | "ja" | "en"
+
+const uiText = {
+  headerSubtitle: {
+    zh: "./kairos/创始人",
+    ja: "./kairos/ファウンダー",
+    en: "./kairos/founder",
+  },
+  sectionAbout: {
+    zh: "关于",
+    ja: "about",
+    en: "about",
+  },
+  sectionTimeline: {
+    zh: "时间线",
+    ja: "timeline",
+    en: "timeline",
+  },
+  sectionThoughts: {
+    zh: "想法",
+    ja: "thoughts",
+    en: "thoughts",
+  },
+  curiousPrefix: {
+    zh: "好奇吗？",
+    ja: "気になる？",
+    en: "aren't you curious?",
+  },
+  endOfFile: {
+    zh: "> 文件结束",
+    ja: "> end of file",
+    en: "> end of file",
+  },
+  forbiddenRabbit: {
+    zh: "禁忌兔子 🐇",
+    ja: "禁断のうさぎ 🐇",
+    en: "forbidden rabbit 🐇",
+  },
+  book30: {
+    zh: "预约 30 分钟",
+    ja: "30 分のコール予約",
+    en: "book 30 min",
+  },
+  playSnake: {
+    zh: "玩贪吃蛇",
+    ja: "スネークで遊ぶ",
+    en: "play snake",
+  },
 }
 
 // Sample articles - in a real implementation, these would come from your git repo
@@ -690,14 +747,15 @@ PMs don’t become infrastructure by being a single site with a ticker. They bec
 },
 ]
 
-const timelineItems = [
+const timelineItemsEn = [
   {
     year: "2024-now",
     title: "Founder of Kairos",
     company: "Kairos",
-    description: "Gave up PhD to build out the future of Marine Science x AI. Started Kairos, where we build the future of prediction markets. Best bet ever.",
+    description:
+      "Gave up PhD to build out the future of Marine Science x AI. Started Kairos, where we build the future of prediction markets. Best bet ever.",
   },
-    {
+  {
     year: "2023",
     title: "Master's Degree in Marine Science",
     company: "JCU, Townsville, QLD",
@@ -707,7 +765,8 @@ const timelineItems = [
     year: "2021-22",
     title: "Home Baker & Crypto enthusiast",
     company: "baked",
-    description: "Managed over 8 orders/day with a busted oven for ~4.5 months. Baked challah, babkas, bagels, brownies, cookies and more; explored the crypto space (NFTs, lol).",
+    description:
+      "Managed over 8 orders/day with a busted oven for ~4.5 months. Baked challah, babkas, bagels, brownies, cookies and more; explored the crypto space (NFTs, lol).",
   },
   {
     year: "2020",
@@ -719,11 +778,117 @@ const timelineItems = [
     year: "1999",
     title: "Newborn",
     company: "The Family",
-    description: "I realised I existsed, and all of a sudden, I was here, the universe obeserving itself.",
+    description:
+      "I realised I existed, and all of a sudden, I was here, the universe observing itself.",
   },
 ]
 
+const timelineItemsZh = [
+  {
+    year: "2024-至今",
+    title: "Kairos 创始人",
+    company: "Kairos",
+    description:
+      "放弃攻读博士，用海洋科学 x AI 构建未来。创立 Kairos，专注预测市场基础设施——也许是我做过最好的押注。",
+  },
+  {
+    year: "2023",
+    title: "海洋科学硕士",
+    company: "JCU, Townsville, QLD",
+    description: "考入全球顶尖的海洋生物学项目，希望真的能在海洋世界里做出一点改变。",
+  },
+  {
+    year: "2021-22",
+    title: "家庭烘焙 & 加密爱好者",
+    company: "baked",
+    description:
+      "在一台快坏掉的烤箱里，每天做 8+ 份订单，坚持了 4 个多月：编织面包、babka、贝果、布朗尼、曲奇……同时一头扎进加密世界（包括 NFTs，lol）。",
+  },
+  {
+    year: "2020",
+    title: "海洋科学与技术学士",
+    company: "AMITY University, Noida",
+    description: "那时真的以为，自己可以单枪匹马改变海洋科学的世界。",
+  },
+  {
+    year: "1999",
+    title: "新生儿",
+    company: "The Family",
+    description: "突然发现“我”出现了——好像只是宇宙在用一副新的身体观察自己。",
+  },
+]
+
+const timelineItemsJa = [
+  {
+    year: "2024-現在",
+    title: "Kairos 創業者",
+    company: "Kairos",
+    description:
+      "博士課程を捨てて、海洋科学 x AI の未来づくりにフルベット。予測市場インフラをつくる Kairos を立ち上げた。いまのところ、人生で一番いいトレード。",
+  },
+  {
+    year: "2023",
+    title: "海洋科学 修士号",
+    company: "JCU, Townsville, QLD",
+    description: "世界トップレベルの海洋生物学プログラムに進学し、本気で海の世界にインパクトを出したいと思っていた。",
+  },
+  {
+    year: "2021-22",
+    title: "ホームベーカー & クリプトオタク",
+    company: "baked",
+    description:
+      "ほぼ壊れかけのオーブンで、4.5 ヶ月のあいだ 1 日 8 件以上の注文をこなす。ハラ、バブカ、ベーグル、ブラウニー、クッキー……を焼きながら、NFT などクリプトの世界も掘りまくる。",
+  },
+  {
+    year: "2020",
+    title: "海洋科学・技術 学士号",
+    company: "AMITY University, Noida",
+    description: "この頃は、本気で海洋科学の世界を変えられると信じていた。",
+  },
+  {
+    year: "1999",
+    title: "誕生",
+    company: "The Family",
+    description: "突然「自分」がいることに気づいた瞬間——宇宙が自分自身を観察し始めた、そんな感覚だった。",
+  },
+]
+
+const SectionAccordion = ({
+  title,
+  children,
+  defaultOpen = true,
+}: {
+  title: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
+  return (
+    <Accordion
+      type="single"
+      collapsible
+      defaultValue={defaultOpen ? "item-1" : undefined}
+      onValueChange={(value) => setIsOpen(value === "item-1")}
+      className="border-none"
+    >
+      <AccordionItem value="item-1" className="border-none">
+        <AccordionTrigger className="hover:no-underline hover:text-primary transition-colors py-2 px-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary flex items-center gap-2">
+            <span className="text-primary transition-transform duration-200">
+              {isOpen ? "v" : ">"}
+            </span>
+            {title}
+          </h2>
+        </AccordionTrigger>
+        <AccordionContent className="pt-4 px-0">{children}</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  )
+}
+
 export default function Home() {
+  const [lang, setLang] = useState<Language>("zh")
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null)
 
   const toggleArticle = (articleId: string) => {
@@ -734,20 +899,37 @@ export default function Home() {
     setExpandedArticle(null)
   }
 
+  const cycleLanguage = () => {
+    setLang((prev) => (prev === "zh" ? "ja" : prev === "ja" ? "en" : "zh"))
+  }
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <header className="mb-12 flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-bold mb-2 terminal-text">
+            <h1
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2 terminal-text cursor-pointer select-none"
+              onClick={cycleLanguage}
+              title="Click to change language"
+            >
               {">"} kluless<span className="cursor"></span>
             </h1>
-            <p className="text-muted-foreground">./kairos/founder</p>
+            <p className="text-muted-foreground">{uiText.headerSubtitle[lang]}</p>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Removed theme toggle button */}
+            <MatrixRainTrigger label={uiText.forbiddenRabbit[lang]} />
+            <a
+              href="https://calendly.com/kairos-kluless/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="hover:bg-accent">
+                {uiText.book30[lang]}
+              </Button>
+            </a>
             <a href="https://github.com/kluless13" target="_blank" rel="noopener noreferrer">
               <Button variant="ghost" size="icon" className="hover:bg-accent">
                 <Github className="h-5 w-5" />
@@ -764,49 +946,218 @@ export default function Home() {
 
         {/* About Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4 text-primary">{">"} about</h2>
-          <Card className="p-6 bg-card">
-            <p className="leading-relaxed">
-            I like baking, data, lifting heavy, and predicting the future. I’m the founder of Kairos, always exploring and building.
-            <br />
-            I began as a marine scientist, earning my Master’s at James Cook University, the world’s top-ranked program for marine science. My passion for biology, robotics, and AI led me to Flyingfish Technologies, where I built FishTally—an AI tool that automated fish counts and coral detection from underwater video, saving >100 hours of manual work each week and delivering real-time ecological insights.
-            <br />
-            Beyond marine robotics, I scraped data across all ASX-listed companies to identify those needing carbon and renewable credits—work that astonished energy executives and saved months of research.
-            <br />
-            At Kairos, we’re advancing prediction market infrastructure, building tools that let us not only forecast the future but shape it.
-              </p>
-          </Card>
+          <SectionAccordion title={uiText.sectionAbout[lang]} defaultOpen>
+            <div className="py-4">
+              {lang === "en" && (
+                <p className="leading-relaxed text-foreground/90 space-y-4">
+                  <span className="block">
+                    I like baking, data, lifting heavy, and predicting the future. I&apos;m the founder of{" "}
+                    <a
+                      href="https://kairos.io"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Kairos
+                    </a>
+                    , where we&apos;re advancing prediction market infrastructure—building tools that let us not only
+                    forecast the future but shape it.
+                  </span>
+
+                  <span className="block">
+                    My journey started in marine science. I earned my Master&apos;s at{" "}
+                    <span className="text-primary">James Cook University</span>, the world&apos;s top-ranked program
+                    for marine biology. My passion for biology, robotics, and AI led me to{" "}
+                    <span className="text-primary">Flyingfish Technologies</span>, where I built{" "}
+                    <span className="text-primary font-semibold">FishTally</span>—an AI-powered tool that automated fish
+                    counts and coral detection from underwater video, saving{" "}
+                    <span className="text-primary font-semibold">&gt;100 hours</span> of manual work each week and
+                    delivering real-time ecological insights.
+                  </span>
+
+                  <span className="block">
+                    Beyond marine robotics, I&apos;ve built products across climate, AI, and emerging tech. At{" "}
+                    <span className="text-primary">PurposeFi</span>, I developed ESG intelligence engines that
+                    transformed{" "}
+                    <span className="text-primary font-semibold">
+                      4–5 month analyses into automated 48-hour diagnostics
+                    </span>
+                    . I scraped and analyzed data across all ASX-listed companies to identify those needing carbon and
+                    renewable credits—work that saved months of research and directly informed strategy for renewable
+                    energy companies and super funds.
+                  </span>
+
+                  <span className="block">
+                    At <span className="text-primary">DeTrash</span>, I scaled operations from{" "}
+                    <span className="text-primary font-semibold">&gt;300 to 51,000+ recyclers</span> in India through
+                    strategic partnerships, and led carbon credit due diligence for{" "}
+                    <span className="text-primary font-semibold">6M+ credits</span> in bulk procurement discussions.
+                  </span>
+
+                  <span className="block">
+                    My work consistently merges systems thinking, analytical depth, and narrative clarity to solve
+                    ambiguous, cross-disciplinary problems. At Kairos, I designed end-to-end prediction market
+                    infrastructure on Bitcoin, built AI-enabled transaction layers, and created{" "}
+                    <span className="text-primary font-semibold">STRIKE</span> (Smart Transaction Route Integration
+                    Kit)—a grant-winning platform integrating dApps with social platforms.
+                  </span>
+
+                  <span className="block text-muted-foreground italic">
+                    I thrive in ambiguity, move fast with structure, and bring a blend of analytical rigor,
+                    emerging-tech fluency, and real operational experience.
+                  </span>
+                </p>
+              )}
+
+              {lang === "zh" && (
+                <p className="leading-relaxed text-foreground/90 space-y-4">
+                  <span className="block">
+                    我喜欢烘焙、数据、硬拉和预测未来。现在我是{" "}
+                    <a
+                      href="https://kairos.io"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Kairos
+                    </a>
+                    的创始人——我们在做预测市场基础设施，试着把「预言未来」这件事，变成可以真正驱动决策的系统。
+                  </span>
+
+                  <span className="block">
+                    我的旅程从海洋科学开始。在{" "}
+                    <span className="text-primary">James Cook University</span>
+                    拿到海洋科学硕士，那是全球海洋生物学排名第一的项目。后来我加入{" "}
+                    <span className="text-primary">Flyingfish Technologies</span>，做水下机器人和 AI，构建了{" "}
+                    <span className="text-primary font-semibold">FishTally</span>——一个自动识别鱼类和珊瑚的视频分析工具，
+                    每周为科研团队节省{" "}
+                    <span className="text-primary font-semibold">&gt;100 小时</span> 的人工标注时间，把生态洞察变成近乎实时的信号。
+                  </span>
+
+                  <span className="block">
+                    除了海洋机器人，我还在气候、AI 和新兴技术的交叉地带搭过很多产品。在{" "}
+                    <span className="text-primary">PurposeFi</span>，我设计了 ESG 智能分析引擎，把原本
+                    <span className="text-primary font-semibold"> 4–5 个月的分析流程压缩到 48 小时内自动完成</span>；
+                    我爬取并分析了所有澳交所上市公司数据，找出真正需要碳与可再生能源凭证的主体，帮助可再生能源公司和养老基金节省了数月的调研时间。
+                  </span>
+
+                  <span className="block">
+                    在 <span className="text-primary">DeTrash</span>，我通过搭建合作网络，把印度的回收网络从{" "}
+                    <span className="text-primary font-semibold">&gt;300 扩展到 51,000+ 名回收者</span>，并主导了
+                    <span className="text-primary font-semibold"> 600 万+ 碳信用</span> 的尽调和采购分析。
+                  </span>
+
+                  <span className="block">
+                    我的工作本质上都是同一件事：用系统思维、分析深度和叙事清晰度，去解决跨学科、边界模糊的问题。在
+                    Kairos，我从零设计了基于比特币的预测市场基础设施，搭建带有 AI 的交易层，并构建了{" "}
+                    <span className="text-primary font-semibold">STRIKE</span>{" "}
+                   （Smart Transaction Route Integration Kit），一个把 dApp 嵌入社交平台的路由层——这个项目也拿到了资助。
+                  </span>
+
+                  <span className="block text-muted-foreground italic">
+                    我习惯在不确定里工作，用结构感和行动速度把模糊问题拆开，并用真实世界的约束校准自己的野心。
+                  </span>
+                </p>
+              )}
+
+              {lang === "ja" && (
+                <p className="leading-relaxed text-foreground/90 space-y-4">
+                  <span className="block">
+                    焼き菓子づくり、データ、重いものを持ち上げること、そして「未来を当てにいくこと」が好きです。いまは{" "}
+                    <a
+                      href="https://kairos.io"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Kairos
+                    </a>
+                    のファウンダーとして、予測市場インフラをつくり、「未来予測」をちゃんと意思決定に使えるレイヤーにしようとしています。
+                  </span>
+
+                  <span className="block">
+                    出発点は海洋科学でした。{" "}
+                    <span className="text-primary">James Cook University</span>
+                    で海洋科学の修士号を取得し、世界トップクラスの海洋生物学プログラムで研究していました。その後{" "}
+                    <span className="text-primary">Flyingfish Technologies</span>
+                    に入り、水中ロボティクスと AI に取り組みます。そこで{" "}
+                    <span className="text-primary font-semibold">FishTally</span>
+                    というツールをつくり、水中映像から魚やサンゴを自動カウントできるようにしました。これによって、研究チームの
+                    <span className="text-primary font-semibold"> 週 100 時間以上</span>
+                    の手作業が削減され、エコロジーのインサイトがほぼリアルタイムで届くようになりました。
+                  </span>
+
+                  <span className="block">
+                    海洋ロボットの外側でも、気候・AI・新興技術の境界でいろいろなプロダクトをつくってきました。{" "}
+                    <span className="text-primary">PurposeFi</span>
+                    では ESG インテリジェンスエンジンを開発し、
+                    <span className="text-primary font-semibold">
+                      数ヶ月かかっていた分析プロセスを 48 時間の自動診断にまで短縮
+                    </span>
+                    。オーストラリア証券取引所に上場する全企業のデータをスクレイピングし、本当に炭素クレジットや再エネクレジットを必要としているプレーヤーを特定して、再エネ企業や年金基金のリサーチを何ヶ月分もショートカットしました。
+                  </span>
+
+                  <span className="block">
+                    <span className="text-primary">DeTrash</span>
+                    ではパートナーシップを構築しながら、インドのリサイクルネットワークを
+                    <span className="text-primary font-semibold"> 300 人強から 51,000 人以上</span>
+                    までスケールさせ、さらに
+                    <span className="text-primary font-semibold"> 600 万枚以上のカーボンクレジット</span>
+                    に関するデューデリジェンスと調達検討をリードしました。
+                  </span>
+
+                  <span className="block">
+                    一貫してやっているのは、「システム思考」「深い分析」「ストーリーの明快さ」を組み合わせて、境界のあいまいな横断的な問題を解くことです。Kairos
+                    では、ビットコイン上の予測市場インフラをエンドツーエンドで設計し、AI を組み込んだトランザクションレイヤーを構築し、dApp をソーシャルプラットフォームに統合する{" "}
+                    <span className="text-primary font-semibold">STRIKE</span>
+                    （Smart Transaction Route Integration Kit）をつくりました。このプロジェクトは助成金も獲得しています。
+                  </span>
+
+                  <span className="block text-muted-foreground italic">
+                    不確実性の中で働くのがわりと好きです。構造をつくりながら素早く動き、野心は高く保ちつつも、現実世界の制約でちゃんとキャリブレーションする——そんなスタイルで生きています。
+                  </span>
+                </p>
+              )}
+            </div>
+          </SectionAccordion>
         </section>
 
         {/* Timeline Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4 text-primary">{">"} timeline</h2>
-          <div className="space-y-4">
-            {timelineItems.map((item, index) => (
-              <Card key={index} className="p-4 bg-card">
-                <div className="flex items-start gap-4">
-                  <div className="text-primary font-bold min-w-[60px]">{item.year}</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{item.title}</h3>
-                    <p className="text-primary text-sm">{item.company}</p>
-                    <p className="text-muted-foreground text-sm mt-1">{item.description}</p>
+          <SectionAccordion title={uiText.sectionTimeline[lang]} defaultOpen>
+            <div className="space-y-4">
+              {(lang === "zh"
+                ? timelineItemsZh
+                : lang === "ja"
+                ? timelineItemsJa
+                : timelineItemsEn
+              ).map((item, index) => (
+                <div key={index} className="py-3 border-l-2 border-primary/20 pl-4">
+                  <div className="flex items-start gap-4">
+                    <div className="text-primary font-bold text-sm sm:text-base min-w-[60px]">
+                      {item.year}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{item.title}</h3>
+                      <p className="text-primary text-xs sm:text-sm">{item.company}</p>
+                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">{item.description}</p>
+                    </div>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          </SectionAccordion>
         </section>
 
         {/* Thoughts Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4 text-primary">{">"} thoughts</h2>
-          <div className="space-y-3">
-            {sampleArticles.map((article) => (
-              <div key={article.id}>
-                <Card className="bg-card overflow-hidden">
+          <SectionAccordion title={uiText.sectionThoughts[lang]} defaultOpen>
+            <div className="space-y-3">
+              {sampleArticles.map((article) => (
+                <div key={article.id} className="border-b border-primary/10 pb-3">
                   <button
                     onClick={() => toggleArticle(article.id)}
-                    className="w-full p-4 text-left hover:bg-accent transition-colors"
+                    className="w-full py-3 text-left hover:text-primary transition-colors"
                   >
                     <div className="flex justify-between items-center">
                       <div>
@@ -818,18 +1169,23 @@ export default function Home() {
                   </button>
 
                   {expandedArticle === article.id && (
-                    <div className="p-6 bg-muted/20">
-                      <div className="prose prose-sm max-w-none prose-invert">
+                    <div className="pt-3">
+                      <div className="prose prose-sm max-w-none prose-invert text-foreground">
                         <ReactMarkdown
-                          className="text-foreground"
                           components={{
-                            h1: ({ children }) => <h1 className="text-2xl font-bold mb-4 text-primary">{children}</h1>,
+                            h1: ({ children }) => (
+                              <h1 className="text-2xl font-bold mb-4 text-primary">{children}</h1>
+                            ),
                             h2: ({ children }) => (
                               <h2 className="text-xl font-semibold mb-3 text-primary">{children}</h2>
                             ),
-                            h3: ({ children }) => <h3 className="text-lg font-medium mb-2 text-primary">{children}</h3>,
+                            h3: ({ children }) => (
+                              <h3 className="text-lg font-medium mb-2 text-primary">{children}</h3>
+                            ),
                             p: ({ children }) => <p className="mb-3 leading-relaxed">{children}</p>,
-                            ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
+                            ul: ({ children }) => (
+                              <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>
+                            ),
                             ol: ({ children }) => (
                               <ol className="list-decimal list-inside mb-3 space-y-1">{children}</ol>
                             ),
@@ -850,15 +1206,23 @@ export default function Home() {
                       </div>
                     </div>
                   )}
-                </Card>
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
+          </SectionAccordion>
+        </section>
+
+        {/* Snake teaser */}
+        <section className="mt-12 flex justify-center">
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+            <span>{uiText.curiousPrefix[lang]}</span>
+            <SnakeGameTrigger label={uiText.playSnake[lang]} />
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="text-center text-muted-foreground text-sm">
-          <p>{">"} end of file</p>
+        <footer className="mt-8 text-center text-muted-foreground text-sm">
+          <p>{uiText.endOfFile[lang]}</p>
         </footer>
       </div>
 

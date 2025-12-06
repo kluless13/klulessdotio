@@ -81,11 +81,43 @@
 }
 
 @layer base {
+  html {
+    /* Base font size scales from 14px (mobile) to 16px (desktop) */
+    font-size: clamp(14px, 2vw, 16px);
+  }
+
+  h1 {
+    /* Main heading: 28px mobile → 36px desktop */
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+  }
+
+  h2 {
+    /* Section headings: 20px mobile → 24px desktop */
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+  }
+
+  h3 {
+    /* Subheadings: 16px mobile → 18px desktop */
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+  }
+
+  p,
+  .body-text {
+    /* Body text: 14px mobile → 16px desktop */
+    font-size: clamp(0.875rem, 2vw, 1rem);
+  }
+
+  .text-sm {
+    /* Small text: 12px mobile → 14px desktop */
+    font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  }
+
   * {
     /* Remove border and outline styles for clean terminal look */
     @apply outline-none;
     border: none !important;
   }
+
   body {
     @apply bg-background text-foreground font-mono;
   }
@@ -101,6 +133,7 @@
     50% {
       opacity: 1;
     }
+
     51%,
     100% {
       opacity: 0;
@@ -110,5 +143,23 @@
   /* Terminal text effects */
   .terminal-text {
     text-shadow: 0 0 5px currentColor;
+  }
+}
+
+/* Hide default accordion chevron icon; keep only the custom `>` indicator */
+[data-slot="accordion-trigger"] svg {
+  display: none;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Tighter spacing on mobile */
+  section {
+    @apply mb-8;
   }
 }
