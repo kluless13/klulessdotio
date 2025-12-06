@@ -905,9 +905,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
         {/* Header */}
-        <header className="mb-12 flex justify-between items-start">
+        <header className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 sm:gap-0">
           <div>
             <h1
               className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2 terminal-text cursor-pointer select-none"
@@ -919,7 +919,7 @@ export default function Home() {
             <p className="text-muted-foreground">{uiText.headerSubtitle[lang]}</p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 sm:justify-end">
             <MatrixRainTrigger label={uiText.forbiddenRabbit[lang]} />
             <a
               href="https://calendly.com/kairos-kluless/30min"
