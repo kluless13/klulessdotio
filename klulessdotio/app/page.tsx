@@ -1,165 +1,95 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
+import { ArrowUpRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Github, Twitter, X } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import ReactMarkdown from "react-markdown"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import { MatrixRainTrigger } from "@/components/MatrixRain"
-import { SnakeGameTrigger } from "@/components/SnakeGame"
+
+// Custom Icons
+const GitHubIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+  </svg>
+)
+
+const XIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+)
+
+const SubstackIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+    <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
+  </svg>
+)
 
 interface Article {
   id: string
   title: string
   date: string
   content: string
+  excerpt: string
 }
 
-type Language = "zh" | "ja" | "en"
-
-const uiText = {
-  headerSubtitle: {
-    zh: "./kairos/创始人",
-    ja: "./kairos/ファウンダー",
-    en: "./kairos/founder",
-  },
-  sectionAbout: {
-    zh: "关于",
-    ja: "about",
-    en: "about",
-  },
-  sectionTimeline: {
-    zh: "时间线",
-    ja: "timeline",
-    en: "timeline",
-  },
-  sectionThoughts: {
-    zh: "想法",
-    ja: "thoughts",
-    en: "thoughts",
-  },
-  curiousPrefix: {
-    zh: "好奇吗？",
-    ja: "気になる？",
-    en: "aren't you curious?",
-  },
-  endOfFile: {
-    zh: "> 文件结束",
-    ja: "> end of file",
-    en: "> end of file",
-  },
-  forbiddenRabbit: {
-    zh: "禁忌兔子 🐇",
-    ja: "禁断のうさぎ 🐇",
-    en: "forbidden rabbit 🐇",
-  },
-  book30: {
-    zh: "预约 30 分钟",
-    ja: "30 分のコール予約",
-    en: "book 30 min",
-  },
-  playSnake: {
-    zh: "玩贪吃蛇",
-    ja: "スネークで遊ぶ",
-    en: "play snake",
-  },
-}
-
-// Sample articles - in a real implementation, these would come from your git repo
-const sampleArticles: Article[] = [
+const articles: Article[] = [
   {
     id: "1",
-    title: "why we predict (brain's native business model)",
-    date: "2025-08-18",
+    title: "Why We Predict",
+    date: "Aug 18, 2025",
+    excerpt: "Modern neuroscience frames the brain as a prediction machine. Exploring how prediction markets mirror the brain's native operating system.",
     content: `# the predictive brain
 
 Modern neuroscience increasingly frames the brain as a **prediction machine**. At any moment, it generates top-down expectations about incoming sensory data and compares them with bottom-up input. This family of ideas is often called **predictive coding**: higher cortical areas send predictions; sensory areas send back **prediction errors** (mismatch signals) that update internal models (Clark, 2013)(1).
 
 # the free-energy principle
 
-Karl Friston’s **free-energy principle** generalizes this: organisms resist disorder by minimizing a quantity (“variational free energy”) that upper-bounds **surprise/uncertainty** about sensations (Friston, 2010)(2). Here “free energy” is **not calories**; it’s a statistical bound tied to model mismatch.
+Karl Friston's **free-energy principle** generalizes this: organisms resist disorder by minimizing a quantity ("variational free energy") that upper-bounds **surprise/uncertainty** about sensations (Friston, 2010)(2). Here "free energy" is **not calories**; it's a statistical bound tied to model mismatch.
 
 A trading parallel can be helpful as a **metaphor**: think of free energy like a **spread** between your internal price and incoming data — wider spread ⇒ more uncertainty/mismatch; narrower ⇒ easier, cheaper action. This analogy is illustrative only; Friston does not define free energy as a market spread (2).
 
 # the amygdala: salience and survival
 
-The amygdala is not just a “fear center”; it helps flag **salience** under uncertainty and supports defensive learning (LeDoux, 2000)(3). Picture rustling in the bushes at night: before conscious appraisal (“wind or predator?”), the amygdala can trigger autonomic readiness — heart rate up, attention narrowed — a bias toward **false alarms** that’s adaptive when costs of misses are high (3).
+The amygdala is not just a "fear center"; it helps flag **salience** under uncertainty and supports defensive learning (LeDoux, 2000)(3). Picture rustling in the bushes at night: before conscious appraisal ("wind or predator?"), the amygdala can trigger autonomic readiness — heart rate up, attention narrowed — a bias toward **false alarms** that's adaptive when costs of misses are high (3).
 
 # the prefrontal cortex: training for certainty
 
-If the amygdala is the alarm, the **prefrontal cortex (PFC)** is the strategist. It supports **cognitive control**: maintaining goals, evaluating options, suppressing prepotent impulses, and selecting actions (Miller & Cohen, 2001)(4). In life, PFC “trains” through repeated decisions under uncertainty — e.g., sticking to a plan or rule when emotions tug elsewhere. Each successful override that’s rewarded helps stabilize control policies (4).
+If the amygdala is the alarm, the **prefrontal cortex (PFC)** is the strategist. It supports **cognitive control**: maintaining goals, evaluating options, suppressing prepotent impulses, and selecting actions (Miller & Cohen, 2001)(4). In life, PFC "trains" through repeated decisions under uncertainty — e.g., sticking to a plan or rule when emotions tug elsewhere. Each successful override that's rewarded helps stabilize control policies (4).
 
-# prediction errors as the brain’s PnL
+# prediction errors as the brain's PnL
 
-Midbrain dopamine neurons encode **reward prediction errors** — the difference between expected and received outcomes. Better-than-expected outcomes yield phasic bursts; worse-than-expected, dips. These signals are **teaching signals**, retuning expectations and timing, not mere “pleasure” (Schultz, 1997)(5).
+Midbrain dopamine neurons encode **reward prediction errors** — the difference between expected and received outcomes. Better-than-expected outcomes yield phasic bursts; worse-than-expected, dips. These signals are **teaching signals**, retuning expectations and timing, not mere "pleasure" (Schultz, 1997)(5).
 
 # the pricing parallel
 
-Markets “price in” information; brains “price in” experience. In both, **prediction error** is the engine that updates value estimates. Traders arbitrage mispricings toward consensus; neurons adjust synapses to better fit environmental regularities. Neither system **knows** reality with certainty; both aim for a good enough approximation to act.
+Markets "price in" information; brains "price in" experience. In both, **prediction error** is the engine that updates value estimates. Traders arbitrage mispricings toward consensus; neurons adjust synapses to better fit environmental regularities. Neither system **knows** reality with certainty; both aim for a good enough approximation to act.
 
 # training for certainty
 
-The goal isn’t to make the world certain — it’s to make your **policy** reliable under uncertainty. You can’t control an outcome, but you can control **how you respond** (rules, checklists, risk limits, journaling). Neurally, that’s PFC channeling amygdala signals into strategy instead of panic. **Certainty** here means *consistent policy*, not omniscience.
+The goal isn't to make the world certain — it's to make your **policy** reliable under uncertainty. You can't control an outcome, but you can control **how you respond** (rules, checklists, risk limits, journaling). Neurally, that's PFC channeling amygdala signals into strategy instead of panic. **Certainty** here means *consistent policy*, not omniscience.
 
 # prediction as the human signature
 
-Why do we predict? Because it’s the operating system of consciousness. Much of culture is an **externalization of predictive machinery**: calendars, models, religions, markets, music, science — scaffolds that stabilize uncertainty.
+Why do we predict? Because it's the operating system of consciousness. Much of culture is an **externalization of predictive machinery**: calendars, models, religions, markets, music, science — scaffolds that stabilize uncertainty.
 
-But prediction doesn’t unify us by *form*. Monks may not care about markets; musicians about 0DTEs; traders will trade; artists will make art. What unifies us is deeper: the drive to **survive, persevere, and thrive**.
-
-Prediction is inevitable. Even when we “surrender” prediction, we lean into **providence** — trusting that outcomes can unfold without control. As metaphors, prediction evokes structure and explicit modeling; providence evokes integration, creativity, and acceptance. Importantly, modern neuroscience cautions against the pop **left-brain/right-brain** split (e.g., “logic lives on the left, creativity on the right”). While some functions are lateralized, people are **not** globally left- or right-brained; both hemispheres cooperate in most tasks (Nielsen et al., 2013)(6). So take “left = prediction / right = providence” as poetic imagery, not biology.
-
-That’s why **prediction markets** matter: they’re a clear, collective mirror of what brains already do — **minimize mismatch, update expectations, and act** — balancing structured prediction with lived acceptance in the service of survival.
+That's why **prediction markets** matter: they're a clear, collective mirror of what brains already do — **minimize mismatch, update expectations, and act** — balancing structured prediction with lived acceptance in the service of survival.
 
 ---
 
 ## references
 
 1. Clark, A. (2013). *Whatever next? Predictive brains, situated agents, and the future of cognitive science.* Behavioral and Brain Sciences.
-    
-    https://www.cambridge.org/core/journals/behavioral-and-brain-sciences/article/whatever-next-predictive-brains-situated-agents-and-the-future-of-cognitive-science/33542C736E17E3D1D44E8D03BE5F4CD9
-    
-
-(alt open PDF) https://www.fil.ion.ucl.ac.uk/~karl/Whatever%20next.pdf
-
 2. Friston, K. (2010). *The free-energy principle: a unified brain theory?* Nature Reviews Neuroscience.
-    
-    https://www.nature.com/articles/nrn2787
-    
-
-(alt open PDF) https://www.uab.edu/medicine/cinl/images/KFriston_FreeEnergy_BrainTheory.pdf
-
-3. LeDoux, J.E. (2000). *Emotion circuits in the brain.* Annual Review of Neuroscience, 23:155–184.
-    
-    https://pubmed.ncbi.nlm.nih.gov/10845062/
-    
-    (alt PDF) https://stanford.edu/~knutson/ans/ledoux00.pdf
-    
-4. Miller, E.K., & Cohen, J.D. (2001). *An integrative theory of prefrontal cortex function.* Annual Review of Neuroscience, 24:167–202.
-    
-    https://www.annualreviews.org/content/journals/10.1146/annurev.neuro.24.1.167
-    
-    (alt PDF) https://web.math.princeton.edu/~sswang/literature_general_unsorted/miller_cohen01_annu_rev_neurosci_prefrontal-theory.pdf
-    
-5. Schultz, W., Dayan, P., & Montague, P.R. (1997). *A neural substrate of prediction and reward.* Science, 275:1593–1599.
-    
-    https://www.science.org/doi/10.1126/science.275.5306.1593
-    
-    (alt PDF) https://www.gatsby.ucl.ac.uk/~dayan/papers/sdm97.pdf
-    
-6. Nielsen, J.A., et al. (2013). *An evaluation of the left-brain vs right-brain hypothesis with resting state functional connectivity MRI.* PLOS ONE.
-    
-    https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0071275`,
+3. LeDoux, J.E. (2000). *Emotion circuits in the brain.* Annual Review of Neuroscience.
+4. Miller, E.K., & Cohen, J.D. (2001). *An integrative theory of prefrontal cortex function.* Annual Review of Neuroscience.
+5. Schultz, W., Dayan, P., & Montague, P.R. (1997). *A neural substrate of prediction and reward.* Science.`,
   },
   {
     id: "2",
-    title: "how PMs win (if they win)",
-    date: "2025-08-21",
+    title: "How PMs Win (If They Win)",
+    date: "Aug 21, 2025",
+    excerpt: "Prediction markets don't beat futures in hedging or casinos in gambling. They win if they become infrastructure for truth.",
     content: `### prediction markets: not about the money
 
 Prediction markets look like casinos at first glance. You put money down, you win or lose. But the real story is not about gambling or hedging — we already have futures, options, and swaps for that. Those instruments are deep, liquid, and regulatory-blessed (Hull, 2017)(1).
@@ -172,263 +102,42 @@ Where they *can* win is as **information systems**.
 
 ### markets as truth engines
 
-Prediction markets aggregate dispersed beliefs into a single number: the price. That price is not just odds; it’s a living probability estimate backed by skin in the game.
+Prediction markets aggregate dispersed beliefs into a single number: the price. That price is not just odds; it's a living probability estimate backed by skin in the game.
 
-Robin Hanson, who pioneered much of this field, formalized market scoring rules and argued for markets as **truth-seeking mechanisms** that elicit and aggregate forecasts (Hanson, 2002; 2003)(2)(3). Markets don’t just reflect known data — they *incentivize the discovery of unknown data*.
+Robin Hanson, who pioneered much of this field, formalized market scoring rules and argued for markets as **truth-seeking mechanisms** that elicit and aggregate forecasts (Hanson, 2002; 2003)(2)(3). Markets don't just reflect known data — they *incentivize the discovery of unknown data*.
 
 ---
 
 ### polymarket: the proof of concept
 
-Polymarket is a prominent live example. Its markets on elections, geopolitics, and culture have often tracked outcomes faster or more tightly than punditry and many polling averages; major press covered how prediction markets called key 2024 dynamics when poll models lagged (WSJ, 2024)(4). Today, Polymarket prices frequently serve as a **reference point** for “the crowd’s odds.”
+Polymarket is a prominent live example. Its markets on elections, geopolitics, and culture have often tracked outcomes faster or more tightly than punditry and many polling averages; major press covered how prediction markets called key 2024 dynamics when poll models lagged (WSJ, 2024)(4). Today, Polymarket prices frequently serve as a **reference point** for "the crowd's odds."
 
-The magic here isn’t that people make money. It’s that the market becomes an **informational baseline** — a source of truth in real time.
-
----
-
-### information systems: why they matter
-
-An **information system** is a structured way of collecting, processing, and distributing knowledge to guide decisions (Laudon & Laudon, 2020)(5).
-
-Traditional systems:
-
-- **Polls** → snapshot of opinions, subject to bias.
-- **News outlets** → filtered narratives, often slow or politicized.
-- **Social media** → raw, noisy, unstructured.
-- **Expert forecasts** → precise but bottlenecked by small groups.
-- **AI models** → scalable, but risk hallucination and poor calibration.
-
-Prediction markets add something new:
-
-1. **skin in the game** → financial incentives for accuracy.
-2. **real-time updating** → probabilities shift continuously with new data.
-3. **distributed aggregation** → no need for coordination, just participation.
-4. **single actionable number** → a live probability anyone can read.
-
-This makes PMs less like news feeds and more like **live probability terminals** — systems that translate chaos into a price signal.
-
----
-
-### problems prediction markets could solve
-
-Where does this information actually help us?
-
-- **Politics**: replacing or augmenting polls with real-time, incentive-aligned forecasts of elections, referenda, or policy outcomes.
-- **Finance**: predicting central bank moves, inflation trends, mergers, or regulatory rulings faster than analysts.
-- **Science**: guiding funding and investment by betting on which research is reproducible or which drug trials will succeed (Dreber et al., 2015)(6).
-- **Governance**: governments hedging knowledge risk — pandemics, geopolitical conflicts, climate shocks — through probabilities rather than guesswork.
-- **Corporate strategy**: firms using internal PMs to predict sales, launch dates, or supply-chain disruptions more accurately than top-down projections.
-- **Everyday decision-making**: a Bloomberg-style PM terminal guiding entrepreneurs, investors, or even citizens in weighing uncertain futures.
-
----
-
-## the devil’s advocate
-
-### liquidity: the structural weakness
-
-Single Polymarket markets often top out in the **tens to low hundreds of millions**, while platform-wide volume reached **multi-billions** during the 2024 U.S. election cycle (press/industry coverage). By contrast, U.S. options markets clear **~57 million contracts/day** and **hundreds of billions up toward ~$1T notional/day**; 0DTE options alone averaged about **$760B/day** in 2024, per Bank of America (OCC; FT)(7)(8).
-
-Thin PMs mean:
-
-- small bets can distort prices,
-- odds are volatile without being informative,
-- institutions won’t trust or use the data.
-
-Without liquidity, the “truth machine” risks becoming a “toy calculator.”
-
----
-
-### regulation: the legal ceiling
-
-Intrade was charged by the CFTC in 2012 and later enjoined (9)(10). PredictIt’s no-action relief was rescinded in 2022, but the **Fifth Circuit granted an injunction** in 2023 that allowed continued operation pending litigation and later rulings (11)(12). Polymarket paid a **$1.4M** civil penalty in 2022 and restricted U.S. access (13).
-
-**Update:** In **Sept 2025**, **Reuters** reported that the **CFTC cleared Polymarket’s U.S. return** via a CFTC-regulated entity (QCX), materially broadening potential adoption (14).
-
-This matters because:
-
-- governments and corporates won’t integrate “illegal” signals,
-- mainstream adoption stalls without clarity,
-- the sector remains vulnerable if regulators reverse course.
-
----
-
-### incentives: truth vs influence
-
-Large, motivated flows can shape **perception**, not just reflect truth. Political markets, especially when thin, can be nudged by whales to signal momentum — raising self-fulfilling concerns. This dual-use risk (information vs. influence) is discussed in legal/policy analysis (WilmerHale, 2024)(19) and in media coverage (20).
-
----
-
-### resolution: when truth is fuzzy
-
-Not every question has a clean outcome. “Will X reduce inflation by 2026?” can be debated endlessly, unlike “Who won the Super Bowl?” Ambiguous contracts introduce disputes, erode confidence, and limit utility.
-
-Markets can only be truth engines if their questions themselves are resolvable as truth.
-
----
-
-### competition: experts and machines
-
-Prediction markets aren’t the only forecasting tools.
-
-- **Superforecasters** (Tetlock’s Good Judgment Project) often outperform other methods, sometimes beating market alternatives on long-range questions (15)(16).
-- **AI systems** can process massive datasets and generate forecasts instantly.
-
-PMs might not replace these; they may only complement them. If so, their “truth machine” status is less absolute and more specialized.
-
----
-
-### adoption: who actually uses PMs?
-
-Today’s user base is mostly retail speculators and crypto enthusiasts. For PMs to matter institutionally, they need:
-
-- **APIs** plugged into trading terminals,
-- **dashboards** for policy think tanks,
-- **integrations** with research ecosystems.
-
-Momentum is shifting: appeals-court wins and settlements opened the door for **Kalshi’s election markets** in late 2024, increasing the plausibility of compliant, institutional PM rails (17)(18). Still, mainstream integration is early.
-
----
-
-### time horizons: short vs long bets
-
-PMs shine with near-term, binary events: elections, sports, short-term policy decisions. But long-term, complex bets (climate policy success in 2040, technological breakthroughs) suffer from:
-
-- capital lock-up,
-- low liquidity,
-- shifting definitions over time.
-
-This makes PMs less versatile than they first appear.
-
----
-
-### the social layer: markets as discourse
-
-Prediction markets are not just pricing systems, they’re **social arenas**. People gather, argue, meme, and narrate around them. Sometimes the conversation around the market is as valuable as the price. But this introduces noise — if PMs are just seen as “Twitter with odds,” they risk becoming entertainment rather than decision-making infrastructure.
-
----
-
-### toward a “Bloomberg for prediction”
-
-The vision isn’t just more markets. It’s **systems built on top**:
-
-- A “prediction terminal” aggregating PM data, expert input, and AI summaries.
-- Real-time dashboards of probabilities for politics, finance, science.
-- Alerts when odds shift meaningfully, integrated into trading desks, policy planning, or corporate strategy.
-
-Polymarket is the engine. The **terminal** is the win-condition.
+The magic here isn't that people make money. It's that the market becomes an **informational baseline** — a source of truth in real time.
 
 ---
 
 ### how PMs win (if they win)
 
-Prediction markets don’t beat futures in hedging or beat casinos in gambling. They win if they become infrastructure for truth.
+Prediction markets don't beat futures in hedging or beat casinos in gambling. They win if they become infrastructure for truth.
 
-But truth alone isn’t enough. They must overcome liquidity, regulation, manipulation, ambiguous resolutions, competition from experts/AI, and adoption hurdles. They must prove their information is not just *different* but **indispensable**.
+But truth alone isn't enough. They must overcome liquidity, regulation, manipulation, ambiguous resolutions, competition from experts/AI, and adoption hurdles. They must prove their information is not just *different* but **indispensable**.
 
 The optimistic case: PMs evolve into the **Bloomberg of uncertainty** — a layer of real-time probabilities that guide decisions across society.
 
 The skeptical case: they remain niche, fun, and sometimes accurate, but structurally sidelined.
 
-Both outcomes are possible. That’s the bet.
-
----
-
-## references (plain URLs, numbered to match)
-
-1. Hull, J. (2017). *Options, Futures, and Other Derivatives (10th ed.)*.
-    
-    https://books.google.com/books/about/Options_Futures_and_Other_Derivatives.html?id=vpIYvgAACAAJ
-    
-2. Hanson, R. (2002). *Logarithmic Market Scoring Rules for Information Aggregation*.
-    
-    https://hanson.gmu.edu/mktscore.pdf
-    
-3. Hanson, R. (2003). *Combinatorial Information Market Design*.
-    
-    https://mason.gmu.edu/~rhanson/combobet.pdf
-    
-4. The Wall Street Journal (2024). *How the “Trump Whale” and Prediction Markets Beat the Pollsters in 2024.*
-    
-    https://www.wsj.com/politics/elections/how-the-trump-whale-and-prediction-markets-beat-the-pollsters-in-2024-dd11ec4e
-    
-5. Laudon, K.C., & Laudon, J.P. (2020). *Management Information Systems: Managing the Digital Firm (16th ed.)*.
-    
-    https://www.pearson.com/store/p/management-information-systems-managing-the-digital-firm/P100003064998
-    
-6. Dreber, A., et al. (2015). *Using prediction markets to estimate the reproducibility of scientific research*. PNAS.
-    
-    https://www.pnas.org/doi/10.1073/pnas.1516179112
-    
-7. OCC (Options Clearing Corporation). *Market Data: Volume & Open Interest* (for ADV context).
-    
-    https://www.theocc.com/market-data/market-data-reports/volume-and-open-interest
-    
-8. Financial Times (2024). *0DTE options average ~$760bn/day, BofA estimate*.
-    
-    https://www.ft.com/content/324302e4-0b92-46de-b6b7-41c4766b1cfb
-    
-9. CFTC Press Release 6423-12 (2012). *CFTC charges Intrade and TEN with violating CFTC orders*.
-    
-    https://www.cftc.gov/PressRoom/PressReleases/6423-12
-    
-10. CFTC Press Release 7758-18 (2018). *Order against The Prediction Company et al.* (enforcement history context).
-    
-    https://www.cftc.gov/PressRoom/PressReleases/7758-18
-    
-11. U.S. Court of Appeals, Fifth Circuit (2023). *Order enjoining CFTC action re: PredictIt* (22-51124).
-    
-    https://www.ca5.uscourts.gov/opinions/pub/22/22-51124-CV0.pdf
-    
-12. CCH (2024). *PredictIt litigation analysis (compiled filings/excerpts).*
-    
-    https://business.cch.com/srd/20240510-printDocuments.pdf
-    
-13. CFTC Press Release 8478-22 (2022). *CFTC orders Polymarket to pay $1.4M; off-limits to U.S. users*.
-    
-    https://www.cftc.gov/PressRoom/PressReleases/8478-22
-    
-14. Reuters (2025). *CFTC clears Polymarket’s regulated U.S. return via QCX LLC* (Sept 2025).
-    
-    https://www.reuters.com/sustainability/boards-policy-regulation/polymarket-returns-us-after-cftc-clears-regulatory-hurdles-2025-09-03/
-    
-15. Good Judgment (Tetlock). *What is Superforecasting?*
-    
-    https://www.goodjudgment.com/superforecasting/
-    
-16. Scientific American (2019). *The Secrets of the Superforecasters.*
-    
-    https://www.scientificamerican.com/article/the-secrets-of-the-superforecasters/
-    
-17. Reuters (2024). *Federal court upholds ruling letting Kalshi list U.S. election contracts* (Oct 2, 2024).
-    
-    https://www.reuters.com/legal/us-federal-court-upholds-ruling-letting-kalshiex-list-election-betting-contracts-2024-10-02/
-    
-18. Bloomberg (2024). *Judge green-lights election betting on congressional outcomes* (Sept 12, 2024).
-    
-    https://www.bloomberg.com/news/articles/2024-09-12/betting-on-us-congress-elections-outcome-green-lit-by-judge
-    
-19. WilmerHale (2024). *Market integrity & manipulation risks in election prediction markets (client alert).*
-    
-    https://www.wilmerhale.com/-/media/files/shared_content/editorial/publications/wh_publications/client_alert_pdfs/20241028-market-integrity-and-manipulation-in-election-prediction-markets.pdf
-    
-20. CoinDesk (2024). *Election prediction markets prone to manipulation?*
-    
-    https://www.coindesk.com/policy/2024/07/01/election-prediction-markets-prone-to-manipulation/`,
+Both outcomes are possible. That's the bet.`,
   },
   {
     id: "3",
-    title: "can PMs save science?",
-    date: "2025-08-25",
+    title: "Can PMs Save Science?",
+    date: "Aug 25, 2025",
+    excerpt: "Prediction markets won't fix science alone — but they price the thing science ultimately seeks: truth.",
     content: `## the reproducibility crisis
 
-Modern science has a trust problem. Studies suggest that **many published findings do not replicate**. A foundational critique argued that structural incentives and low prior odds make most “positive” findings likely false (Ioannidis, 2005)(1). In psychology, the Open Science Collaboration (2015) tried to replicate 100 experiments and found only **36%** produced statistically significant results in the same direction (2). In cancer biology, Amgen scientists reported they could reproduce **6 of 53** “landmark” preclinical studies (Begley & Ellis, 2012)(3).
+Modern science has a trust problem. Studies suggest that **many published findings do not replicate**. A foundational critique argued that structural incentives and low prior odds make most "positive" findings likely false (Ioannidis, 2005)(1). In psychology, the Open Science Collaboration (2015) tried to replicate 100 experiments and found only **36%** produced statistically significant results in the same direction (2). In cancer biology, Amgen scientists reported they could reproduce **6 of 53** "landmark" preclinical studies (Begley & Ellis, 2012)(3).
 
 The economic cost is large: one estimate put **irreproducible U.S. preclinical biomedical research** at **~$28B per year** (Freedman, Cockburn & Simcoe, 2015)(4).
-
-1. https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0020124
-2. https://www.science.org/doi/10.1126/science.aac4716
-3. https://www.nature.com/articles/483531a
-4. https://pubmed.ncbi.nlm.nih.gov/26057340/
 
 ---
 
@@ -440,801 +149,645 @@ What if, instead of publishing into the void, we let **markets price the likelih
 
 **Example 2: Economics replications.** In experimental economics, a replication project ran **both surveys and prediction markets**. **Both** tracked outcomes; **neither clearly beat the other**, and both **overestimated** true replication rates—useful signal, but imperfect (Camerer et al., 2016)(6).
 
-**Meta-evidence across projects.** A pooled analysis of four large forecasting projects found **prediction markets ~73% accurate vs. surveys ~66%** at classifying replication outcomes (Gordon et al., 2021)(7).
-
-1. https://projects.iq.harvard.edu/files/yiling/files/pnas.1516179112.pdf
-2. https://www.science.org/cms/asset/febfa588-66f1-493b-afb8-268e0aaeb6a9/pap.pdf
-3. https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0248780
-
----
-
-## the biopharma angle
-
-Drug R&D is expensive and risky. A widely cited analysis estimated **$2.6B** (capitalized, incl. failures) per new drug (DiMasi et al., 2016)(8), though newer work shows **wide ranges** and often **lower** averages depending on methods and data (Sertkaya et al., 2024)(9). Success rates remain low: **~10%** of candidates entering Phase I reach approval (BIO industry analyses)(10).
-
-**Late-stage failures can be crushing.** Phase III trial costs vary from **tens of millions** to **hundreds of millions**, depending on disease area and design (RAPS summary of a multi-sponsor sample; median ~$19M per Phase III in one large dataset; Tufts/other estimates are higher)(11)(9).
-
-Alzheimer’s illustrates the stakes: failure rates have historically exceeded **95–99%** and **cumulative private AD R&D outlays** since 1995 are estimated at **~$42.5B** (Cummings et al., 2021)(12), with many high-profile late-stage failures (8).
-
-**Where PMs can help:**
-
-- *“Will Drug X meet its Phase III primary endpoint by 2028?”*
-    
-    A low market probability can **de-risk portfolios** earlier, steer capital, or hedge exposure.
-    
-- *Program triage:* funders and VCs use market odds to **prioritize** pipelines.
-- *Policy & payers:* probabilities inform **budget impact** planning and **coverage** risk.
-1. https://www.sciencedirect.com/science/article/abs/pii/S0167629616000291
-2. https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2820562
-3. https://go.bio.org/rs/490-EHZ-999/images/Clinical%20Development%20Success%20Rates%202006-2015%20-%20BIO%2C%20Biomedtracker%2C%20Amplion%202016.pdf
-4. https://www.raps.org/news-and-articles/news-articles/2018/9/phase-3-trial-costs-estimated-at-19m-study-finds
-5. https://alz-journals.onlinelibrary.wiley.com/doi/10.1002/alz.12450
-
----
-
-## information systems for science
-
-Think of prediction markets as **meta-peer-review**:
-
-- Peer review = a handful of experts’ judgments.
-- Prediction markets = **distributed** judgments (experts + outsiders) **priced into a probability**.
-- Used together, you get **richer, more honest** signals: incentives to reveal information that **wouldn’t surface** in narratives or status contests.
-
-(5)(6)(7)
-
----
-
-## DARPA’s replication markets (SCORE)
-
-DARPA funded **Replication Markets** (2019–2021) to forecast the replicability of **thousands** of social-science claims—**~3,000 assessed by mid-2020**—using surveys and incentivized markets. The program delivered **probability “confidence scores”** at scale and resolved **121 markets** with prize payouts, demonstrating feasibility for large pipelines and crisis contexts (e.g., COVID-related claims) (13)(14)(15).
-
-1. https://royalsocietypublishing.org/doi/10.1098/rsos.200566
-2. https://replicationmarkets.org/
-3. https://projects.iq.harvard.edu/sites/projects.iq.harvard.edu/files/yiling/files/2005.04543.pdf
-
-*Related:* A 2024–2025 decision-market study showed markets can **select** which studies to replicate (top-priced claims replicated ~83% vs. ~33% for bottom-priced), offering a practical triage tool—while surveys remained a cheaper, slightly less accurate baseline (Nature Human Behaviour, 2024/2025)(16).
-
-1. https://www.nature.com/articles/s41562-024-02062-9
-
----
-
-## the vision: science as a prediction terminal
-
-**Step 1 — publication-time odds.** Every new paper ships with a **live replication market**. Within days, you have a base probability. (5)(7)
-
-**Step 2 — capital alignment.** Funders and VCs **consult odds** before allocating grants or investments; they update as new data arrives. (5)(7)
-
-**Step 3 — pipeline pricing.** Biopharma trials carry markets from Phase I→III; sponsors, investors, payers, and policy planners use **continuous probabilities** to manage risk. (8)(9)(10)(11)(12)
-
-**Step 4 — policy integration.** Health agencies and ministries adopt **replicability dashboards** for strategic planning and crisis response. (13)(16)
-
-**Step 5 — the terminal.** A **Bloomberg-like interface** shows real-time probabilities across fields, paired with expert commentary and AI synthesis, to guide **billions** in public and private decisions. (13)(16)
-
----
-
-## the devil’s advocate
-
-- **Liquidity.** Niche scientific questions may not attract enough traders for tight, informative prices. (6)(7)
-- **Resolution lag.** Many scientific questions resolve **years** later; capital can lock up; incentives must be designed for long horizons. (13)(16)
-- **Ethics/compliance.** Markets around trials risk **leaks** or insider trading if not carefully governed. (8)(9)
-- **Alternatives.** **Superforecasters**, structured surveys, and **ML models** can be competitive baselines; markets likely **complement** rather than replace them. (7)(16)
-
 ---
 
 ## pricing truth
 
-Prediction markets won’t fix science alone—but they **price the thing science ultimately seeks**: truth.
+Prediction markets won't fix science alone—but they **price the thing science ultimately seeks**: truth.
 
 Where journals reward prestige, **markets reward accuracy**; where narratives dominate, **prices discipline**; where hype misallocates resources, **probabilities redirect** them.
 
-By **pricing truth**, we channel funding toward **robust** findings and away from fragile ones—saving money **and** accelerating discovery. When truth is priced, **breakthroughs compound faster**. (5)(7)(13)(16)`},
-{
+By **pricing truth**, we channel funding toward **robust** findings and away from fragile ones—saving money **and** accelerating discovery. When truth is priced, **breakthroughs compound faster**.`,
+  },
+  {
     id: "4",
-    title: "networks needed for PMs",
-    date: "2025-08-25",
+    title: "Networks Needed for PMs",
+    date: "Aug 25, 2025",
+    excerpt: "A prediction market isn't just a pricing mechanism; it's a networked system. Value scales with users, complements, and adopters.",
     content: `### why networks matter
 
-A prediction market isn’t just a pricing mechanism; it’s a **networked system**. Value scales with users (traders + forecasters), complements (data feeds, terminals, APIs), and adopters (funds, firms, policymakers). In econ terms, PMs are classic **network-effect** / **two-sided platform** businesses: more users → better prices → more complements → more users (Katz & Shapiro, 1985)(1); (Rochet & Tirole, 2003)(2). ([JSTOR](https://www.jstor.org/stable/1814809?utm_source=chatgpt.com))
+A prediction market isn't just a pricing mechanism; it's a **networked system**. Value scales with users (traders + forecasters), complements (data feeds, terminals, APIs), and adopters (funds, firms, policymakers). In econ terms, PMs are classic **network-effect** / **two-sided platform** businesses: more users → better prices → more complements → more users (Katz & Shapiro, 1985)(1); (Rochet & Tirole, 2003)(2).
 
 ---
 
 ### direct vs indirect network effects
 
 - **Direct effects:** more participants → tighter spreads, faster incorporation of info, more robust prices (Wolfers & Zitzewitz, 2004)(3).
-- **Indirect effects:** integrations (APIs, dashboards, terminals) attract institutions; institutional use attracts more liquidity; the **flywheel** turns (Rochet & Tirole, 2003)(2). ([American Economic Association](https://www.aeaweb.org/articles?id=10.1257%2F0895330041371321&utm_source=chatgpt.com))
+- **Indirect effects:** integrations (APIs, dashboards, terminals) attract institutions; institutional use attracts more liquidity; the **flywheel** turns (Rochet & Tirole, 2003)(2).
 
 ---
 
 ### who belongs in the network?
 
-1. **Retail participants** (breadth, speed), 2) **domain experts** (informed priors), 3) **institutions** (scale, persistence), 4) **platforms & meta-platforms** (exchanges + aggregators), 5) **infrastructure** (identity/AML, market makers, oracles, APIs, analytics). Think **participants × pipes × products**—all three layers must grow. (Wolfers & Zitzewitz, 2004)(3). ([American Economic Association](https://www.aeaweb.org/articles?id=10.1257%2F0895330041371321&utm_source=chatgpt.com))
+1. **Retail participants** (breadth, speed)
+2. **Domain experts** (informed priors)
+3. **Institutions** (scale, persistence)
+4. **Platforms & meta-platforms** (exchanges + aggregators)
+5. **Infrastructure** (identity/AML, market makers, oracles, APIs, analytics)
 
----
-
-### money network vs information network
-
-PMs “win” in two ways—and need both networks:
-
-- **Money network:** regulated access, deep liquidity, robust market-making.
-- **Information network:** open APIs, interoperable data, resolution trust, distribution into decision flows (BI tools, terminals, policy models).
-    
-    If you optimize only for trading P&L, you get a casino; only for information, you get a dashboard nobody trades on. The durable moat is **both**.
-    
-
----
-
-## real-world nodes: how today’s networks are forming
-
-### regulated exchange rails (kalshi)
-
-- **Legal footing:** U.S. DCM (Designated Contract Market) with a public **Rulebook** and product-level **contract rules**—institution-friendly primitives (Kalshi Rulebook)(13).
-- **Courts & scope:** In Oct 2024, a U.S. appeals court upheld a ruling letting Kalshi list election contracts—key signal on regulatory scope (Reuters, 2024-10-02)(4).
-- **APIs:** REST API + docs enable programmatic ingestion into terminals/strategies (Kalshi docs)(14). ([kalshi.com](https://kalshi.com/regulatory/rulebook?utm_source=chatgpt.com))
-
-### public crypto-native PM rails (polymarket)
-
-- **U.S. re-entry:** In Sept 2025, **CFTC clearance** paved Polymarket’s return to the U.S. via a regulated entity—broadens institutional access (Reuters, 2025-09-03)(6); see CFTC no-action letter context (CFTC, 2025-09-03)(5).
-- **Scale example:** In 2024, Polymarket reported **~$9B annual volume** and **>300k active traders**—evidence of network thickness (The Block, 2025-01-03)(7).
-- **Event pop:** During the Sept 2025 Fed cut, Americans wagered **>$300M** across platforms; Polymarket alone cleared ~**$208M** on the decision—showing mass-attention spikes pull liquidity (Investopedia, 2025-09)(8). ([Reuters](https://www.reuters.com/sustainability/boards-policy-regulation/polymarket-returns-us-after-cftc-clears-regulatory-hurdles-2025-09-03/?utm_source=chatgpt.com))
-
-### oracles, tokens & resolution trust
-
-- **How resolution works:** Polymarket resolves via clear market rules and—if contested—routes disputes to **UMA’s DVM** (decentralized oracle) as backstop (Polymarket docs)(9)(10).
-- **Token standard:** Positions are ERC-1155 **Conditional Tokens** (Gnosis **CTF**) → interoperable with wallets/analytics; audited by ChainSecurity (CTF audit, 2024)(12)(11).
-- **Trade-off:** Crypto PMs gain openness but must **engineer** resolution clarity to earn institutional trust; regulated DCMs like Kalshi lean on rulebooks and centralized adjudication. (Kalshi rulebook, Market Rules)(13). ([docs.polymarket.com](https://docs.polymarket.com/polymarket-learn/markets/how-are-markets-resolved?utm_source=chatgpt.com))
-
-### forecasting communities as complements (non-PM but adjacent)
-
-- **Good Judgment Open (GJO)** and **Metaculus** supply expert crowds + reasoning threads; their **APIs/guides** and calibration histories are natural complements to PM price feeds—useful for **hybrid terminals** (GJO FAQ; Metaculus resources)(16)(17). ([gjopen.com](https://www.gjopen.com/faq?utm_source=chatgpt.com))
-
-### market-making & liquidity tech
-
-- **Automated market makers** like **LMSR** (logarithmic market scoring rule) give bounded-loss liquidity—the default for thin, internal, or long-tail markets (Hanson, 2002/2007)(18).
-- Liquidity-sensitive variants adapt depth to flow (Othman & Sandholm, 2010)(19). These mechanisms are the **plumbing** for early-stage networks before natural depth arrives. ([hanson.gmu.edu](https://hanson.gmu.edu/mktscore.pdf?utm_source=chatgpt.com))
-
----
-
-## interoperability: the “prediction terminal” stack
-
-**Data pipes**
-
-- **Exchange APIs:** Kalshi API (14), Polymarket’s on-chain data + docs (9)(16), Manifold API (15) → unified feeds for **prices**, **order books**, **resolutions**.
-- **Standards:** Conditional Tokens (CTF) enable portable, composable position IDs across tools (12).
-- **Governance & provenance:** DCM rulebooks (13) and on-chain resolution logs (10) let terminals show **why** a market resolved, not just **that** it did.
-
-**Analytics layer**
-
-- Combine PM odds with **expert forecasts** (GJO, Metaculus), text feeds, and fundamentals.
-- Compute **implied probabilities**, **moves**, **Brier deltas**, trigger **alerts** into Slack/terminals.
-
-**Decision layer**
-
-- **Finance:** hook into PM dashboards alongside options chains; in macro events (e.g., Fed), PMs already act as a “retail macro tape” (Investopedia, 2025-09)(8).
-- **Science & policy:** DARPA’s SCORE + **Replication Markets** showed scalable pipelines for pricing credibility; a Nature Human Behaviour study used **decision markets** to prioritize replications (DARPA; RM site; Nature HB, 2024/25)(20)(21)(22). ([Investopedia](https://www.investopedia.com/forget-sports-betting-americans-found-a-new-300-million-dollar-game-the-fed-meeting-11812164?utm_source=chatgpt.com))
-
----
-
-## devil’s advocate: why networks still stall
-
-- **Fragmentation:** one PM rarely dominates → prices siloed; without **aggregators**, each network effect is local (Katz & Shapiro, 1985)(1).
-- **Trust gap:** crypto PMs must prove resolution integrity (oracles, audits); regulated PMs must navigate shifting legal lines (CFTC, Reuters)(5)(6).
-- **Adverse selection:** insiders/noise traders skew signals unless mechanisms (LMSR, position limits, KYC) dampen edge cases (Hanson, 2002; Kalshi rulebook)(18)(13). ([JSTOR](https://www.jstor.org/stable/1814809?utm_source=chatgpt.com))
-
----
-
-## blueprint: building the network-of-networks
-
-**phase 1 — prices everywhere (pipes)**
-
-- Ship **unified APIs**: Kalshi + Polymarket + Manifold feeds into one schema (market id, rules, resolution source, price, depth).
-- Require **explicit resolution criteria** surfaced at the UI/API edge. (Polymarket/Manifold docs)(9)(1). ([docs.polymarket.com](https://docs.polymarket.com/polymarket-learn/markets/how-are-markets-resolved?utm_source=chatgpt.com))
-
-**phase 2 — credibility & provenance (trust)**
-
-- Attach **verifiable provenance**: DCM rule references (Kalshi Rulebook), on-chain oracle proofs (UMA DVM txs), audit links (ChainSecurity). (10)(11)(13). ([docs.polymarket.com](https://docs.polymarket.com/developers/resolution/UMA?utm_source=chatgpt.com))
-
-**phase 3 — terminals & alerts (distribution)**
-
-- Build a **“Bloomberg for probabilities”**: cross-PM dashboards, commentary threads, expert overlays (GJO/Metaculus), and **event move alerts**. (16)(17). ([gjopen.com](https://www.gjopen.com/faq?utm_source=chatgpt.com))
-
-**phase 4 — institutional integration (adoption)**
-
-- Finance desks: embed odds for macro/policy; connect to compliance (KYC/AML on regulated rails).
-- Corporates: internally run IPMs for delivery/sales risks; display **external PM odds** adjacent to OKRs.
-- Science & policy: replication & clinical-success odds incorporated into **grant/portfolio screens** (DARPA SCORE, Nature HB). (20)(22). ([darpa.mil](https://www.darpa.mil/research/programs/systematizing-confidence-in-open-research-and-evidence?utm_source=chatgpt.com))
-
-**phase 5 — feedback & governance (resilience)**
-
-- Publish **calibration**, **Brier scores**, and post-mortems; tune market maker params (LMSR b), position limits, and resolution panels. (18)(19)(13). ([hanson.gmu.edu](https://hanson.gmu.edu/mktscore.pdf?utm_source=chatgpt.com))
+Think **participants × pipes × products**—all three layers must grow.
 
 ---
 
 ## bottom line
 
-PMs don’t become infrastructure by being a single site with a ticker. They become infrastructure when **networks**—participants, platforms, oracles, APIs, auditors, analysts, and adopters—**mesh**. That’s when a price stops being trivia and starts steering **capital, policy, and science**.
-
----
-
-## references
-
-1. Katz, M., & Shapiro, C. (1985). *Network externalities, competition, and compatibility.*
-    
-    https://www.jstor.org/stable/1814809
-    
-2. Rochet, J-C., & Tirole, J. (2003). *Platform competition in two-sided markets.*
-    
-    https://www.edegan.com/pdfs/Rochet%20Tirole%20%282003%29%20-%20Platform%20Competition%20in%20Two%20Sided%20Markets.pdf
-    
-3. Wolfers, J., & Zitzewitz, E. (2004). *Prediction Markets.* JEP 18(2).
-    
-    https://www.aeaweb.org/articles?id=10.1257%2F0895330041371321
-    
-4. **Reuters** (2024-10-02). *US appeals court clears Kalshi to restart elections betting.*
-    
-    https://www.reuters.com/legal/us-federal-court-upholds-ruling-letting-kalshiex-list-election-betting-contracts-2024-10-02/
-    
-5. **CFTC** (2025-09-03). *Staff No-Action Letter regarding event contracts (QCX LLC / QC Clearing).*
-    
-    https://www.cftc.gov/PressRoom/PressReleases/9113-25
-    
-6. **Reuters** (2025-09-03). *Polymarket returns to US after CFTC clears regulatory hurdles.*
-    
-    https://www.reuters.com/sustainability/boards-policy-regulation/polymarket-returns-us-after-cftc-clears-regulatory-hurdles-2025-09-03/
-    
-7. **The Block** (2025-01-03). *Polymarket’s huge year: $9B in volume and 314k active traders.*
-    
-    https://www.theblock.co/post/333050/polymarkets-huge-year-9-billion-in-volume-and-314000-active-traders-redefine-prediction-markets
-    
-8. **Investopedia** (2025-09). *Americans wager >$300M on Fed decision across PMs; Polymarket >$208M.*
-    
-    https://www.investopedia.com/forget-sports-betting-americans-found-a-new-300-million-dollar-game-the-fed-meeting-11812164
-    
-9. Polymarket Docs — *How markets resolve.*
-    
-    https://docs.polymarket.com/polymarket-learn/markets/how-are-markets-resolved
-    
-10. Polymarket Dev Docs — *Resolution via UMA’s DVM (oracle backstop).*
-    
-    https://docs.polymarket.com/developers/resolution/UMA
-    
-11. ChainSecurity (2024-04-11). *Audit: Gnosis Conditional Tokens (used by Polymarket).*
-    
-    https://old.chainsecurity.com/wp-content/uploads/2024/04/ChainSecurity_Polymarket_Conditional_Tokens_audit.pdf
-    
-12. Gnosis — *Conditional Tokens Framework (CTF) docs (ERC-1155 positions).*
-    
-    https://conditional-tokens.readthedocs.io/_/downloads/en/latest/pdf/
-    
-13. Kalshi — *Exchange Rulebook & Contract Rules.*
-    
-    https://kalshi.com/regulatory/rulebook
-    
-14. Kalshi — *API docs.*
-    
-    https://docs.kalshi.com/
-    
-15. Manifold — *API docs.*
-    
-    https://docs.manifold.markets/api
-    
-16. Good Judgment Open — *FAQ / platform overview.*
-    
-    https://www.gjopen.com/faq
-    
-17. Metaculus — *Prediction resources / tooling.*
-    
-    https://www.metaculus.com/help/prediction-resources/
-    
-18. Hanson, R. (2002/2007). *Logarithmic Market Scoring Rules (LMSR).*
-    
-    https://hanson.gmu.edu/mktscore.pdf
-    
-19. Othman, A., & Sandholm, T. (2010). *A practical liquidity-sensitive automated market maker.*
-    
-    https://www.cs.cmu.edu/~sandholm/liquidity-sensitive%20automated%20market%20maker.teac.pdf
-    
-20. DARPA — *SCORE program (confidence in research claims).*
-    
-    https://www.darpa.mil/research/programs/systematizing-confidence-in-open-research-and-evidence
-    
-21. Replication Markets (SCORE) — *Resolutions & payouts.*
-    
-    https://replicationmarkets.org/
-    
-22. Nature Human Behaviour (2024/25). *Decision markets to select replication targets.*
-    
-    https://www.nature.com/articles/s41562-024-02062-9`,
-},
+PMs don't become infrastructure by being a single site with a ticker. They become infrastructure when **networks**—participants, platforms, oracles, APIs, auditors, analysts, and adopters—**mesh**. That's when a price stops being trivia and starts steering **capital, policy, and science**.`,
+  },
 ]
 
-const timelineItemsEn = [
+const timelineItems = [
   {
-    year: "2024-now",
+    year: "2024–now",
     title: "Founder of Kairos",
     company: "Kairos",
     description:
-      "Gave up PhD to build out the future of Marine Science x AI. Started Kairos, where we build the future of prediction markets. Best bet ever.",
+      "Gave up PhD to build out the future of prediction markets. Building infrastructure that lets us not only forecast the future but shape it.",
   },
   {
     year: "2023",
-    title: "Master's Degree in Marine Science",
-    company: "JCU, Townsville, QLD",
-    description: "Got into the best university for marine biology to make a difference.",
+    title: "Master's in Marine Science",
+    company: "James Cook University",
+    description: "World's top-ranked program for marine biology. Built FishTally — AI-powered fish counting from underwater video.",
   },
   {
-    year: "2021-22",
-    title: "Home Baker & Crypto enthusiast",
-    company: "baked",
+    year: "2021–22",
+    title: "Home Baker & Crypto Explorer",
+    company: "Independent",
     description:
-      "Managed over 8 orders/day with a busted oven for ~4.5 months. Baked challah, babkas, bagels, brownies, cookies and more; explored the crypto space (NFTs, lol).",
+      "8+ orders/day for 4.5 months with a busted oven. Baked challah, babkas, bagels. Explored the crypto space.",
   },
   {
     year: "2020",
-    title: "Bachelor's Degree in Marine Science & Technology",
-    company: "AMITY University, Noida",
-    description: "I thought I could make a difference in the marine science world.",
+    title: "Bachelor's in Marine Science",
+    company: "AMITY University",
+    description: "Where the journey into marine biology began.",
   },
   {
     year: "1999",
-    title: "Newborn",
-    company: "The Family",
-    description:
-      "I realised I existed, and all of a sudden, I was here, the universe observing itself.",
+    title: "Born",
+    company: "",
+    description: "The universe started observing itself through new eyes.",
   },
 ]
 
-const timelineItemsZh = [
-  {
-    year: "2024-至今",
-    title: "Kairos 创始人",
-    company: "Kairos",
-    description:
-      "放弃攻读博士，用海洋科学 x AI 构建未来。创立 Kairos，专注预测市场基础设施——也许是我做过最好的押注。",
-  },
-  {
-    year: "2023",
-    title: "海洋科学硕士",
-    company: "JCU, Townsville, QLD",
-    description: "考入全球顶尖的海洋生物学项目，希望真的能在海洋世界里做出一点改变。",
-  },
-  {
-    year: "2021-22",
-    title: "家庭烘焙 & 加密爱好者",
-    company: "baked",
-    description:
-      "在一台快坏掉的烤箱里，每天做 8+ 份订单，坚持了 4 个多月：编织面包、babka、贝果、布朗尼、曲奇……同时一头扎进加密世界（包括 NFTs，lol）。",
-  },
-  {
-    year: "2020",
-    title: "海洋科学与技术学士",
-    company: "AMITY University, Noida",
-    description: "那时真的以为，自己可以单枪匹马改变海洋科学的世界。",
-  },
-  {
-    year: "1999",
-    title: "新生儿",
-    company: "The Family",
-    description: "突然发现“我”出现了——好像只是宇宙在用一副新的身体观察自己。",
-  },
+// Poster data - add your poster filenames here
+// orientation: 'portrait' for 842x1191 (A3), 'landscape' for 2382x1191
+const posters = [
+  { src: "/posters/kairos 1.png", alt: "Kairos 1", orientation: "portrait" as const },
+  { src: "/posters/kairos 2.png", alt: "Kairos 2", orientation: "portrait" as const },
+  { src: "/posters/kairos 3.png", alt: "Kairos 3", orientation: "portrait" as const },
+  { src: "/posters/kairos 4.png", alt: "Kairos 4", orientation: "portrait" as const },
+  { src: "/posters/kairos 5.png", alt: "Kairos 5", orientation: "landscape" as const },
+  { src: "/posters/kairos 6.png", alt: "Kairos 6", orientation: "landscape" as const },
+  { src: "/posters/kairos 7.png", alt: "Kairos 7", orientation: "landscape" as const },
+  { src: "/posters/kairos 8.png", alt: "Kairos 8", orientation: "landscape" as const },
+  { src: "/posters/polymarket RT-01A.png", alt: "Polymarket", orientation: "portrait" as const },
+  { src: "/posters/polymarket RT-02A.png", alt: "Polymarket", orientation: "portrait" as const },
+  { src: "/posters/kalshi RT-01.png", alt: "Kalshi", orientation: "portrait" as const },
+  { src: "/posters/kalshi RT-02.png", alt: "Kalshi", orientation: "portrait" as const },
+  { src: "/posters/dome RT-01.png", alt: "Dome", orientation: "portrait" as const },
+  { src: "/posters/dome RT-02.png", alt: "Dome", orientation: "portrait" as const },
+  { src: "/posters/limitless RT-01.png", alt: "Limitless", orientation: "portrait" as const },
+  { src: "/posters/limitless RT-02.png", alt: "Limitless", orientation: "portrait" as const },
+  { src: "/posters/melee RT-01.png", alt: "Melee", orientation: "portrait" as const },
+  { src: "/posters/melee RT-02.png", alt: "Melee", orientation: "portrait" as const },
+  { src: "/posters/myriad RT-01D - YES special.png", alt: "Myriad", orientation: "portrait" as const },
+  { src: "/posters/myriad RT-01E - YES special.png", alt: "Myriad", orientation: "portrait" as const },
+  { src: "/posters/myriad RT-01F - YES.png", alt: "Myriad", orientation: "portrait" as const },
+  { src: "/posters/myriad RT-02A - YES.png", alt: "Myriad", orientation: "portrait" as const },
+  { src: "/posters/truf network RT-01.png", alt: "Truf Network", orientation: "portrait" as const },
+  { src: "/posters/truf network RT-02.png", alt: "Truf Network", orientation: "portrait" as const },
 ]
-
-const timelineItemsJa = [
-  {
-    year: "2024-現在",
-    title: "Kairos 創業者",
-    company: "Kairos",
-    description:
-      "博士課程を捨てて、海洋科学 x AI の未来づくりにフルベット。予測市場インフラをつくる Kairos を立ち上げた。いまのところ、人生で一番いいトレード。",
-  },
-  {
-    year: "2023",
-    title: "海洋科学 修士号",
-    company: "JCU, Townsville, QLD",
-    description: "世界トップレベルの海洋生物学プログラムに進学し、本気で海の世界にインパクトを出したいと思っていた。",
-  },
-  {
-    year: "2021-22",
-    title: "ホームベーカー & クリプトオタク",
-    company: "baked",
-    description:
-      "ほぼ壊れかけのオーブンで、4.5 ヶ月のあいだ 1 日 8 件以上の注文をこなす。ハラ、バブカ、ベーグル、ブラウニー、クッキー……を焼きながら、NFT などクリプトの世界も掘りまくる。",
-  },
-  {
-    year: "2020",
-    title: "海洋科学・技術 学士号",
-    company: "AMITY University, Noida",
-    description: "この頃は、本気で海洋科学の世界を変えられると信じていた。",
-  },
-  {
-    year: "1999",
-    title: "誕生",
-    company: "The Family",
-    description: "突然「自分」がいることに気づいた瞬間——宇宙が自分自身を観察し始めた、そんな感覚だった。",
-  },
-]
-
-const SectionAccordion = ({
-  title,
-  children,
-  defaultOpen = true,
-}: {
-  title: string
-  children: React.ReactNode
-  defaultOpen?: boolean
-}) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-
-  return (
-    <Accordion
-      type="single"
-      collapsible
-      defaultValue={defaultOpen ? "item-1" : undefined}
-      onValueChange={(value) => setIsOpen(value === "item-1")}
-      className="border-none"
-    >
-      <AccordionItem value="item-1" className="border-none">
-        <AccordionTrigger className="hover:no-underline hover:text-primary transition-colors py-2 px-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-primary flex items-center gap-2">
-            <span className="text-primary transition-transform duration-200">
-              {isOpen ? "v" : ">"}
-            </span>
-            {title}
-          </h2>
-        </AccordionTrigger>
-        <AccordionContent className="pt-4 px-0">{children}</AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  )
-}
 
 export default function Home() {
-  const [lang, setLang] = useState<Language>("zh")
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null)
+  
+  // Carousel state
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [scrollLeft, setScrollLeft] = useState(0)
+  const [isAutoScrollPaused, setIsAutoScrollPaused] = useState(false)
+  const autoScrollRef = useRef<number | null>(null)
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const posterRefs = useRef<(HTMLDivElement | null)[]>([])
+  
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
-  const toggleArticle = (articleId: string) => {
-    setExpandedArticle(expandedArticle === articleId ? null : articleId)
+  // Auto-scroll logic
+  const startAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) return
+    
+    const scroll = () => {
+      if (carouselRef.current && !isAutoScrollPaused) {
+        carouselRef.current.scrollLeft += 1
+        
+        // Reset to start when we've scrolled halfway (for seamless loop)
+        const maxScroll = carouselRef.current.scrollWidth / 2
+        if (carouselRef.current.scrollLeft >= maxScroll) {
+          carouselRef.current.scrollLeft = 0
+        }
+      }
+      autoScrollRef.current = requestAnimationFrame(scroll)
+    }
+    autoScrollRef.current = requestAnimationFrame(scroll)
+  }, [isAutoScrollPaused])
+
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) {
+      cancelAnimationFrame(autoScrollRef.current)
+      autoScrollRef.current = null
+    }
+  }, [])
+
+  // Initialize auto-scroll
+  useEffect(() => {
+    if (!isAutoScrollPaused) {
+      startAutoScroll()
+    } else {
+      stopAutoScroll()
+    }
+    return () => stopAutoScroll()
+  }, [isAutoScrollPaused, startAutoScroll, stopAutoScroll])
+
+  // Resume auto-scroll after user interaction
+  const scheduleResumeAutoScroll = useCallback(() => {
+    if (resumeTimeoutRef.current) {
+      clearTimeout(resumeTimeoutRef.current)
+    }
+    resumeTimeoutRef.current = setTimeout(() => {
+      setIsAutoScrollPaused(false)
+    }, 3000) // Resume after 3 seconds of no interaction
+  }, [])
+
+  // Mouse events for desktop drag
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!carouselRef.current) return
+    setIsDragging(true)
+    setIsAutoScrollPaused(true)
+    setStartX(e.pageX - carouselRef.current.offsetLeft)
+    setScrollLeft(carouselRef.current.scrollLeft)
+    carouselRef.current.style.cursor = 'grabbing'
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !carouselRef.current) return
+    e.preventDefault()
+    const x = e.pageX - carouselRef.current.offsetLeft
+    const walk = (x - startX) * 2 // Multiply for faster scroll
+    carouselRef.current.scrollLeft = scrollLeft - walk
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    if (carouselRef.current) {
+      carouselRef.current.style.cursor = 'grab'
+    }
+    scheduleResumeAutoScroll()
+  }
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false)
+      if (carouselRef.current) {
+        carouselRef.current.style.cursor = 'grab'
+      }
+      scheduleResumeAutoScroll()
+    }
+  }
+
+  // Touch events for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!carouselRef.current) return
+    setIsDragging(true)
+    setIsAutoScrollPaused(true)
+    setStartX(e.touches[0].pageX - carouselRef.current.offsetLeft)
+    setScrollLeft(carouselRef.current.scrollLeft)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !carouselRef.current) return
+    const x = e.touches[0].pageX - carouselRef.current.offsetLeft
+    const walk = (x - startX) * 2
+    carouselRef.current.scrollLeft = scrollLeft - walk
+    if (isMobile) updateParallax()
+  }
+
+  const handleTouchEnd = () => {
+    setIsDragging(false)
+    scheduleResumeAutoScroll()
+  }
+  
+  // Parallax effect for mobile
+  const updateParallax = useCallback(() => {
+    if (!carouselRef.current || !isMobile) return
+    
+    const carousel = carouselRef.current
+    const carouselRect = carousel.getBoundingClientRect()
+    const centerX = carouselRect.width / 2
+    
+    posterRefs.current.forEach((posterEl) => {
+      if (!posterEl) return
+      const img = posterEl.querySelector('.parallax-img') as HTMLElement
+      if (!img) return
+      
+      const rect = posterEl.getBoundingClientRect()
+      const posterCenterX = rect.left + rect.width / 2 - carouselRect.left
+      const distanceFromCenter = (posterCenterX - centerX) / centerX
+      
+      // Apply parallax: image moves opposite to scroll direction
+      const parallaxOffset = distanceFromCenter * -20 // max 20px offset
+      img.style.transform = `scale(1.15) translateX(${parallaxOffset}px)`
+    })
+  }, [isMobile])
+  
+  // Update parallax on scroll
+  useEffect(() => {
+    if (!isMobile || !carouselRef.current) return
+    
+    const carousel = carouselRef.current
+    const handleScroll = () => updateParallax()
+    
+    carousel.addEventListener('scroll', handleScroll, { passive: true })
+    updateParallax() // Initial call
+    
+    return () => carousel.removeEventListener('scroll', handleScroll)
+  }, [isMobile, updateParallax])
+
+  const openArticle = (articleId: string) => {
+    setExpandedArticle(articleId)
+    document.body.style.overflow = "hidden"
   }
 
   const closeArticle = () => {
     setExpandedArticle(null)
+    document.body.style.overflow = "auto"
   }
 
-  const cycleLanguage = () => {
-    setLang((prev) => (prev === "zh" ? "ja" : prev === "ja" ? "en" : "zh"))
-  }
+  const selectedArticle = articles.find((a) => a.id === expandedArticle)
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
-        {/* Header */}
-        <header className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 sm:gap-0">
-          <div>
-            <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2 terminal-text cursor-pointer select-none"
-              onClick={cycleLanguage}
-              title="Click to change language"
-            >
-              {">"} kluless<span className="cursor"></span>
-            </h1>
-            <p className="text-muted-foreground">{uiText.headerSubtitle[lang]}</p>
-          </div>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Grid Pattern */}
+        <div className="grid-pattern" />
+        
+        {/* Light Rays */}
+        <div className="light-rays" />
+        
+        {/* Animated Blobs */}
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
+        
+        {/* Glow Orb */}
+        <div className="glow-orb" style={{ top: '20%', right: '10%' }} />
+        <div className="glow-orb" style={{ bottom: '30%', left: '5%', animationDelay: '-4s' }} />
+      </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4 sm:justify-end">
-            <MatrixRainTrigger label={uiText.forbiddenRabbit[lang]} />
+      {/* Navigation - Fully transparent */}
+      <nav className="fixed top-0 left-0 right-0 z-50">
+        <div className="container mx-auto px-6 py-5 max-w-5xl flex justify-between items-center">
+          <a href="/" className="font-serif text-xl font-bold italic">
+            onetrillionx
+          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://github.com/kluless13"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted"
+            >
+              <GitHubIcon />
+            </a>
+            <a
+              href="https://twitter.com/kluless_"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted"
+            >
+              <XIcon />
+            </a>
+            <a
+              href="https://substack.com/@deltaconfidence"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted"
+            >
+              <SubstackIcon />
+            </a>
+            <div className="w-px h-5 bg-border mx-1" />
+            <ThemeToggle />
+          </div>
+        </div>
+      </nav>
+
+      <main className="container mx-auto px-6 max-w-5xl pt-24 relative z-10">
+        {/* Hero Section */}
+        <section className="py-20 sm:py-32">
+          <div className="fade-in-up">
+            <h1 className="font-serif mb-6 text-[28px] sm:text-5xl md:text-6xl lg:text-7xl">
+              <span className="block font-bold italic">1<span className="text-primary" style={{ paddingLeft: '3px', paddingRight: '3px', letterSpacing: '3.2px' }}>,000,000,000,000</span>x</span>
+            </h1>
+            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mb-8 font-medium">
+              Founder of{" "}
+              <a
+                href="https://kairos.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline underline-offset-4 font-medium"
+              >
+                Kairos
+              </a>
+              . Building prediction market infrastructure — tools that let us{" "}
+              <em className="font-serif">forecast the future</em> and shape it.
+            </p>
             <a
               href="https://calendly.com/kairos-kluless/30min"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="outline" size="sm" className="hover:bg-accent">
-                {uiText.book30[lang]}
-              </Button>
-            </a>
-            <a href="https://github.com/kluless13" target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="icon" className="hover:bg-accent">
-                <Github className="h-5 w-5" />
-              </Button>
-            </a>
-
-            <a href="https://twitter.com/kluless_" target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="icon" className="hover:bg-accent">
-                <Twitter className="h-5 w-5" />
+              <Button className="group">
+                Book a call
+                <ArrowUpRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Button>
             </a>
           </div>
-        </header>
+        </section>
 
         {/* About Section */}
-        <section className="mb-12">
-          <SectionAccordion title={uiText.sectionAbout[lang]} defaultOpen>
-            <div className="py-4">
-              {lang === "en" && (
-                <p className="leading-relaxed text-foreground/90 space-y-4">
-                  <span className="block">
-                    I like baking, data, lifting heavy, and predicting the future. I&apos;m the founder of{" "}
-                    <a
-                      href="https://kairos.io"
-                      className="text-primary hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Kairos
-                    </a>
-                    , where we&apos;re advancing prediction market infrastructure—building tools that let us not only
-                    forecast the future but shape it.
-                  </span>
-
-                  <span className="block">
-                    My journey started in marine science. I earned my Master&apos;s at{" "}
-                    <span className="text-primary">James Cook University</span>, the world&apos;s top-ranked program
-                    for marine biology. My passion for biology, robotics, and AI led me to{" "}
-                    <span className="text-primary">Flyingfish Technologies</span>, where I built{" "}
-                    <span className="text-primary font-semibold">FishTally</span>—an AI-powered tool that automated fish
-                    counts and coral detection from underwater video, saving{" "}
-                    <span className="text-primary font-semibold">&gt;100 hours</span> of manual work each week and
-                    delivering real-time ecological insights.
-                  </span>
-
-                  <span className="block">
-                    Beyond marine robotics, I&apos;ve built products across climate, AI, and emerging tech. At{" "}
-                    <span className="text-primary">PurposeFi</span>, I developed ESG intelligence engines that
-                    transformed{" "}
-                    <span className="text-primary font-semibold">
-                      4–5 month analyses into automated 48-hour diagnostics
-                    </span>
-                    . I scraped and analyzed data across all ASX-listed companies to identify those needing carbon and
-                    renewable credits—work that saved months of research and directly informed strategy for renewable
-                    energy companies and super funds.
-                  </span>
-
-                  <span className="block">
-                    At <span className="text-primary">DeTrash</span>, I scaled operations from{" "}
-                    <span className="text-primary font-semibold">&gt;300 to 51,000+ recyclers</span> in India through
-                    strategic partnerships, and led carbon credit due diligence for{" "}
-                    <span className="text-primary font-semibold">6M+ credits</span> in bulk procurement discussions.
-                  </span>
-
-                  <span className="block">
-                    My work consistently merges systems thinking, analytical depth, and narrative clarity to solve
-                    ambiguous, cross-disciplinary problems. At Kairos, I designed end-to-end prediction market
-                    infrastructure on Bitcoin, built AI-enabled transaction layers, and created{" "}
-                    <span className="text-primary font-semibold">STRIKE</span> (Smart Transaction Route Integration
-                    Kit)—a grant-winning platform integrating dApps with social platforms.
-                  </span>
-
-                  <span className="block text-muted-foreground italic">
-                    I thrive in ambiguity, move fast with structure, and bring a blend of analytical rigor,
-                    emerging-tech fluency, and real operational experience.
-                  </span>
-                </p>
-              )}
-
-              {lang === "zh" && (
-                <p className="leading-relaxed text-foreground/90 space-y-4">
-                  <span className="block">
-                    我喜欢烘焙、数据、硬拉和预测未来。现在我是{" "}
-                    <a
-                      href="https://kairos.io"
-                      className="text-primary hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Kairos
-                    </a>
-                    的创始人——我们在做预测市场基础设施，试着把「预言未来」这件事，变成可以真正驱动决策的系统。
-                  </span>
-
-                  <span className="block">
-                    我的旅程从海洋科学开始。在{" "}
-                    <span className="text-primary">James Cook University</span>
-                    拿到海洋科学硕士，那是全球海洋生物学排名第一的项目。后来我加入{" "}
-                    <span className="text-primary">Flyingfish Technologies</span>，做水下机器人和 AI，构建了{" "}
-                    <span className="text-primary font-semibold">FishTally</span>——一个自动识别鱼类和珊瑚的视频分析工具，
-                    每周为科研团队节省{" "}
-                    <span className="text-primary font-semibold">&gt;100 小时</span> 的人工标注时间，把生态洞察变成近乎实时的信号。
-                  </span>
-
-                  <span className="block">
-                    除了海洋机器人，我还在气候、AI 和新兴技术的交叉地带搭过很多产品。在{" "}
-                    <span className="text-primary">PurposeFi</span>，我设计了 ESG 智能分析引擎，把原本
-                    <span className="text-primary font-semibold"> 4–5 个月的分析流程压缩到 48 小时内自动完成</span>；
-                    我爬取并分析了所有澳交所上市公司数据，找出真正需要碳与可再生能源凭证的主体，帮助可再生能源公司和养老基金节省了数月的调研时间。
-                  </span>
-
-                  <span className="block">
-                    在 <span className="text-primary">DeTrash</span>，我通过搭建合作网络，把印度的回收网络从{" "}
-                    <span className="text-primary font-semibold">&gt;300 扩展到 51,000+ 名回收者</span>，并主导了
-                    <span className="text-primary font-semibold"> 600 万+ 碳信用</span> 的尽调和采购分析。
-                  </span>
-
-                  <span className="block">
-                    我的工作本质上都是同一件事：用系统思维、分析深度和叙事清晰度，去解决跨学科、边界模糊的问题。在
-                    Kairos，我从零设计了基于比特币的预测市场基础设施，搭建带有 AI 的交易层，并构建了{" "}
-                    <span className="text-primary font-semibold">STRIKE</span>{" "}
-                   （Smart Transaction Route Integration Kit），一个把 dApp 嵌入社交平台的路由层——这个项目也拿到了资助。
-                  </span>
-
-                  <span className="block text-muted-foreground italic">
-                    我习惯在不确定里工作，用结构感和行动速度把模糊问题拆开，并用真实世界的约束校准自己的野心。
-                  </span>
-                </p>
-              )}
-
-              {lang === "ja" && (
-                <p className="leading-relaxed text-foreground/90 space-y-4">
-                  <span className="block">
-                    焼き菓子づくり、データ、重いものを持ち上げること、そして「未来を当てにいくこと」が好きです。いまは{" "}
-                    <a
-                      href="https://kairos.io"
-                      className="text-primary hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Kairos
-                    </a>
-                    のファウンダーとして、予測市場インフラをつくり、「未来予測」をちゃんと意思決定に使えるレイヤーにしようとしています。
-                  </span>
-
-                  <span className="block">
-                    出発点は海洋科学でした。{" "}
-                    <span className="text-primary">James Cook University</span>
-                    で海洋科学の修士号を取得し、世界トップクラスの海洋生物学プログラムで研究していました。その後{" "}
-                    <span className="text-primary">Flyingfish Technologies</span>
-                    に入り、水中ロボティクスと AI に取り組みます。そこで{" "}
-                    <span className="text-primary font-semibold">FishTally</span>
-                    というツールをつくり、水中映像から魚やサンゴを自動カウントできるようにしました。これによって、研究チームの
-                    <span className="text-primary font-semibold"> 週 100 時間以上</span>
-                    の手作業が削減され、エコロジーのインサイトがほぼリアルタイムで届くようになりました。
-                  </span>
-
-                  <span className="block">
-                    海洋ロボットの外側でも、気候・AI・新興技術の境界でいろいろなプロダクトをつくってきました。{" "}
-                    <span className="text-primary">PurposeFi</span>
-                    では ESG インテリジェンスエンジンを開発し、
-                    <span className="text-primary font-semibold">
-                      数ヶ月かかっていた分析プロセスを 48 時間の自動診断にまで短縮
-                    </span>
-                    。オーストラリア証券取引所に上場する全企業のデータをスクレイピングし、本当に炭素クレジットや再エネクレジットを必要としているプレーヤーを特定して、再エネ企業や年金基金のリサーチを何ヶ月分もショートカットしました。
-                  </span>
-
-                  <span className="block">
-                    <span className="text-primary">DeTrash</span>
-                    ではパートナーシップを構築しながら、インドのリサイクルネットワークを
-                    <span className="text-primary font-semibold"> 300 人強から 51,000 人以上</span>
-                    までスケールさせ、さらに
-                    <span className="text-primary font-semibold"> 600 万枚以上のカーボンクレジット</span>
-                    に関するデューデリジェンスと調達検討をリードしました。
-                  </span>
-
-                  <span className="block">
-                    一貫してやっているのは、「システム思考」「深い分析」「ストーリーの明快さ」を組み合わせて、境界のあいまいな横断的な問題を解くことです。Kairos
-                    では、ビットコイン上の予測市場インフラをエンドツーエンドで設計し、AI を組み込んだトランザクションレイヤーを構築し、dApp をソーシャルプラットフォームに統合する{" "}
-                    <span className="text-primary font-semibold">STRIKE</span>
-                    （Smart Transaction Route Integration Kit）をつくりました。このプロジェクトは助成金も獲得しています。
-                  </span>
-
-                  <span className="block text-muted-foreground italic">
-                    不確実性の中で働くのがわりと好きです。構造をつくりながら素早く動き、野心は高く保ちつつも、現実世界の制約でちゃんとキャリブレーションする——そんなスタイルで生きています。
-                  </span>
-                </p>
-              )}
+        <section className="section">
+          <p className="section-title fade-in stagger-1">About</p>
+          <div className="grid md:grid-cols-2 gap-12 fade-in-up stagger-2">
+            <div className="prose-elegant">
+              <p>
+                I like baking, data, lifting heavy, and <em className="font-serif">predicting the future</em>. My journey started in marine science — I earned my Master's at James Cook University, the world's top-ranked program for marine biology.
+              </p>
+              <p>
+                My passion for biology, robotics, and AI led me to build <strong>FishTally</strong> — an AI-powered tool that automated fish counts and coral detection from underwater video, saving over 100 hours of manual work each week.
+              </p>
             </div>
-          </SectionAccordion>
+            <div className="prose-elegant">
+              <p>
+                Beyond marine robotics, I've built products across climate, AI, and emerging tech. At PurposeFi, I developed ESG intelligence engines. At DeTrash, I scaled operations from 300 to 51,000+ recyclers in India.
+              </p>
+              <p className="text-muted-foreground">
+                <em className="font-serif" style={{ fontWeight: 600, fontSize: '22px', letterSpacing: '1.1px' }}>I thrive in ambiguity, move fast with structure, and bring a blend of analytical rigor, emerging-tech fluency, and real operational experience.</em>
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* Timeline Section */}
-        <section className="mb-12">
-          <SectionAccordion title={uiText.sectionTimeline[lang]} defaultOpen>
-            <div className="space-y-4">
-              {(lang === "zh"
-                ? timelineItemsZh
-                : lang === "ja"
-                ? timelineItemsJa
-                : timelineItemsEn
-              ).map((item, index) => (
-                <div key={index} className="py-3 border-l-2 border-primary/20 pl-4">
-                  <div className="flex items-start gap-4">
-                    <div className="text-primary font-bold text-sm sm:text-base min-w-[60px]">
-                      {item.year}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{item.title}</h3>
-                      <p className="text-primary text-xs sm:text-sm">{item.company}</p>
-                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">{item.description}</p>
-                    </div>
-                  </div>
+        <section className="section">
+          <p className="section-title fade-in">Timeline</p>
+          <div className="space-y-8 fade-in-up stagger-2">
+            {timelineItems.map((item, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] gap-4 sm:gap-8"
+              >
+                <div className="text-muted-foreground text-sm sm:text-base font-medium">
+                  {item.year}
                 </div>
-              ))}
-            </div>
-          </SectionAccordion>
+                <div>
+                  <h3 className="font-serif text-lg font-bold mb-1">{item.title}</h3>
+                  {item.company && (
+                    <p className="text-primary text-sm mb-2 italic">{item.company}</p>
+                  )}
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Thoughts Section */}
-        <section className="mb-12">
-          <SectionAccordion title={uiText.sectionThoughts[lang]} defaultOpen>
-            <div className="space-y-3">
-              {sampleArticles.map((article) => (
-                <div key={article.id} className="border-b border-primary/10 pb-3">
-                  <button
-                    onClick={() => toggleArticle(article.id)}
-                    className="w-full py-3 text-left hover:text-primary transition-colors"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold">{article.title}</h3>
-                        <p className="text-muted-foreground text-sm">{article.date}</p>
-                      </div>
-                      <span className="text-primary">{expandedArticle === article.id ? "[-]" : "[+]"}</span>
-                    </div>
-                  </button>
+        {/* Writing Section */}
+        <section className="section">
+          <p className="section-title fade-in">Writing</p>
+          <div className="grid sm:grid-cols-2 gap-6 fade-in-up stagger-2">
+            {articles.map((article) => (
+              <button
+                key={article.id}
+                onClick={() => openArticle(article.id)}
+                className="text-left p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50 card-hover group"
+              >
+                <p className="text-sm text-muted-foreground mb-2">{article.date}</p>
+                <h3 className="font-serif text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                  {article.title}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                  {article.excerpt}
+                </p>
+                <span className="inline-flex items-center text-sm text-primary mt-4 group-hover:underline underline-offset-4">
+                  Read more
+                  <ArrowUpRight className="ml-1 h-3 w-3" />
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
 
-                  {expandedArticle === article.id && (
-                    <div className="pt-3">
-                      <div className="prose prose-sm max-w-none prose-invert text-foreground">
-                        <ReactMarkdown
-                          components={{
-                            h1: ({ children }) => (
-                              <h1 className="text-2xl font-bold mb-4 text-primary">{children}</h1>
-                            ),
-                            h2: ({ children }) => (
-                              <h2 className="text-xl font-semibold mb-3 text-primary">{children}</h2>
-                            ),
-                            h3: ({ children }) => (
-                              <h3 className="text-lg font-medium mb-2 text-primary">{children}</h3>
-                            ),
-                            p: ({ children }) => <p className="mb-3 leading-relaxed">{children}</p>,
-                            ul: ({ children }) => (
-                              <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="list-decimal list-inside mb-3 space-y-1">{children}</ol>
-                            ),
-                            li: ({ children }) => <li className="text-foreground">{children}</li>,
-                            code: ({ children }) => (
-                              <code className="bg-accent px-1 py-0.5 rounded text-sm font-mono">{children}</code>
-                            ),
-                            pre: ({ children }) => (
-                              <pre className="bg-accent p-3 rounded overflow-x-auto mb-3">{children}</pre>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="font-semibold text-primary">{children}</strong>
-                            ),
-                          }}
-                        >
-                          {article.content}
-                        </ReactMarkdown>
-                      </div>
+        {/* Posters Carousel Section */}
+        <section className="section">
+          <p className="section-title fade-in">Posters</p>
+          <p className="text-muted-foreground mb-8 fade-in-up">
+            <em className="font-serif">A collection of visual work.</em>
+          </p>
+        </section>
+      </main>
+
+      {/* Full-width Poster Carousel - Outside container for edge-to-edge */}
+      <div className="w-full py-8 relative z-10">
+        <div 
+          ref={carouselRef}
+          className="poster-carousel-interactive"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div ref={trackRef} className="poster-track-interactive">
+            {/* First set of posters */}
+            {posters.map((poster, i) => (
+              <div 
+                key={`poster-a-${i}`} 
+                ref={(el) => { posterRefs.current[i] = el }}
+                className={poster.orientation === 'landscape' ? 'poster-item-wide' : 'poster-item'}
+              >
+                <div 
+                  className={`${poster.orientation === 'landscape' ? 'aspect-[2/1]' : 'aspect-[842/1191]'} rounded-xl bg-muted/30 border border-border/50 overflow-hidden pointer-events-none`}
+                >
+                  {poster.src ? (
+                    <img 
+                      src={poster.src} 
+                      alt={poster.alt || `Poster ${i + 1}`}
+                      className="parallax-img w-full h-full object-cover object-center select-none"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
+                      <span className="font-serif text-lg">{poster.alt || `Poster ${i + 1}`}</span>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-          </SectionAccordion>
-        </section>
+              </div>
+            ))}
+            {/* Duplicate set for seamless loop */}
+            {posters.map((poster, i) => (
+              <div 
+                key={`poster-b-${i}`} 
+                ref={(el) => { posterRefs.current[posters.length + i] = el }}
+                className={poster.orientation === 'landscape' ? 'poster-item-wide' : 'poster-item'}
+              >
+                <div 
+                  className={`${poster.orientation === 'landscape' ? 'aspect-[2/1]' : 'aspect-[842/1191]'} rounded-xl bg-muted/30 border border-border/50 overflow-hidden pointer-events-none`}
+                >
+                  {poster.src ? (
+                    <img 
+                      src={poster.src} 
+                      alt={poster.alt || `Poster ${i + 1}`}
+                      className="parallax-img w-full h-full object-cover object-center select-none"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
+                      <span className="font-serif text-lg">{poster.alt || `Poster ${i + 1}`}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-        {/* Snake teaser */}
-        <section className="mt-12 flex justify-center">
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
-            <span>{uiText.curiousPrefix[lang]}</span>
-            <SnakeGameTrigger label={uiText.playSnake[lang]} />
+      <main className="container mx-auto px-6 max-w-5xl relative z-10">
+        {/* Substack Section */}
+        <section className="section py-12 sm:py-16 md:py-24">
+          <p className="section-title fade-in text-xs sm:text-sm">Newsletter</p>
+          <div className="fade-in-up stagger-2 max-w-xl">
+            <div className="rounded-xl sm:rounded-2xl bg-muted/50 border border-border/50 p-4 sm:p-6 md:p-8 text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-3 sm:mb-4 text-primary">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                  <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
+                </svg>
+              </div>
+              <h3 className="font-serif text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Delta Confidence</h3>
+              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">
+                <em className="font-serif">Deep dives on prediction markets, AI, and building the future.</em>
+              </p>
+              <a
+                href="https://deltaconfidence.substack.com/subscribe"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full sm:w-auto px-6 sm:px-8 text-sm sm:text-base">
+                  Subscribe
+                  <ArrowUpRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </a>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-3 sm:mt-4">
+                Free weekly newsletter. Unsubscribe anytime.
+              </p>
+            </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="mt-8 text-center text-muted-foreground text-sm">
-          <p>{uiText.endOfFile[lang]}</p>
+        <footer className="py-12 text-center">
+          <p className="text-muted-foreground text-sm">
+            © {new Date().getFullYear()} onetrillionx
+          </p>
+          <p className="text-muted-foreground/60 text-xs mt-2">
+            <em className="font-serif">fka kluless</em>
+          </p>
         </footer>
-      </div>
+      </main>
 
-      {/* Floating Close Button */}
-      {expandedArticle && (
-        <Button
-          onClick={closeArticle}
-          className="fixed bottom-6 right-6 rounded-full w-12 h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-          size="icon"
-        >
-          <X className="h-5 w-5" />
-        </Button>
+      {/* Article Modal */}
+      {selectedArticle && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-y-auto">
+          <div className="min-h-screen">
+            <div className="container mx-auto px-6 max-w-3xl py-8">
+              <div className="flex justify-between items-center mb-8 sticky top-0 bg-background/95 backdrop-blur-sm py-4 -mx-6 px-6">
+                <button
+                  onClick={closeArticle}
+                  className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Close
+                </button>
+                <p className="text-muted-foreground text-sm">{selectedArticle.date}</p>
+              </div>
+              
+              <article className="fade-in">
+                <h1 className="font-serif text-4xl sm:text-5xl font-bold mb-8">
+                  {selectedArticle.title}
+                </h1>
+                <div className="prose-elegant">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children }) => (
+                        <h2 className="font-serif text-2xl sm:text-3xl font-bold mt-12 mb-4">{children}</h2>
+                      ),
+                      h2: ({ children }) => (
+                        <h3 className="font-serif text-xl sm:text-2xl font-bold mt-10 mb-4">{children}</h3>
+                      ),
+                      h3: ({ children }) => (
+                        <h4 className="font-serif text-lg font-bold italic mt-8 mb-3">{children}</h4>
+                      ),
+                      p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+                      ul: ({ children }) => (
+                        <ul className="list-disc list-outside ml-6 mb-4 space-y-2">{children}</ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="list-decimal list-outside ml-6 mb-4 space-y-2">{children}</ol>
+                      ),
+                      li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                      strong: ({ children }) => (
+                        <strong className="font-semibold text-foreground">{children}</strong>
+                      ),
+                      em: ({ children }) => <em className="font-serif italic">{children}</em>,
+                      hr: () => <hr className="my-8 border-border/50" />,
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-2 border-primary pl-4 my-4 font-serif italic text-muted-foreground">
+                          {children}
+                        </blockquote>
+                      ),
+                      a: ({ href, children }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline underline-offset-4 decoration-primary/30 hover:decoration-primary"
+                        >
+                          {children}
+                        </a>
+                      ),
+                    }}
+                  >
+                    {selectedArticle.content}
+                  </ReactMarkdown>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
