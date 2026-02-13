@@ -14,9 +14,26 @@ const instrumentSerif = Instrument_Serif({
 })
 
 export const metadata: Metadata = {
-  title: "onetrillionx",
-  description: "Founder of Kairos — building prediction market infrastructure",
-  generator: "v0.app",
+  title: "Angad Maniyambath — 1tx.dev",
+  description: "Angad's personal site.",
+  metadataBase: new URL("https://1tx.dev"),
+  icons: {
+    icon: "/trufonomics logo11 - dark mode.png",
+    apple: "/trufonomics logo11 - dark mode.png",
+  },
+  openGraph: {
+    title: "Angad Maniyambath — 1tx.dev",
+    description: "Angad's personal site.",
+    url: "https://1tx.dev",
+    siteName: "1tx.dev",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Angad Maniyambath — 1tx.dev",
+    description: "Angad's personal site.",
+    creator: "@onetrillionx",
+  },
 }
 
 export default function RootLayout({
