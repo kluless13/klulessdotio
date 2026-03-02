@@ -39,7 +39,7 @@ async function fetchAllCommitDates(): Promise<Map<string, number>> {
       headers.Authorization = `token ${process.env.GITHUB_TOKEN}`
     }
 
-    const res = await fetch(url, { headers })
+    const res = await fetch(url, { headers, next: { revalidate: 3600 } })
     if (!res.ok) break
 
     const commits: CommitResponse[] = await res.json()
@@ -211,6 +211,8 @@ function generateSvg(
   lines.push("</svg>")
   return lines.join("\n")
 }
+
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
