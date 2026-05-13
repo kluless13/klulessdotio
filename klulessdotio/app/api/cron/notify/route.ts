@@ -57,7 +57,28 @@ export async function GET(req: Request): Promise<Response> {
   const expected = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization");
   if (!expected || authHeader !== `Bearer ${expected}`) {
-    return new Response("unauthorized", { status: 401 });
+    // Diagnostic body (length-only, no secret values).
+    // Remove once 200s start landing — this is debug-only.
+    return Response.json(
+      {
+        ok: false,
+        error: "unauthorized",
+        debug: {
+          env_var_exists: !!expected,
+          env_var_length: expected?.length ?? 0,
+          auth_header_exists: !!authHeader,
+          auth_header_length: authHeader?.length ?? 0,
+          header_starts_with_bearer: authHeader?.startsWith("Bearer ") ?? false,
+          header_token_length:
+            authHeader?.startsWith("Bearer ") ? authHeader.length - 7 : null,
+          lengths_match:
+            expected && authHeader?.startsWith("Bearer ")
+              ? expected.length === authHeader.length - 7
+              : null,
+        },
+      },
+      { status: 401 }
+    );
   }
 
   // 2. Load last_polled_at from KV (or default).
