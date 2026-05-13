@@ -34,9 +34,27 @@ export const dynamic = "force-dynamic";
 const STATE_KEY = "gh:last_polled_at";
 const FIRST_RUN_LOOKBACK_MS = 5 * 60 * 1000; // 5 minutes
 
-// Redis.fromEnv() auto-detects either UPSTASH_REDIS_REST_{URL,TOKEN} or
-// the KV-prefixed Vercel-KV-compat names KV_REST_API_{URL,TOKEN}.
-const redis = Redis.fromEnv();
+/**
+ * Build a Redis client lazily so a missing env var returns a clean JSON
+ * error rather than crashing the whole module (which Vercel surfaces as
+ * an opaque 502).
+ *
+ * Tries the Vercel-KV-compat env vars first, falls back to the standard
+ * Upstash names.
+ */
+function getRedis(): Redis {
+  const url =
+    process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    throw new Error(
+      "Redis env vars not configured. Looked for KV_REST_API_URL/TOKEN " +
+        "and UPSTASH_REDIS_REST_URL/TOKEN; neither pair was set."
+    );
+  }
+  return new Redis({ url, token });
+}
 
 function formatMessage(n: GithubNotification): string {
   const label = escapeHtml(reasonLabel(n.reason));
@@ -90,7 +108,34 @@ export async function GET(req: Request): Promise<Response> {
     );
   }
 
-  const stored = await redis.get<string>(STATE_KEY);
+  let redis: Redis;
+  try {
+    redis = getRedis();
+  } catch (e) {
+    return Response.json(
+      {
+        ok: false,
+        error: String(e),
+        env_check: {
+          KV_REST_API_URL: !!process.env.KV_REST_API_URL,
+          KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
+          UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
+          UPSTASH_REDIS_REST_TOKEN: !!process.env.UPSTASH_REDIS_REST_TOKEN,
+        },
+      },
+      { status: 500 }
+    );
+  }
+
+  let stored: string | null;
+  try {
+    stored = await redis.get<string>(STATE_KEY);
+  } catch (e) {
+    return Response.json(
+      { ok: false, error: `redis.get failed: ${e}` },
+      { status: 502 }
+    );
+  }
   const since =
     stored ?? new Date(Date.now() - FIRST_RUN_LOOKBACK_MS).toISOString();
 
