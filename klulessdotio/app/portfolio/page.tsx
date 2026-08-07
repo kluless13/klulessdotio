@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { ArrowUpRight, X } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { ArrowUpRight, Info, Shuffle, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -24,6 +24,17 @@ const XIcon = () => (
 // GitHub repos data with curated details
 const repos = [
   {
+    name: "bigmac-predict",
+    description: "Prediction market built on TRUF Network using Big Mac Index-style macro data.",
+    url: "https://bigmac.market",
+    tags: ["TRUF Network", "Prediction Markets", "Macro Data"],
+    linkType: "live",
+    details: {
+      stats: "Live at bigmac.market • private repo for now • built to showcase TRUF Network market primitives",
+      features: ["Market creation", "TRUF data integration", "Macro-data settlement logic", "Prediction-market UX", "Public demo surface"]
+    }
+  },
+  {
     name: "pm-data-analyses",
     description: "Prediction market research pipeline powering all my PM articles.",
     url: "https://github.com/kluless13/pm-data-analyses",
@@ -40,12 +51,12 @@ const repos = [
   },
   {
     name: "FishTally",
-    description: "AI-driven fish detection and counting for marine ecology.",
+    description: "Published automated fish detection and counting tool for marine ecology.",
     url: "https://github.com/kluless13/fishtally",
-    tags: ["Python", "Computer Vision", "YOLOv8"],
+    tags: ["Python", "Computer Vision", "SoftwareX"],
     details: {
-      stats: "YOLOv8 + ByteTrack • DeepFish dataset • Published preprint",
-      features: ["Automated species detection", "Multi-object tracking", "Biodiversity metrics", "Large-scale survey processing"]
+      stats: "SoftwareX, Volume 34, 2026 • YOLOv8 + ByteTrack • DeepFish dataset",
+      features: ["Automated species detection", "Multi-object tracking", "Biodiversity metrics", "Large-scale survey processing", "Published software paper"]
     }
   },
   {
@@ -118,9 +129,35 @@ const repos = [
   },
 ]
 
+type PosterCategory = {
+  id: string
+  name: string
+  folder: string
+  description: string
+  posters: string[]
+}
+
+type PosterItem = {
+  poster: string
+  categoryId: string
+  categoryName: string
+  folder: string
+}
+
+type SelectedPoster = {
+  src: string
+  name: string
+  categoryId: string
+  categoryName: string
+}
+
+function stripPngExtension(filename: string): string {
+  return filename.replace(/\.png$/i, "")
+}
+
 // Poster descriptions based on filename
 function getPosterDescription(filename: string, category: string): string {
-  const name = filename.replace('.png', '').toLowerCase()
+  const name = stripPngExtension(filename).toLowerCase()
 
   if (category === "prediction-platforms") {
     if (name.includes("truf")) return "TRUF Network — Prediction market infrastructure"
@@ -149,11 +186,19 @@ function getPosterDescription(filename: string, category: string): string {
     if (name.includes("trufonomics")) return "Trufonomics — Brand identity"
   }
 
-  return filename.replace('.png', '')
+  if (category === "tesla") {
+    if (name.includes("newletter") || name.includes("newsletter")) return "Tesla EPS — newsletter layout study"
+    if (name.includes("final")) return "Tesla EPS — final poster concept"
+
+    const num = name.match(/\d+/)?.[0] || ""
+    return num ? `Tesla EPS ${num} — earnings poster study` : "Tesla EPS — earnings poster study"
+  }
+
+  return stripPngExtension(filename)
 }
 
 // Poster categories with descriptions
-const posterCategories = [
+const posterCategories: PosterCategory[] = [
   {
     id: "prediction-platforms",
     name: "Prediction Platforms",
@@ -218,19 +263,192 @@ const posterCategories = [
       "trufonomics B.png",
     ]
   },
+  {
+    id: "tesla",
+    name: "Tesla",
+    folder: "tesla",
+    description: "Tesla EPS poster and newsletter studies exploring earnings, market attention, and finance-native visual storytelling.",
+    posters: [
+      "tsla eps final A.png",
+      "tsla eps final B.png",
+      "tsla eps final  C.png",
+      "eps newletter 1.png",
+      "tsla eps 2.png",
+      "tsla eps 3.png",
+      "tsla eps 5.png",
+      "tsla eps 9.png",
+      "tsla eps 10.png",
+      "tsla eps 11.png",
+      "tsla eps 12.png",
+    ]
+  },
 ]
+
+function getPosterItems(category: PosterCategory): PosterItem[] {
+  return category.posters.map((poster) => ({
+    poster,
+    categoryId: category.id,
+    categoryName: category.name,
+    folder: category.folder,
+  }))
+}
+
+function getPosterSrc(poster: PosterItem): string {
+  return `/posters/${poster.folder}/${poster.poster}`
+}
+
+function getPosterKey(poster: PosterItem): string {
+  return `${poster.categoryId}-${poster.poster}`
+}
+
+function getPosterBoardHeight(count: number): number {
+  if (count > 24) return 1420
+  if (count > 16) return 1240
+  return 1120
+}
+
+function seededUnit(index: number, salt: number, seed: number): number {
+  const raw = Math.sin((index + 1 + seed * 97) * (12.9898 + salt * 78.233)) * 43758.5453
+  return raw - Math.floor(raw)
+}
+
+function getPosterWidth(count: number): string {
+  if (count > 24) {
+    return "clamp(8.25rem, 10vw, 13rem)"
+  }
+
+  if (count > 16) {
+    return "clamp(9rem, 12vw, 15rem)"
+  }
+
+  return "clamp(10rem, 15vw, 18rem)"
+}
+
+function getPosterBoardStyle(
+  index: number,
+  count: number,
+  boardHeight: number,
+  layoutSeed: number,
+  isSelected: boolean,
+  hasSelectedPoster: boolean,
+  isDragging: boolean,
+  isTopPoster: boolean
+) {
+  if (isSelected) {
+    return {
+      left: "50%",
+      top: "50%",
+      width: "min(68vw, 24rem)",
+      translate: "-50% -50%",
+      rotate: "0deg",
+      zIndex: isDragging ? 1200 : 1000,
+      filter: "none",
+    }
+  }
+
+  const x = 12 + seededUnit(index, 1, layoutSeed) * 66
+  const y = 230 + seededUnit(index, 2, layoutSeed) * (boardHeight - 560)
+
+  return {
+    left: `clamp(5rem, ${x}%, calc(100% - 13rem))`,
+    top: `${y}px`,
+    width: getPosterWidth(count),
+    translate: "-50% 0",
+    rotate: `${getPosterTilt(index + layoutSeed)}deg`,
+    zIndex: isDragging ? 1200 : isTopPoster ? 1000 : index + 1,
+    filter: hasSelectedPoster ? "blur(8px)" : "none",
+  }
+}
+
+function getPosterTilt(index: number): number {
+  return [-8, 5, -3, 7, -6, 2, 9, -4][index % 8]
+}
+
+function getCategoryTabHeight(category: PosterCategory): string {
+  if (category.id === "prediction-platforms" || category.id === "perplexity-inspiration") {
+    return "h-44"
+  }
+
+  if (category.id === "bobbin-study" || category.id === "quartr-design") {
+    return "h-36"
+  }
+
+  return "h-28"
+}
 
 export default function PortfolioPage() {
   const [activeSection, setActiveSection] = useState<"code" | "design">("code")
-  const [selectedCategory, setSelectedCategory] = useState(posterCategories[0])
-  const [selectedPoster, setSelectedPoster] = useState<{ src: string; name: string } | null>(null)
+  const [selectedCategoryId, setSelectedCategoryId] = useState(posterCategories[0].id)
+  const [selectedPoster, setSelectedPoster] = useState<SelectedPoster | null>(null)
+  const [showPosterInfo, setShowPosterInfo] = useState(false)
+  const [posterLayoutSeed, setPosterLayoutSeed] = useState(0)
+  const [draggingPosterKey, setDraggingPosterKey] = useState<string | null>(null)
+  const [topPosterKey, setTopPosterKey] = useState<string | null>(null)
   const [expandedRepo, setExpandedRepo] = useState<string | null>(null)
+  const suppressPosterClickRef = useRef(false)
+  const selectedCategory = posterCategories.find((category) => category.id === selectedCategoryId) ?? posterCategories[0]
+  const visiblePosters = getPosterItems(selectedCategory)
+  const posterBoardHeight = getPosterBoardHeight(visiblePosters.length)
+  const selectedPosterKey = selectedPoster ? `${selectedPoster.categoryId}-${selectedPoster.name}` : null
+
+  const openPoster = (poster: PosterItem) => {
+    setTopPosterKey(getPosterKey(poster))
+    setSelectedPoster({
+      src: getPosterSrc(poster),
+      name: poster.poster,
+      categoryId: poster.categoryId,
+      categoryName: poster.categoryName,
+    })
+    setShowPosterInfo(false)
+  }
+
+  const selectPosterCategory = (categoryId: string) => {
+    setSelectedCategoryId(categoryId)
+    setSelectedPoster(null)
+    setShowPosterInfo(false)
+    setDraggingPosterKey(null)
+    setTopPosterKey(null)
+  }
+
+  const shufflePosters = () => {
+    setSelectedPoster(null)
+    setShowPosterInfo(false)
+    setDraggingPosterKey(null)
+    setTopPosterKey(null)
+    setPosterLayoutSeed((seed) => seed + 1)
+  }
+
+  const bringPosterToFront = (posterKey: string) => {
+    setTopPosterKey(posterKey)
+  }
+
+  const handlePosterDragStart = (posterKey: string) => {
+    suppressPosterClickRef.current = true
+    setDraggingPosterKey(posterKey)
+    setTopPosterKey(posterKey)
+  }
+
+  const handlePosterDragEnd = () => {
+    window.setTimeout(() => {
+      suppressPosterClickRef.current = false
+      setDraggingPosterKey(null)
+    }, 120)
+  }
+
+  const handlePosterClick = (poster: PosterItem) => {
+    if (suppressPosterClickRef.current) {
+      return
+    }
+
+    openPoster(poster)
+  }
 
   // Close modal on escape
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSelectedPoster(null)
+        setShowPosterInfo(false)
         setExpandedRepo(null)
       }
     }
@@ -344,8 +562,13 @@ export default function PortfolioPage() {
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label={`Open ${repo.name}`}
                           >
-                            <GitHubIcon />
+                            {"linkType" in repo && repo.linkType === "live" ? (
+                              <ArrowUpRight className="h-4 w-4" />
+                            ) : (
+                              <GitHubIcon />
+                            )}
                           </a>
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -441,139 +664,197 @@ export default function PortfolioPage() {
 
         {/* Design Section */}
         {activeSection === "design" && (
-          <section>
-            {/* Category Tabs */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {posterCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                    selectedCategory.id === category.id
-                      ? "bg-foreground text-background"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+          <section className="relative">
+            <div
+              className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden border-y border-border/60 bg-background"
+              style={{
+                minHeight: `max(${posterBoardHeight}px, 78vh)`,
+                backgroundImage:
+                  "linear-gradient(to right, hsl(var(--border) / 0.32) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / 0.32) 1px, transparent 1px)",
+                backgroundSize: "22px 22px",
+              }}
+            >
+              <div className="pointer-events-none absolute left-6 top-10 z-20 max-w-[17rem] sm:left-10 sm:max-w-md">
+                <p className="font-mono text-[10px] font-medium uppercase text-muted-foreground">
+                  {selectedCategory.name} / {visiblePosters.length}
+                </p>
+                <p className="mt-2 hidden text-xs leading-relaxed text-foreground/70 sm:block">
+                  {selectedCategory.description}
+                </p>
+              </div>
 
-            {/* Category Description */}
-            <div className="mb-8 p-4 bg-muted/50 rounded-lg border border-border/50">
-              <p className="text-sm text-foreground/80">
-                {selectedCategory.description}
-              </p>
-            </div>
-
-            {/* Poster Grid - Full images, no zoom */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {selectedCategory.posters.map((poster, i) => (
+              <div className="absolute left-1/2 top-10 z-30 flex -translate-x-1/2 items-center gap-3">
                 <motion.button
-                  key={i}
-                  onClick={() => setSelectedPoster({
-                    src: `/posters/${selectedCategory.folder}/${poster}`,
-                    name: poster
-                  })}
-                  className="relative bg-muted rounded-lg overflow-hidden"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  type="button"
+                  onClick={shufflePosters}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-foreground bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm backdrop-blur-sm transition-colors"
+                  whileHover={{ scale: 1.04, rotate: -2 }}
+                  whileTap={{ scale: 0.96 }}
                 >
-                  <img
-                    src={`/posters/${selectedCategory.folder}/${poster}`}
-                    alt={poster.replace('.png', '')}
-                    className="w-full h-auto"
-                  />
+                  <Shuffle className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">shuffle</span>
                 </motion.button>
-              ))}
+              </div>
+
+              <div className="absolute bottom-0 right-0 top-0 z-30 flex w-20 items-center justify-end border-l border-border/50 bg-background/50 backdrop-blur-sm sm:w-24">
+                <div className="flex w-full flex-col items-end gap-1.5 py-6">
+                  {posterCategories.map((category) => (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => selectPosterCategory(category.id)}
+                      aria-label={`Show ${category.name} posters`}
+                      className={`${getCategoryTabHeight(category)} px-2 py-4 font-mono text-[10px] font-bold uppercase leading-none shadow-sm transition-all ${
+                        selectedCategory.id === category.id
+                          ? "-ml-7 w-[calc(100%+1.75rem)] rounded-l-lg bg-foreground text-background shadow-[0_18px_45px_rgba(0,0,0,0.24)]"
+                          : "w-full rounded-l-md bg-background/25 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      }`}
+                      style={{ writingMode: "vertical-rl" }}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="absolute inset-0 z-10">
+                <AnimatePresence>
+                  {visiblePosters.map((poster, i) => {
+                    const posterKey = getPosterKey(poster)
+                    const isSelected = posterKey === selectedPosterKey
+                    const isDragging = draggingPosterKey === posterKey
+                    const isTopPoster = topPosterKey === posterKey
+
+                    return (
+                      <motion.div
+                        key={posterKey}
+                        role="button"
+                        tabIndex={0}
+                        onPointerDown={() => bringPosterToFront(posterKey)}
+                        onClick={() => handlePosterClick(poster)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault()
+                            openPoster(poster)
+                          }
+                        }}
+                        className="absolute origin-center cursor-grab overflow-visible bg-transparent p-0 shadow-[0_18px_50px_rgba(0,0,0,0.28)] transition-[filter] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground active:cursor-grabbing"
+                        style={getPosterBoardStyle(
+                          i,
+                          visiblePosters.length,
+                          posterBoardHeight,
+                          posterLayoutSeed,
+                          isSelected,
+                          Boolean(selectedPoster),
+                          isDragging,
+                          isTopPoster
+                        )}
+                        initial={{ opacity: 0, scale: 0.72, y: 48 }}
+                        animate={{
+                          opacity: selectedPoster && !isSelected ? 0.34 : 1,
+                          scale: 1,
+                          y: 0,
+                        }}
+                        exit={{ opacity: 0, scale: 0.78, y: 32 }}
+                        drag={!selectedPoster}
+                        dragMomentum={false}
+                        dragElastic={0.03}
+                        onDragStart={() => handlePosterDragStart(posterKey)}
+                        onDragEnd={handlePosterDragEnd}
+                        whileDrag={{ scale: 1.08, rotate: 0, zIndex: 1200 }}
+                        whileHover={selectedPoster && !isSelected ? { scale: 1.01 } : { scale: 1.04, rotate: 0 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 360,
+                          damping: 26,
+                          delay: selectedPoster ? 0 : Math.min(i, 14) * 0.028,
+                        }}
+                        aria-label={`Open ${stripPngExtension(poster.poster)}`}
+                        aria-pressed={isSelected}
+                      >
+                        <img
+                          src={getPosterSrc(poster)}
+                          alt={stripPngExtension(poster.poster)}
+                          className="w-full h-auto rounded-md"
+                          style={{ display: "block", width: "100%", height: "auto" }}
+                          loading="lazy"
+                          decoding="async"
+                          draggable={false}
+                        />
+                      </motion.div>
+                    )
+                  })}
+                </AnimatePresence>
+              </div>
+
+              <AnimatePresence>
+                {selectedPoster && (
+                  <motion.div
+                    className="absolute left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-background/90 px-3 py-2 shadow-sm backdrop-blur-sm"
+                    style={{ top: "calc(50% + 18rem)" }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setShowPosterInfo((value) => !value)}
+                      className={`rounded-full p-1.5 transition-colors ${
+                        showPosterInfo ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      aria-label="Poster info"
+                      title="Poster info"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPoster(null)
+                        setShowPosterInfo(false)
+                      }}
+                      className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                      aria-label="Close poster"
+                      title="Close poster"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {selectedPoster && showPosterInfo && (
+                  <motion.div
+                    data-poster-info-panel
+                    className="fixed left-6 top-24 z-[95] rounded-lg border border-border bg-background/90 p-4 shadow-sm backdrop-blur-sm"
+                    style={{ width: "min(22rem, calc(100% - 6rem))" }}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    <p className="mb-1 font-mono text-[10px] font-medium uppercase text-muted-foreground">
+                      Poster info
+                    </p>
+                    <p className="text-sm font-medium">
+                      {getPosterDescription(selectedPoster.name, selectedPoster.categoryId)}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {selectedPoster.categoryName}
+                    </p>
+                    <p className="mt-3 break-words font-mono text-[10px] text-muted-foreground">
+                      {stripPngExtension(selectedPoster.name)}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </section>
         )}
       </main>
-
-      {/* Poster Lightbox */}
-      <AnimatePresence>
-        {selectedPoster && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
-            onClick={() => setSelectedPoster(null)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {/* Backdrop */}
-            <motion.div
-              className="absolute inset-0 bg-background/80 backdrop-blur-md"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            />
-
-            {/* Content */}
-            <motion.div
-              className="relative z-10 flex flex-col md:flex-row items-center gap-4 md:gap-12 max-w-5xl w-full max-h-[85vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-                duration: 0.3
-              }}
-            >
-              {/* Poster - slightly left */}
-              <motion.div
-                className="flex-shrink-0 w-full max-w-[280px] sm:max-w-md md:max-w-lg"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ delay: 0.1, duration: 0.3 }}
-              >
-                <img
-                  src={selectedPoster.src}
-                  alt={selectedPoster.name}
-                  className="w-full h-auto rounded-lg shadow-2xl"
-                />
-              </motion.div>
-
-              {/* Description - on the right */}
-              <motion.div
-                className="text-center md:text-left max-w-sm"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: 0.15, duration: 0.3 }}
-              >
-                <p className="text-lg font-medium mb-2">
-                  {getPosterDescription(selectedPoster.name, selectedCategory.id)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedCategory.name}
-                </p>
-              </motion.div>
-
-              {/* Close button */}
-              <motion.button
-                onClick={() => setSelectedPoster(null)}
-                className="absolute top-0 right-0 md:-top-4 md:-right-4 p-2 text-muted-foreground hover:text-foreground transition-colors"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ delay: 0.2 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <X className="h-6 w-6" />
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
     </div>
   )

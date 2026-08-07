@@ -27,13 +27,26 @@ const SubstackIcon = () => (
 
 const experience = [
   {
-    period: "2024 – Present",
+    period: "Apr 2026 – Present",
+    role: "Head of AI",
+    company: "Truflation",
+    description: "Joined after Truflation acquired Trufonomics. Building Truman, a purpose-built macro agent, plus AI systems for inflation intelligence, data products, and forecasting workflows.",
+    link: "https://truflation.com",
+  },
+  {
+    period: "Dec 2025 – Apr 2026",
     role: "Founder",
     company: "Trufonomics",
-    description: "",
+    description: "Founded Trufonomics, a prediction-market and macro intelligence project acquired by Truflation in April 2026.",
     link: "https://trufonomics.com",
     hasDropdown: true,
     dropdownImage: "/trufonomics.png"
+  },
+  {
+    period: "2024 – 2025",
+    role: "Founder",
+    company: "BetBTC.win",
+    description: "Built a Bitcoin-denominated prediction market, focusing on market creation, position accounting, settlement flows, and BTC-native pricing.",
   },
   {
     period: "2023 – 2024",
@@ -51,7 +64,7 @@ const experience = [
     period: "2022 – 2023",
     role: "Marine Robotics Intern",
     company: "Flyingfish Tech",
-    description: "Built FishTally — AI-driven biodiversity analysis tool using YOLOv8 + ByteTrack. Trained on DeepFish dataset for marine monitoring.",
+    description: "Built FishTally, an automated fish detection and counting tool using YOLOv8 + ByteTrack, now published in SoftwareX.",
     link: "https://fft.ai"
   },
   {
@@ -82,9 +95,15 @@ const education = [
 const projects = [
   {
     name: "FishTally",
-    description: "Automated fish detection and counting using YOLOv8 + ByteTrack for marine ecology research.",
+    description: "Automated fish detection and counting tool using YOLOv8 + ByteTrack, published in SoftwareX, Volume 34, 2026.",
     link: "https://github.com/kluless13/fishtally",
-    tags: ["Python", "Computer Vision", "Marine Science"]
+    tags: ["Python", "Computer Vision", "SoftwareX"]
+  },
+  {
+    name: "BigMac Predict",
+    description: "Prediction market built with TRUF Network, using Big Mac Index-style macro data as the market primitive.",
+    link: "https://bigmac.market",
+    tags: ["TRUF Network", "Prediction Markets", "Macro Data"]
   },
   {
     name: "STRIKE",
@@ -171,14 +190,14 @@ export default function Home() {
             Building tech to let humanity hedge reality.
           </p>
           <p className="text-xs text-muted-foreground mb-8">
-            Previously: computational marine science,{" "}
+            Head of AI at Truflation, building Truman, a purpose-built macro agent. Founded Trufonomics, acquired Apr 2026.{" "}
             <a
-              href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6019587"
+              href="https://www.sciencedirect.com/science/article/pii/S2352711026001366"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground underline underline-offset-2 transition-colors"
             >
-              published research
+              FishTally published in SoftwareX
             </a>
           </p>
           <div className="flex gap-3">
