@@ -1,0 +1,716 @@
+[
+ {
+  "slug": "nvda-nvda-earnings-1",
+  "group": "earnings",
+  "title": "nvda earnings 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-7",
+  "group": "earnings",
+  "title": "nvda earnings 7",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-8",
+  "group": "earnings",
+  "title": "nvda earnings 8",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-9",
+  "group": "earnings",
+  "title": "nvda earnings 9",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-11",
+  "group": "earnings",
+  "title": "nvda earnings 11",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-12",
+  "group": "earnings",
+  "title": "nvda earnings 12",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-14",
+  "group": "earnings",
+  "title": "nvda earnings 14",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-15",
+  "group": "earnings",
+  "title": "nvda earnings 15",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-16",
+  "group": "earnings",
+  "title": "nvda earnings 16",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-17",
+  "group": "earnings",
+  "title": "nvda earnings 17",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-18",
+  "group": "earnings",
+  "title": "nvda earnings 18",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-19",
+  "group": "earnings",
+  "title": "nvda earnings 19",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "nvda-nvda-earnings-20",
+  "group": "earnings",
+  "title": "nvda earnings 20",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "meta-meta-eps-1",
+  "group": "earnings",
+  "title": "meta eps 1",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "meta-meta-eps-2",
+  "group": "earnings",
+  "title": "meta eps 2",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "meta-meta-eps-3",
+  "group": "earnings",
+  "title": "meta eps 3",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-final-a",
+  "group": "earnings",
+  "title": "tsla eps final A",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-final-b",
+  "group": "earnings",
+  "title": "tsla eps final B",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-final-c",
+  "group": "earnings",
+  "title": "tsla eps final  C",
+  "w": 1600,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-eps-newletter-1",
+  "group": "earnings",
+  "title": "eps newletter 1",
+  "w": 4904,
+  "h": 1546
+ },
+ {
+  "slug": "tesla-tsla-eps-2",
+  "group": "earnings",
+  "title": "tsla eps 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-3",
+  "group": "earnings",
+  "title": "tsla eps 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-5",
+  "group": "earnings",
+  "title": "tsla eps 5",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-9",
+  "group": "earnings",
+  "title": "tsla eps 9",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-10",
+  "group": "earnings",
+  "title": "tsla eps 10",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-11",
+  "group": "earnings",
+  "title": "tsla eps 11",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "tesla-tsla-eps-12",
+  "group": "earnings",
+  "title": "tsla eps 12",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "cesr-index-cesr-index-1",
+  "group": "cesr",
+  "title": "cesr index 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "cesr-index-cesr-index-2",
+  "group": "cesr",
+  "title": "cesr index 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "cesr-index-cesr-index-3",
+  "group": "cesr",
+  "title": "cesr index 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "cesr-index-cesr-index-4",
+  "group": "cesr",
+  "title": "cesr index 4",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "netflix-markets-netflix-markets-1",
+  "group": "netflix",
+  "title": "netflix markets 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "netflix-markets-netflix-markets-2",
+  "group": "netflix",
+  "title": "netflix markets 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "big-mac-index-bigmac-index",
+  "group": "bigmac",
+  "title": "bigmac index",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-crude-oil-1",
+  "group": "quartr",
+  "title": "crude oil 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-crude-oil-2",
+  "group": "quartr",
+  "title": "crude oil 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-crude-oil-3",
+  "group": "quartr",
+  "title": "crude oil 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-crude-oil-4",
+  "group": "quartr",
+  "title": "crude oil 4",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-gold-1",
+  "group": "quartr",
+  "title": "gold 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-gold-2",
+  "group": "quartr",
+  "title": "gold 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-gold-3",
+  "group": "quartr",
+  "title": "gold 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-gold-4",
+  "group": "quartr",
+  "title": "gold 4",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-mcdonalds-index-1",
+  "group": "quartr",
+  "title": "mcdonalds index 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-mcdonalds-index-2",
+  "group": "quartr",
+  "title": "mcdonalds index 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-mcdonalds-index-3",
+  "group": "quartr",
+  "title": "mcdonalds index 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-mcdonalds-index-4",
+  "group": "quartr",
+  "title": "mcdonalds index 4",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-mcdonalds-index-5",
+  "group": "quartr",
+  "title": "mcdonalds index 5",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-mcdonalds-index-6",
+  "group": "quartr",
+  "title": "mcdonalds index 6",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "quartr-design-inspiration-trufonomics",
+  "group": "quartr",
+  "title": "trufonomics",
+  "w": 3000,
+  "h": 1000
+ },
+ {
+  "slug": "quartr-design-inspiration-trufonomics-b",
+  "group": "quartr",
+  "title": "trufonomics B",
+  "w": 2697,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-1",
+  "group": "perplexity",
+  "title": "insp 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-2",
+  "group": "perplexity",
+  "title": "insp 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-3",
+  "group": "perplexity",
+  "title": "insp 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-4",
+  "group": "perplexity",
+  "title": "insp 4",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-5",
+  "group": "perplexity",
+  "title": "insp 5",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-6",
+  "group": "perplexity",
+  "title": "insp 6",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-7",
+  "group": "perplexity",
+  "title": "insp 7",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-8",
+  "group": "perplexity",
+  "title": "insp 8",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "perplexity-inspiration-insp-9",
+  "group": "perplexity",
+  "title": "insp 9",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-1",
+  "group": "bobbin",
+  "title": "bobbin study 1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-2",
+  "group": "bobbin",
+  "title": "bobbin study 2",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-3",
+  "group": "bobbin",
+  "title": "bobbin study 3",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-4",
+  "group": "bobbin",
+  "title": "bobbin study 4",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-5",
+  "group": "bobbin",
+  "title": "bobbin study 5",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-6",
+  "group": "bobbin",
+  "title": "bobbin study 6",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-7",
+  "group": "bobbin",
+  "title": "bobbin study 7",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-8",
+  "group": "bobbin",
+  "title": "bobbin study 8",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-9",
+  "group": "bobbin",
+  "title": "bobbin study 9",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-10",
+  "group": "bobbin",
+  "title": "bobbin study 10",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-11",
+  "group": "bobbin",
+  "title": "bobbin study 11",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-12",
+  "group": "bobbin",
+  "title": "bobbin study 12",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-13",
+  "group": "bobbin",
+  "title": "bobbin study 13",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-14",
+  "group": "bobbin",
+  "title": "bobbin study 14",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-15",
+  "group": "bobbin",
+  "title": "bobbin study 15",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-16",
+  "group": "bobbin",
+  "title": "bobbin study 16",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-17",
+  "group": "bobbin",
+  "title": "bobbin study 17",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-18",
+  "group": "bobbin",
+  "title": "bobbin study 18",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-19",
+  "group": "bobbin",
+  "title": "bobbin study 19",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-20",
+  "group": "bobbin",
+  "title": "bobbin study 20",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-21",
+  "group": "bobbin",
+  "title": "bobbin study 21",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-22",
+  "group": "bobbin",
+  "title": "bobbin study 22",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-23",
+  "group": "bobbin",
+  "title": "bobbin study 23",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-24",
+  "group": "bobbin",
+  "title": "bobbin study 24",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "bobbin-study-bobbin-study-25",
+  "group": "bobbin",
+  "title": "bobbin study 25",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "prediction-platforms-or-similar-truf-network-rt-01",
+  "group": "prediction",
+  "title": "truf network RT-01",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-truf-network-rt-02",
+  "group": "prediction",
+  "title": "truf network RT-02",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-polymarket-rt-01a",
+  "group": "prediction",
+  "title": "polymarket RT-01A",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "prediction-platforms-or-similar-polymarket-rt-02a",
+  "group": "prediction",
+  "title": "polymarket RT-02A",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "prediction-platforms-or-similar-polymarket-rt-01a-1",
+  "group": "prediction",
+  "title": "polymarket RT-01A-1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "prediction-platforms-or-similar-polymarket-rt-02a-1",
+  "group": "prediction",
+  "title": "polymarket RT-02A-1",
+  "w": 1131,
+  "h": 1600
+ },
+ {
+  "slug": "prediction-platforms-or-similar-kalshi-rt-01",
+  "group": "prediction",
+  "title": "kalshi RT-01",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-kalshi-rt-02",
+  "group": "prediction",
+  "title": "kalshi RT-02",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-dome-rt-01",
+  "group": "prediction",
+  "title": "dome RT-01",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-dome-rt-02",
+  "group": "prediction",
+  "title": "dome RT-02",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-limitless-rt-01",
+  "group": "prediction",
+  "title": "limitless RT-01",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-limitless-rt-02",
+  "group": "prediction",
+  "title": "limitless RT-02",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-melee-rt-01",
+  "group": "prediction",
+  "title": "melee RT-01",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-melee-rt-02",
+  "group": "prediction",
+  "title": "melee RT-02",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-myriad-rt-01d-yes-special",
+  "group": "prediction",
+  "title": "myriad RT-01D - YES special",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-myriad-rt-01e-yes-special",
+  "group": "prediction",
+  "title": "myriad RT-01E - YES special",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-myriad-rt-01f-yes",
+  "group": "prediction",
+  "title": "myriad RT-01F - YES",
+  "w": 842,
+  "h": 1191
+ },
+ {
+  "slug": "prediction-platforms-or-similar-myriad-rt-02a-yes",
+  "group": "prediction",
+  "title": "myriad RT-02A - YES",
+  "w": 842,
+  "h": 1191
+ }
+]
