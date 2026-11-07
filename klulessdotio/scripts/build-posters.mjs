@@ -12,7 +12,7 @@ const THUMB_HEIGHT = 180
 const slugify = (value) => value.toLowerCase().replace(/\.[a-z]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 
 async function buildOne({ group, folder, file }) {
-  const source = path.join(ROOT, "public/posters", folder, file)
+  const source = path.join(ROOT, "assets/posters", folder, file)
   const slug = `${slugify(folder)}-${slugify(file)}`
   const image = sharp(source)
   const { width, height } = await image.metadata()

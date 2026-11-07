@@ -3,6 +3,7 @@
 import { X } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { type Shelf, createShelf } from "@/components/books/shelf-engine"
+import { SHELF_ERROR } from "@/components/quiet/ShelfBoundary"
 import { BOOKS, type Book } from "@/lib/books"
 
 export function Bookshelf() {
@@ -13,6 +14,7 @@ export function Bookshelf() {
   const openerRef = useRef<HTMLElement | null>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState<Book | null>(null)
+  const [failed, setFailed] = useState(false)
 
   const close = useCallback(() => {
     setOpen(null)
@@ -21,17 +23,22 @@ export function Bookshelf() {
 
   useEffect(() => {
     let cancelled = false
-    void import("matter-js").then((module) => {
-      const stage = stageRef.current
-      const svg = svgRef.current
-      const tip = tipRef.current
-      if (cancelled || !stage || !svg || !tip) return
-      const onOpen = (book: Book, element: HTMLElement) => {
-        openerRef.current = element
-        setOpen(book)
-      }
-      shelfRef.current = createShelf(module.default, stage, svg, tip, BOOKS, onOpen)
-    })
+    import("matter-js")
+      .then((module) => {
+        const stage = stageRef.current
+        const svg = svgRef.current
+        const tip = tipRef.current
+        if (cancelled || !stage || !svg || !tip) return
+        const onOpen = (book: Book, element: HTMLElement) => {
+          openerRef.current = element
+          setOpen(book)
+        }
+        shelfRef.current = createShelf(module.default, stage, svg, tip, BOOKS, onOpen)
+      })
+      .catch((error: unknown) => {
+        console.error("Bookshelf physics failed to load", error)
+        setFailed(true)
+      })
     return () => {
       cancelled = true
       shelfRef.current?.destroy()
@@ -44,10 +51,17 @@ export function Bookshelf() {
     closeRef.current?.focus()
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") close()
+      // Close is the only control in the card, so Tab stays on it
+      if (event.key === "Tab") {
+        event.preventDefault()
+        closeRef.current?.focus()
+      }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [open, close])
+
+  if (failed) return <p className="shelf-error" role="alert">{SHELF_ERROR}</p>
 
   return (
     <section className="shelf" aria-labelledby="reading">

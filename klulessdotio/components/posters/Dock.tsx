@@ -15,6 +15,19 @@ export function Dock({ index, onIndex, arrows = false }: { index: number; onInde
     strip.scrollTo({ left, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
   }, [index])
 
+  useEffect(() => {
+    const strip = scroller.current
+    if (!strip) return
+    // Most mouse wheels only scroll up and down, so that moves the strip sideways too
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
+      event.preventDefault()
+      strip.scrollLeft += event.deltaY
+    }
+    strip.addEventListener("wheel", onWheel, { passive: false })
+    return () => strip.removeEventListener("wheel", onWheel)
+  }, [])
+
   return (
     <nav className="dock" aria-label="Posters">
       {arrows ? (

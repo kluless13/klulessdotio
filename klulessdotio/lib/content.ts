@@ -25,6 +25,8 @@ export const ORIGIN =
 export const MY_DAYS =
   "Whatever the day calls for: hardcore engineering, GTM strategy, creative design, sales calls, index development, and modelling (the forecasting kind, not runway)."
 
+export const COPYRIGHT = "© 2026 Angad Maniyambath"
+
 export const HISTORY_LINE = "Marine science, bread, prediction markets, AI. Each one gave me a tool."
 
 export const REACH = [

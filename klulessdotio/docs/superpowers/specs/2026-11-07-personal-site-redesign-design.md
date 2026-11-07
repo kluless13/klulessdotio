@@ -65,7 +65,7 @@ No time labels. No "A day with Angad". Going live needs a private preview review
 
 - "Find me" is gone. Clicking "Say hello", below What I do, opens the ways to reach Angad right there: Telegram, LinkedIn, X and GitHub. No email address is shown.
 - The timeline stays collapsed until opened.
-- Project rows show a name and an arrow; descriptions appear on hover or tap **(Claude's call)**.
+- Project rows show a name and an arrow, both links. Descriptions appear on hover, or by tapping the row on touch screens **(Claude's call)**.
 
 ### Links
 
@@ -162,10 +162,10 @@ The "What I'm reading" shelf lives only in Quiet mode, opened with a "Books" but
 - **Physics:** books behave like real objects under gravity. Visitors can drag and rearrange them; books push on each other, lean on neighbours and fall when unsupported. The test uses Matter.js.
 - **Slump rule (Claude's call):** a thin rectangle would balance forever in pure physics, so an upright book with a nearby gap gets a gentle push and leans into it, and one with nothing beside it tips over.
 - **One unit:** the ledge and bookends are a single connected piece. A book pushed over an end drops off and falls back in at the top of the shelf area, so none are lost. "Tidy the shelf" resets it.
-- **Never over the words:** books stay inside the shelf's own area, held by an invisible ceiling. Opening the shelf replaces the Poster of the Day while it is open **(Claude's call)**.
+- **Never over the words:** books stay inside the shelf's own area, held by an invisible ceiling. Opening the shelf replaces the greeting, status line, poster and dock while it is open, as on the approved Paper board.
 - **Phones:** spines get thinner but stay tall. Each title shrinks automatically until it fits, and the author's surname drops off when space is still too tight. In the test this measured no clipped titles at 390px wide and 1280px wide. Dragging and touch behaviour still need checking on a real phone.
 - **Opening:** clicking without dragging opens a small card with the real cover, title and author. Keyboard users can open books too.
-- **Covers:** real cover images, self-hosted, shown when a book opens. Test covers come from Open Library; Antifragile's has a library stamp and The Hard Thing's is low resolution, so those need better images.
+- **Covers:** real cover images, self-hosted, shown when a book opens. Covers come from Open Library.
 - **Spines:** no public source for spine images was found, and using a slice of the cover looked wrong to Angad. Each spine is designed from its real cover's colours and type style, with title, author surname and accent bands, as in the test, which Angad approved. Photos of his own books' spines could replace these later if he provides them.
 - **Notes:** left for later, at Angad's request. The panel should have room to add them without a redesign.
 - **Book list:** launch with the 11 books in the test, taken from the Books Index in Angad's vault. Angad may swap in what he is actually reading, so the list must be a simple data file.

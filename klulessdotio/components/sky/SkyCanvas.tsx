@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useSky } from "@/components/sky/SkyProvider"
+import { type Sky, useSky } from "@/components/sky/SkyProvider"
 import { type SkyView, type Weather, fallbackGradient, glowPosition, skyView } from "@/lib/sky/model"
 import { FRAG, UNIFORMS, VERT } from "@/lib/sky/shader"
 
@@ -101,9 +101,9 @@ function drawFrame(gl: WebGLRenderingContext, uniforms: Uniforms, width: number,
 
 /** Lets the contrast test draw any state and read the pixels back. Only present in test builds. */
 function installAudit(gl: WebGLRenderingContext, uniforms: Uniforms, canvas: HTMLCanvasElement): () => void {
-  const hook = (hour: number, weather: Weather, xs: readonly [number, number], ys: readonly [number, number], n: number): number[][] => {
+  const hook = (hour: number, weather: Weather, xs: readonly [number, number], ys: readonly [number, number], n: number, flash = 0): number[][] => {
     const view = skyView({ hour, weather, date: new Date() })
-    drawFrame(gl, uniforms, canvas.width, canvas.height, { view, cover: null, weather, seconds: 5, tone: view.light ? 1 : 0, flash: 0, flashX: 0.5, flashY: 0.5 })
+    drawFrame(gl, uniforms, canvas.width, canvas.height, { view, cover: null, weather, seconds: 5, tone: view.light ? 1 : 0, flash, flashX: 0.5, flashY: 0.5 })
     const pixel = new Uint8Array(4)
     const out: number[][] = []
     for (let i = 0; i < n; i++) {
@@ -122,45 +122,63 @@ function installAudit(gl: WebGLRenderingContext, uniforms: Uniforms, canvas: HTM
   }
 }
 
+function installLoop(canvas: HTMLCanvasElement, gl: WebGLRenderingContext, uniforms: Uniforms, latest: { current: Sky }, reduced: boolean) {
+  let tone: number | null = null
+  let lightning: Lightning = { next: 0, x: 0.5, y: 0.7, pulses: [] }
+  let raf = 0
+  let previous = 0
+  let drawn = 0
+
+  const render = (ms: number) => {
+    const { view, weather, cover, ready } = latest.current
+    if (!ready) return
+    const seconds = reduced ? 12 : ms / 1000
+    if (weather === "storm" && !reduced && seconds >= lightning.next) lightning = planLightning(seconds)
+    const goal = view.light ? 1 : 0
+    const elapsed = Math.min(0.2, (ms - previous) / 1000)
+    // The first frame starts on the right tone. After that, changes ease in.
+    tone = tone === null || reduced ? goal : tone + (goal - tone) * (1 - Math.exp(-elapsed * TONE_RATE))
+    previous = ms
+    const flash = weather === "storm" && !reduced ? flashAmount(lightning, seconds) : 0
+    drawFrame(gl, uniforms, canvas.width, canvas.height, { view, weather, cover, seconds, tone, flash, flashX: lightning.x, flashY: lightning.y })
+  }
+  const frame = (ms: number) => {
+    raf = window.requestAnimationFrame(frame)
+    if (ms - drawn < FRAME_MS) return
+    drawn = ms
+    render(ms)
+  }
+  const start = () => {
+    window.cancelAnimationFrame(raf)
+    if (!reduced && !document.hidden) raf = window.requestAnimationFrame(frame)
+  }
+  const stop = () => window.cancelAnimationFrame(raf)
+  return { render, start, stop }
+}
+
 export function SkyCanvas() {
   const sky = useSky()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const latest = useRef(sky)
   const redraw = useRef<(() => void) | null>(null)
-  const [fallbackRef, fallback] = [useRef<HTMLDivElement>(null), fallbackGradient(sky.view)]
 
   useEffect(() => {
     latest.current = sky
+    if (sky.ready) canvasRef.current?.classList.add("sky-ready")
     redraw.current?.()
   }, [sky])
 
   useEffect(() => {
     const canvas = canvasRef.current
-    const wash = fallbackRef.current
-    if (!canvas || !wash) return
+    if (!canvas) return
     const gl = canvas.getContext("webgl", { antialias: false })
-    const useFallback = () => {
-      canvas.style.display = "none"
-    }
     if (!gl) {
-      useFallback()
+      canvas.style.display = "none"
       return
     }
-    let uniforms: Uniforms
-    try {
-      uniforms = createProgram(gl)
-    } catch (error) {
-      console.error("Could not start the sky", error)
-      useFallback()
-      return
-    }
-    canvas.addEventListener("webglcontextlost", useFallback)
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    let tone = latest.current.view.light ? 1 : 0
-    let lightning: Lightning = { next: 0, x: 0.5, y: 0.7, pulses: [] }
-    let raf = 0
-    let previous = 0
-    let drawn = 0
+    let loop: ReturnType<typeof installLoop> | null = null
+    let removeAudit = () => undefined as void
 
     const resize = () => {
       // Half resolution keeps the shader cheap, and the sky has no fine detail to lose
@@ -169,59 +187,61 @@ export function SkyCanvas() {
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w
         canvas.height = h
-        gl.viewport(0, 0, w, h)
+      }
+      gl.viewport(0, 0, w, h)
+    }
+    const begin = () => {
+      try {
+        const uniforms = createProgram(gl)
+        resize()
+        canvas.style.display = ""
+        loop = installLoop(canvas, gl, uniforms, latest, reduced)
+        redraw.current = reduced ? () => loop?.render(0) : null
+        if (reduced) loop.render(0)
+        else loop.start()
+        removeAudit()
+        removeAudit = process.env.NEXT_PUBLIC_SKY_AUDIT === "1" ? installAudit(gl, uniforms, canvas) : () => undefined
+      } catch (error) {
+        console.error("Could not start the sky", error)
+        canvas.style.display = "none"
       }
     }
-    const render = (ms: number) => {
-      const { view, weather, cover } = latest.current
-      const seconds = reduced ? 12 : ms / 1000
-      if (weather === "storm" && !reduced && seconds >= lightning.next) lightning = planLightning(seconds)
-      const goal = view.light ? 1 : 0
-      const elapsed = Math.min(0.2, (ms - previous) / 1000)
-      tone = reduced ? goal : tone + (goal - tone) * (1 - Math.exp(-elapsed * TONE_RATE))
-      previous = ms
-      const flash = weather === "storm" && !reduced ? flashAmount(lightning, seconds) : 0
-      drawFrame(gl, uniforms, canvas.width, canvas.height, { view, weather, cover, seconds, tone, flash, flashX: lightning.x, flashY: lightning.y })
+    // A sleeping laptop can take the graphics context away. The gradient shows until it comes back.
+    const onLost = (event: Event) => {
+      event.preventDefault()
+      loop?.stop()
+      loop = null
+      redraw.current = null
+      canvas.style.display = "none"
     }
-    const loop = (ms: number) => {
-      raf = window.requestAnimationFrame(loop)
-      if (ms - drawn < FRAME_MS) return
-      drawn = ms
-      render(ms)
-    }
-    const start = () => {
-      window.cancelAnimationFrame(raf)
-      if (!document.hidden) raf = window.requestAnimationFrame(loop)
+    const onVisibility = () => {
+      if (document.hidden) loop?.stop()
+      else loop?.start()
     }
     const onResize = () => {
       resize()
-      if (reduced) render(0)
+      if (reduced) loop?.render(0)
     }
-    resize()
-    redraw.current = reduced ? () => render(0) : null
-    if (reduced) render(0)
-    else start()
-    const onVisibility = () => {
-      if (reduced) return
-      if (document.hidden) window.cancelAnimationFrame(raf)
-      else start()
-    }
+    begin()
+    canvas.addEventListener("webglcontextlost", onLost)
+    canvas.addEventListener("webglcontextrestored", begin)
     document.addEventListener("visibilitychange", onVisibility)
     window.addEventListener("resize", onResize)
-    const removeAudit = process.env.NEXT_PUBLIC_SKY_AUDIT === "1" ? installAudit(gl, uniforms, canvas) : () => undefined
     return () => {
-      window.cancelAnimationFrame(raf)
+      loop?.stop()
       redraw.current = null
+      canvas.removeEventListener("webglcontextlost", onLost)
+      canvas.removeEventListener("webglcontextrestored", begin)
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("resize", onResize)
-      canvas.removeEventListener("webglcontextlost", useFallback)
       removeAudit()
     }
-  }, [fallbackRef])
+  }, [])
 
+  // The wash starts from CSS, matched to the time of day by the script in the page head, then follows the sky
   return (
     <div className="sky" aria-hidden="true">
-      <div ref={fallbackRef} className="sky-wash" style={{ backgroundImage: fallback }} />
+      <div className="sky-wash" style={sky.ready ? { backgroundImage: fallbackGradient(sky.view) } : undefined} />
       <canvas ref={canvasRef} className="sky-canvas" data-testid="sky-canvas" />
     </div>
   )

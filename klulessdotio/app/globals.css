@@ -87,6 +87,25 @@ button {
 .sky {
   z-index: -1;
 }
+/* The first paint before the sky is ready, matched to the time of day */
+.sky-wash {
+  background: linear-gradient(180deg, #080d20, #142348 58%, #1c2748);
+}
+:root.day .sky-wash {
+  background: linear-gradient(180deg, #2f7ed2, #79b5e8 58%, #cfe6f4);
+}
+.sky-canvas {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.sky-canvas.sky-ready {
+  opacity: 1;
+}
+/* Someone who chose Quiet last time doesn't see the full page first */
+:root.start-quiet .layer {
+  opacity: 0;
+  transition: none;
+}
 
 /* Layers */
 .layer {
@@ -184,6 +203,18 @@ button {
 .greeting-quiet {
   font-size: clamp(32px, 4vw, 52px);
   min-height: 1.3em;
+}
+/* Some languages take two lines on narrow screens, so there's always room for two */
+@media (max-width: 640px) {
+  .greeting-page {
+    min-height: 2.3em;
+    margin-bottom: 20px;
+  }
+}
+@media (max-width: 1040px) {
+  .greeting-quiet {
+    min-height: 2.3em;
+  }
 }
 
 /* Noise page */
@@ -316,10 +347,8 @@ button {
   font-weight: 500;
   text-decoration: none;
 }
-.project-name::after {
-  content: "";
-}
 .project-arrow {
+  display: flex;
   margin-left: auto;
 }
 .badge {
@@ -341,14 +370,17 @@ button {
 .project-text > p {
   overflow: hidden;
 }
-.project:hover .project-text,
-.project:focus-within .project-text {
+.project-open .project-text {
   grid-template-rows: 1fr;
 }
-@media (hover: none) {
-  .project-text {
+@media (hover: hover) {
+  .project:hover .project-text,
+  .project:focus-within .project-text {
     grid-template-rows: 1fr;
   }
+}
+.project:focus-within .project-text {
+  grid-template-rows: 1fr;
 }
 
 /* Activity */
@@ -726,9 +758,21 @@ button {
 }
 .quiet-caption {
   flex: 0 0 auto;
+  max-width: 620px;
+  text-align: center;
+}
+.quiet-caption .caption-title {
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
+}
+.quiet-caption .caption-text {
+  font-size: 13px;
+  line-height: 19px;
+}
+.quiet-caption .caption-note {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 19px;
 }
 .quiet > .dock {
   flex: 0 0 auto;
@@ -819,6 +863,70 @@ button {
     left: auto;
     right: 16px;
     top: 72px;
+  }
+}
+
+/* Phones held sideways: there's little height, so the caption sits beside the poster */
+@media (max-height: 520px) {
+  .dock {
+    padding: 2px 6px 4px;
+  }
+  .dock-thumb img {
+    height: 34px;
+  }
+  .dock-strip {
+    padding-top: 11px;
+  }
+  .viewer {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) minmax(0, 1fr) minmax(40px, 0.25fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px 16px;
+    padding: 12px 16px;
+  }
+  .viewer-caption {
+    order: 0;
+    max-height: 100%;
+  }
+  .viewer-groups {
+    flex-direction: column;
+    gap: 0;
+    margin-top: 8px;
+    overflow-x: visible;
+  }
+  .viewer-close {
+    top: 12px;
+    right: 12px;
+  }
+  .quiet {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .quiet-top {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .greeting-quiet {
+    font-size: 24px;
+    min-height: 1.3em;
+  }
+  .status {
+    margin-top: 2px;
+    font-size: 13px;
+  }
+  .quiet-stage {
+    flex-direction: row;
+    gap: 16px;
+  }
+  .quiet-caption {
+    flex: 1 1 0;
+    max-width: 300px;
+    text-align: left;
+  }
+  .quiet-stage .stage {
+    flex: 0 1 auto;
+    width: auto;
+    height: 100%;
   }
 }
 
@@ -1010,6 +1118,25 @@ button {
   font-size: 16px;
   line-height: 24px;
   opacity: 0.86;
+}
+.book-card :focus-visible {
+  outline-color: var(--b-ink);
+}
+.shelf-error {
+  margin: auto;
+  max-width: 420px;
+  text-align: center;
+  font-size: 17px;
+  line-height: 28px;
+}
+.error-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: 24px;
 }
 .book-close {
   position: absolute;

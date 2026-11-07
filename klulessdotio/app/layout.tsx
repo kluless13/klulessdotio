@@ -23,8 +23,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#10162a" }
 
-// Picks the tone before the first paint, so night visitors don't get a flash of the daytime colours
-const TONE_SCRIPT = `try{var h=+new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",hour12:false}).format(new Date());if(h>=6&&h<18)document.documentElement.classList.add("day")}catch(e){}`
+// Picks the tone and mode before the first paint, so nobody gets a flash of the wrong colours or the wrong view
+const TONE_SCRIPT = `try{var h=+new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",hour12:false}).format(new Date());if(h>=6&&h<18)document.documentElement.classList.add("day")}catch(e){}try{if(localStorage.getItem("1tx-mode")==="quiet")document.documentElement.classList.add("start-quiet")}catch(e){}`
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (

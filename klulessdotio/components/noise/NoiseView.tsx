@@ -8,7 +8,7 @@ import { Projects } from "@/components/noise/Projects"
 import { Row } from "@/components/noise/Row"
 import { SayHello } from "@/components/noise/SayHello"
 import { Timeline } from "@/components/noise/Timeline"
-import { BELIEFS, BUILD, MY_DAYS, ORIGIN } from "@/lib/content"
+import { BELIEFS, BUILD, COPYRIGHT, MY_DAYS, ORIGIN } from "@/lib/content"
 import { ArrowRight } from "lucide-react"
 
 export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQuiet: () => void }) {
@@ -53,7 +53,7 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
         <Projects />
         <Activity />
         <Timeline />
-        <footer className="foot">© {new Date().getFullYear()} Angad Maniyambath</footer>
+        <footer className="foot">{COPYRIGHT}</footer>
       </main>
       <PageBottom />
     </div>

@@ -10,6 +10,11 @@ export function Music() {
   const [hot, setHot] = useState(false)
   const playerRef = useRef<HTMLDivElement>(null)
 
+  // Hidden controls shouldn't be reachable with the keyboard, and this doesn't stop the music
+  useEffect(() => {
+    if (playerRef.current) playerRef.current.inert = !open
+  }, [open])
+
   useEffect(() => {
     // Spotify's frame swallows mouse events, so an invisible strip around it catches the pointer on the way in
     const onMove = (event: PointerEvent) => setHot(Boolean(playerRef.current?.contains(event.target as Node)))

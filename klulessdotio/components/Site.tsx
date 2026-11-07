@@ -28,7 +28,11 @@ export function Site() {
     setPosters(true)
   }, [])
 
-  useEffect(() => setMode(readMode(browserStorage())), [])
+  useEffect(() => {
+    setMode(readMode(browserStorage()))
+    // From here React decides what's hidden, so the head script's early hint can go
+    window.requestAnimationFrame(() => document.documentElement.classList.remove("start-quiet"))
+  }, [])
 
   const hideNoise = mode === "quiet" || posters
   useEffect(() => {

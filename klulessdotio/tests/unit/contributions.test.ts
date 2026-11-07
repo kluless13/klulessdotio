@@ -1,3 +1,4 @@
+import fs from "node:fs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { loadContributions, parseContributions } from "@/lib/contributions"
 
@@ -25,5 +26,15 @@ describe("loadContributions", () => {
     expect((await loadContributions()).success).toBe(false)
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline") }))
     expect((await loadContributions()).success).toBe(false)
+  })
+})
+
+describe("GitHub's real page", () => {
+  it("parses a saved sample of the markup", () => {
+    const html = fs.readFileSync("tests/fixtures/github-contributions.html", "utf8")
+    const weeks = parseContributions(html)
+    expect(weeks.flat()).toHaveLength(21)
+    expect(weeks.every((week) => week.every((level) => level >= 0 && level <= 4))).toBe(true)
+    expect(weeks.slice(0, -1).every((week) => week.length === 7)).toBe(true)
   })
 })

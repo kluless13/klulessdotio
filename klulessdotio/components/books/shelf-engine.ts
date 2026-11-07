@@ -226,7 +226,9 @@ export function createShelf(M: typeof Matter, stage: HTMLElement, svg: SVGSVGEle
       fitTitle({ book, element })
       const narrow = x + book.w > stageW - 6
       if (narrow) x = BOOKEND_W + 3 + (index % 3) * 8
-      const body = Bodies.rectangle(x + book.w / 2, floorY - book.h / 2 - (narrow ? 330 : 0), book.w, book.h, BODY_OPTIONS)
+      // A book with no room in the row starts higher up and falls in, but always below the ceiling
+      const y = Math.max(book.h / 2 + 4, floorY - book.h / 2 - (narrow ? 330 : 0))
+      const body = Bodies.rectangle(x + book.w / 2, y, book.w, book.h, BODY_OPTIONS)
       Composite.add(engine.world, body)
       x += book.w + 1.5
       return { base, book, element, body, nudged: false }
@@ -252,6 +254,8 @@ export function createShelf(M: typeof Matter, stage: HTMLElement, svg: SVGSVGEle
   const itemFor = (element: Element | null) => items.find((item) => item.element === element?.closest(".book"))
 
   const onDown = (event: PointerEvent) => {
+    // One book at a time, with the main button or one finger
+    if (drag || event.button !== 0) return
     const item = itemFor(event.target as Element)
     if (!item) return
     event.preventDefault()
@@ -289,7 +293,7 @@ export function createShelf(M: typeof Matter, stage: HTMLElement, svg: SVGSVGEle
     item.element.style.zIndex = ""
     drag = null
     wakeAll()
-    if (!moved) onOpen(item.base, item.element)
+    if (!moved && event.type === "pointerup") onOpen(item.base, item.element)
   }
   const onKey = (event: KeyboardEvent) => {
     if (event.key !== "Enter" && event.key !== " ") return
@@ -315,6 +319,7 @@ export function createShelf(M: typeof Matter, stage: HTMLElement, svg: SVGSVGEle
   const tidy = () => {
     items.forEach((item) => {
       item.element.style.zIndex = ""
+      item.element.classList.remove("dragging")
     })
     drag = null
     build()

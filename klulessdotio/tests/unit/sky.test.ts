@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { contrast, formatHour, inkVars, palette, sceneFor, skyView, sunAt, weatherFromCode } from "@/lib/sky/model"
+import { WEATHER_KEYS, contrast, fallbackGradient, formatHour, glowPosition, inkVars, istHour, palette, sceneFor, skyView, sunAt, weatherFromCode } from "@/lib/sky/model"
 
 const DAY = new Date("2026-11-08T06:00:00Z")
 
@@ -67,5 +67,35 @@ describe("colour helpers", () => {
   it("formats hours", () => {
     expect(formatHour(7.5)).toBe("07:30")
     expect(formatHour(23.99)).toBe("23:59")
+  })
+})
+
+describe("no-WebGL gradient", () => {
+  it("keeps text readable in every state", () => {
+    const hex = (value: string) => [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+    for (const weather of WEATHER_KEYS) {
+      for (let hour = 0; hour < 24; hour += 0.5) {
+        const view = skyView({ hour, weather, date: DAY })
+        const ink = hex(inkVars(view.light)["--ink"])
+        const stops = Array.from(fallbackGradient(view).matchAll(/rgb\((\d+),(\d+),(\d+)\)/g)).map((m) => [Number(m[1]) / 255, Number(m[2]) / 255, Number(m[3]) / 255])
+        expect(stops).toHaveLength(3)
+        for (const stop of stops) expect(contrast(ink, stop)).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+  })
+})
+
+describe("time helpers", () => {
+  it("reads the hour in India", () => {
+    expect(istHour(new Date("2026-11-08T06:30:00Z"))).toBe(12)
+  })
+  it("places the glow on screen by day and night", () => {
+    for (const hour of [12, 21]) {
+      const [x, y] = glowPosition(skyView({ hour, weather: "clear", date: DAY }))
+      expect(x).toBeGreaterThan(-0.5)
+      expect(x).toBeLessThan(1.5)
+      expect(y).toBeGreaterThan(-0.2)
+      expect(y).toBeLessThan(1.2)
+    }
   })
 })

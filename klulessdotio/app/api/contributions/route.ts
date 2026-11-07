@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { CONTRIBUTIONS_CACHE_SECONDS, loadContributions } from "@/lib/contributions"
 
-export const revalidate = 21600
+// Rendered per request so a failure is never saved as the page. The fetch cache and CDN headers handle speed.
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   const body = await loadContributions()

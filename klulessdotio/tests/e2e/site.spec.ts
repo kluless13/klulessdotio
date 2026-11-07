@@ -52,6 +52,11 @@ test.describe("Noise", () => {
     await expect(page.locator(".what-text", { hasText: "Founded solo." })).toBeVisible()
   })
 
+  test("the arrow on a project row is a link", async ({ page }) => {
+    await page.goto(DAY)
+    await expect(page.getByRole("link", { name: "Open STRIKE" })).toHaveAttribute("href", "https://strike.oranj.co")
+  })
+
   test("old pages redirect home", async ({ page }) => {
     for (const path of ["/writing", "/portfolio"]) {
       await page.goto(path)
@@ -109,6 +114,17 @@ test.describe("Posters", () => {
     await expect(dialog.getByRole("heading", { name: "CESR index" })).toBeVisible()
   })
 
+  test("a mouse wheel scrolls the dock sideways", async ({ page }) => {
+    await page.goto(DAY)
+    await page.getByRole("button", { name: "Quiet" }).click()
+    await page.waitForTimeout(800)
+    const strip = page.locator(".dock-strip")
+    await strip.hover()
+    const before = await strip.evaluate((el) => el.scrollLeft)
+    await page.mouse.wheel(0, 300)
+    await expect.poll(() => strip.evaluate((el) => el.scrollLeft)).not.toBe(before)
+  })
+
   test("swiping changes the poster", async ({ page }) => {
     await page.goto(DAY)
     await page.getByTestId("open-posters").click()
@@ -153,6 +169,52 @@ test.describe("Dock", () => {
 })
 
 test.describe("Quiet", () => {
+  test("keeps each poster's label and credit", async ({ page }) => {
+    await page.goto(DAY)
+    await page.getByRole("button", { name: "Quiet" }).click()
+    await page.getByRole("button", { name: "polymarket RT-01A", exact: true }).click()
+    await expect(page.getByText("Older personal experiments, not official work.")).toBeVisible()
+    await page.getByRole("button", { name: "bobbin study 1", exact: true }).click()
+    await expect(page.getByText("Case study")).toBeVisible()
+    await expect(page.getByText("Jeff", { exact: false })).toBeVisible()
+  })
+
+  test("a failed shelf load leaves Quiet working", async ({ page }) => {
+    await page.route(/matter/i, (route) => route.abort())
+    await page.goto(DAY)
+    await page.getByRole("button", { name: "Quiet" }).click()
+    await page.getByRole("button", { name: "Books" }).click()
+    await expect(page.locator(".shelf-error")).toContainText("couldn't load")
+    await page.getByRole("button", { name: "Hide books" }).click()
+    await expect(page.getByTestId("quiet-caption")).toBeVisible()
+  })
+
+  test("a visitor who chose Quiet doesn't see the page first", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem("1tx-mode", "quiet"))
+    await page.goto(DAY, { waitUntil: "commit" })
+    await page.waitForSelector("[data-testid=noise]", { state: "attached" })
+    const opacity = await page.getByTestId("noise").evaluate((el) => getComputedStyle(el).opacity)
+    expect(opacity).toBe("0")
+  })
+
+  test("the hidden player and the book card keep the keyboard where it belongs", async ({ page }) => {
+    await page.route("https://open.spotify.com/**", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "" }))
+    await page.goto(DAY)
+    await page.getByRole("button", { name: "Quiet" }).click()
+    await page.getByRole("button", { name: "Music" }).click()
+    await page.getByRole("button", { name: "Hide player" }).click()
+    await page.keyboard.press("Tab")
+    await expect(page.getByRole("button", { name: "Books" })).toBeFocused()
+    await page.getByRole("button", { name: "Books" }).click()
+    const book = page.locator('.book[data-slug="zero-to-one"]')
+    await book.focus()
+    await page.keyboard.press("Enter")
+    await page.keyboard.press("Tab")
+    await expect(page.getByRole("button", { name: "Close book" })).toBeFocused()
+    await page.keyboard.press("Escape")
+    await expect(book).toBeFocused()
+  })
+
   test("switches modes and remembers the choice", async ({ page }) => {
     await page.goto(DAY)
     await page.getByRole("button", { name: "Quiet" }).click()
@@ -263,11 +325,64 @@ test.describe("When things go wrong", () => {
     await page.goto(DAY)
     await page.waitForTimeout(6500)
     await expect(page.locator(".greeting span")).toHaveText("Hi, I'm Angad.")
+    await expect(page.getByTestId("sky-canvas")).toBeVisible()
+    await expect(page.getByTestId("sky-canvas")).toHaveClass(/sky-ready/)
+  })
+})
+
+test.describe("Small phone", () => {
+  test.use({ viewport: { width: 360, height: 740 }, hasTouch: true })
+
+  test("the greeting never moves the page and books stay below the words", async ({ page }) => {
+    await page.clock.install()
+    await page.goto(DAY)
+    const greeting = page.locator(".greeting")
+    const heights = new Set<number>()
+    for (let i = 0; i < 11; i++) {
+      await page.clock.runFor(5600)
+      const box = await greeting.boundingBox()
+      heights.add(Math.round(box?.height ?? 0))
+    }
+    expect([...heights]).toHaveLength(1)
+    await page.clock.resume()
+
+    await page.getByRole("button", { name: "Quiet" }).click()
+    await page.getByRole("button", { name: "Books" }).click()
+    await expect(page.locator(".book").first()).toBeVisible()
+    await page.waitForTimeout(800)
+    const stage = await page.getByTestId("shelf-stage").boundingBox()
+    const tops = await page.locator(".book").evaluateAll((books) => books.map((b) => b.getBoundingClientRect().top))
+    for (const top of tops) expect(top).toBeGreaterThanOrEqual((stage?.y ?? 0) - 1)
+  })
+})
+
+test.describe("Phone held sideways", () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true })
+
+  test("posters stay a good size", async ({ page }) => {
+    await page.goto(DAY)
+    await page.getByTestId("open-posters").click()
+    await page.waitForTimeout(600)
+    const inViewer = await page.locator(".viewer .stage-poster").boundingBox()
+    expect(inViewer?.height ?? 0).toBeGreaterThan(220)
+    await page.keyboard.press("Escape")
+    await page.getByRole("button", { name: "Quiet" }).click()
+    await page.waitForTimeout(600)
+    const inQuiet = await page.locator(".quiet .stage-poster").boundingBox()
+    expect(inQuiet?.height ?? 0).toBeGreaterThan(170)
   })
 })
 
 test.describe("Phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true })
+
+  test("project descriptions stay closed until tapped", async ({ page }) => {
+    await page.goto(DAY)
+    const text = page.locator(".project-text").first()
+    await expect.poll(() => text.evaluate((el) => el.getBoundingClientRect().height)).toBe(0)
+    await page.locator(".project").first().click({ position: { x: 200, y: 6 } })
+    await expect.poll(() => text.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThan(20)
+  })
 
   test("no sideways scroll in any view, and titles fit their spines", async ({ page }) => {
     const noSideways = async () => {

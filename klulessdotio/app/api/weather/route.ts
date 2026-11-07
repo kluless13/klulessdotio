@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { WEATHER_CACHE_SECONDS, loadWeather } from "@/lib/weather"
 
-export const revalidate = 900
+// Rendered per request so a failure is never saved as the page. The fetch cache and CDN headers handle speed.
+export const dynamic = "force-dynamic"
 
 /** Always answers 200: the sky carries on without weather if the service is down. */
 export async function GET() {
