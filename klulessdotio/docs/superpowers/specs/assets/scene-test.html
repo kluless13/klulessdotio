@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page bottom test (throwaway)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+  :root { --ink: #101a2e; --soft: rgba(16,26,46,.92); --line: rgba(16,26,46,.18); }
+  body.dark { --ink: #fff; --soft: rgba(255,255,255,.92); --line: rgba(255,255,255,.2); }
+  * { box-sizing: border-box; margin: 0; }
+  html { background: #10162a; }
+  body { font-family: "Instrument Sans", system-ui, sans-serif; color: var(--ink); overflow-x: hidden; }
+  #sky { position: fixed; inset: 0; background-size: cover; background-position: center; z-index: -1; }
+  main { width: min(680px, calc(100% - 48px)); margin: 0 auto; padding: 96px 0 28px; }
+  h1 { font-size: clamp(38px, 5vw, 56px); line-height: 1.14; font-weight: 500; letter-spacing: -.025em; margin-bottom: 48px; }
+  .label { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--soft); margin-bottom: 12px; }
+  p { font-size: clamp(21px, 2.2vw, 24px); line-height: 1.42; letter-spacing: -.01em; margin-bottom: 12px; }
+  .small { font-size: 17px; line-height: 28px; color: var(--soft); letter-spacing: 0; }
+  section.block { margin-bottom: 56px; }
+  .row { display: flex; justify-content: space-between; padding: 14px 0 6px; border-top: 1px solid var(--line); font-size: 17px; font-weight: 500; }
+  .sub { font-size: 15px; line-height: 24px; color: var(--soft); }
+  #foot { margin-top: 28px; font-size: 13px; line-height: 20px; color: var(--soft); }
+
+  /* The image keeps its original proportions, so nothing is cropped */
+  #scene { position: relative; aspect-ratio: 1488 / 816; overflow: hidden; }
+  #photo { position: absolute; inset: 0; background-size: 100% 100%; -webkit-mask-image: linear-gradient(to bottom, transparent 6%, rgba(0,0,0,.12) 24%, rgba(0,0,0,.5) 44%, rgba(0,0,0,.86) 60%, #000 72%); mask-image: linear-gradient(to bottom, transparent 6%, rgba(0,0,0,.12) 24%, rgba(0,0,0,.5) 44%, rgba(0,0,0,.86) 60%, #000 72%); }
+  /* These blur the sky and the image together, in steps, so there's no visible join */
+  .veil { position: absolute; inset: 0; pointer-events: none; }
+  .v1 { -webkit-backdrop-filter: blur(70px); backdrop-filter: blur(70px); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 36%, transparent 54%); mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 36%, transparent 54%); }
+  .v2 { -webkit-backdrop-filter: blur(36px); backdrop-filter: blur(36px); -webkit-mask-image: linear-gradient(to bottom, transparent 22%, #000 40%, #000 50%, transparent 64%); mask-image: linear-gradient(to bottom, transparent 22%, #000 40%, #000 50%, transparent 64%); }
+  .v3 { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); -webkit-mask-image: linear-gradient(to bottom, transparent 40%, #000 54%, transparent 70%); mask-image: linear-gradient(to bottom, transparent 40%, #000 54%, transparent 70%); }
+  .v4 { -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); -webkit-mask-image: linear-gradient(to bottom, transparent 52%, #000 64%, transparent 78%); mask-image: linear-gradient(to bottom, transparent 52%, #000 64%, transparent 78%); }
+  .v5 { -webkit-backdrop-filter: blur(2.5px); backdrop-filter: blur(2.5px); -webkit-mask-image: linear-gradient(to bottom, transparent 64%, #000 74%, transparent 86%); mask-image: linear-gradient(to bottom, transparent 64%, #000 74%, transparent 86%); }
+  /* Glass letters: the image behind is brightened and softened only inside the word */
+  #glass, #edge { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none; }
+  #glass { -webkit-backdrop-filter: blur(10px) brightness(1.28) saturate(1.2); backdrop-filter: blur(10px) brightness(1.28) saturate(1.2); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+  #edge { display: block; }
+  #panel { position: fixed; top: 12px; right: 12px; z-index: 20; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: min(560px, calc(100% - 24px)); padding: 8px; border-radius: 12px; background: rgba(10,14,24,.68); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  #panel button { font: inherit; font-size: 13px; color: #fff; padding: 6px 9px; border: 0; border-radius: 8px; cursor: pointer; background: rgba(255,255,255,.14); }
+  #panel button[aria-pressed="true"] { background: #fff; color: #141b2c; }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<div id="panel" aria-label="Test weather"></div>
+<main>
+  <h1>Scroll down slowly.</h1>
+  <section class="block"><div class="label">What I do</div><p>Now I'm Head of AI at Truflation, building Truman, an agent built for macro.</p><p class="small">Whatever the day calls for: hardcore engineering, GTM strategy, creative design, sales calls, index development, and modelling (the forecasting kind, not runway).</p></section>
+  <section class="block"><div class="label">What I can build</div><div class="row"><span>Forecasting models</span><span>+</span></div></section>
+  <section><div class="row"><span>How I got here</span><span>+</span></div><div class="sub">Marine science, bread, prediction markets, AI. Each one gave me a tool.</div><div id="foot">© 2026 Angad Maniyambath</div></section>
+</main>
+<section id="scene">
+  <div id="photo"></div>
+  <div class="veil v1"></div><div class="veil v2"></div><div class="veil v3"></div><div class="veil v4"></div><div class="veil v5"></div>
+  <div id="glass" aria-hidden="true"></div>
+  <canvas id="edge" aria-hidden="true"></canvas>
+</section>
+
+<script>
+"use strict";
+const SCENES = {
+  clear:    { label: "Clear", photo: "weather/early-morning-1-0.jpeg", sky: "sky/hi-morning-clear.png?v=storm3", dark: false },
+  partly:   { label: "Some cloud", photo: "weather/stormy-midday-4.jpeg", sky: "sky/hi-midday-partly.png?v=storm3", dark: false },
+  overcast: { label: "Overcast", photo: "weather/stormy-morning-2.jpeg", sky: "sky/hi-midday-overcast.png?v=storm3", dark: false },
+  fog:      { label: "Mist", photo: "weather/misty-morning-1-1.jpeg", sky: "sky/hi-midday-fog.png?v=storm3", dark: false },
+  rain:     { label: "Rain", photo: "weather/stormy-evening-5.jpeg", sky: "sky/hi-midday-rain.png?v=storm3", dark: true },
+  storm:    { label: "Storm", photo: "weather/stormy-evening-3.jpeg", sky: "sky/hi-golden-storm.png?v=storm3", dark: true },
+  clearN:   { label: "Clear night", photo: "weather/clear-night-7.jpeg", sky: "sky/hi-evening-clear.png?v=storm3", dark: true },
+  stormN:   { label: "Stormy night", photo: "weather/stormy-night-6.jpeg", sky: "sky/hi-evening-storm.png?v=storm3", dark: true },
+};
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const scene = document.getElementById("scene"), glass = document.getElementById("glass"), edge = document.getElementById("edge");
+
+function show(key) {
+  const entry = SCENES[key];
+  document.getElementById("sky").style.backgroundImage = `url("${entry.sky}")`;
+  document.getElementById("photo").style.backgroundImage = `url("${entry.photo}")`;
+  document.body.classList.toggle("dark", entry.dark);
+  for (const button of document.querySelectorAll("#panel button")) button.setAttribute("aria-pressed", String(button.dataset.key === key));
+}
+for (const [key, entry] of Object.entries(SCENES)) {
+  const button = document.createElement("button");
+  button.textContent = entry.label; button.dataset.key = key;
+  button.addEventListener("click", () => show(key));
+  document.getElementById("panel").appendChild(button);
+}
+
+// Draws the word once as a mask for the glass and once as its thin bright edge, so the two line up exactly
+function drawWord() {
+  const ratio = Math.min(2, devicePixelRatio || 1), width = scene.clientWidth, size = width * (width < 640 ? .31 : .25), height = Math.round(size * .95);
+  const paint = (canvas, stroke) => {
+    canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
+    canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
+    const context = canvas.getContext("2d");
+    context.scale(ratio, ratio);
+    context.font = `500 ${size}px "Instrument Sans", sans-serif`;
+    if ("letterSpacing" in context) context.letterSpacing = `${-size * .05}px`;
+    context.textAlign = "right"; context.textBaseline = "alphabetic";
+    const x = width * .975; // Sits in the bottom right, with the g dipping below the edge
+    const y = size * .84;
+    if (stroke) {
+      context.lineWidth = Math.max(1, size * .004); context.strokeStyle = "rgba(255,255,255,.62)"; context.lineJoin = "round";
+      context.lineWidth = Math.max(2, size * .007);
+      context.strokeText("Angad", x, y);
+      // Cutting the letter shapes out of the stroke leaves only a clean outer edge
+      context.globalCompositeOperation = "destination-out";
+      context.fillStyle = "#000"; context.fillText("Angad", x, y);
+      context.globalCompositeOperation = "source-over";
+      context.fillStyle = "rgba(255,255,255,.07)"; context.fillText("Angad", x, y);
+    } else {
+      context.fillStyle = "#000"; context.fillText("Angad", x, y);
+    }
+  };
+  const mask = document.createElement("canvas");
+  paint(mask, false); paint(edge, true);
+  const url = mask.toDataURL("image/png");
+  glass.style.height = `${height}px`;
+  glass.style.webkitMaskImage = `url(${url})`; glass.style.maskImage = `url(${url})`;
+}
+
+// The word's position is tied directly to scrolling, so it rises slowly and sinks back when you scroll away
+function reveal() {
+  const rect = scene.getBoundingClientRect();
+  const travel = Math.max(1, Math.min(innerHeight * .62, rect.height));
+  const t = Math.max(0, Math.min(1, (innerHeight - rect.top - rect.height * .22) / travel));
+  const eased = t * t * (3 - 2 * t);
+  for (const element of [glass, edge]) {
+    element.style.opacity = eased;
+    element.style.transform = reduced ? "none" : `translateY(${(1 - eased) * 58}%)`;
+  }
+}
+let queued = false;
+addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; reveal(); }); } }, { passive: true });
+addEventListener("resize", () => { drawWord(); reveal(); });
+show(new URLSearchParams(location.search).get("w") || "partly");
+document.fonts.ready.then(() => { drawWord(); reveal(); });
+</script>
+</body>
+</html>

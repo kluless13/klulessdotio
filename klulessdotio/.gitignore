@@ -3,6 +3,10 @@ node_modules
 
 # Next.js
 .next
+.next-e2e
+test-results
+playwright-report
+coverage
 out
 .vercel
 

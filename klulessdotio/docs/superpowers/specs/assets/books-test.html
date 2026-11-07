@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookshelf test (throwaway)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Oswald:wght@500;600&family=Archivo+Black&display=swap">
+<style>
+  :root { --ink: #101a2e; --soft: rgba(16,26,46,.92); --line: rgba(16,26,46,.18); --b-top: #2b3650; --b-bot: #141b2c; --b-ink: #fff; --b-ring: rgba(255,255,255,.2); --b-shine: rgba(255,255,255,.22); --panel-a: rgba(255,255,255,.92); --panel-b: rgba(238,244,251,.88); }
+  body.night { --ink: #fff; --soft: rgba(255,255,255,.92); --line: rgba(255,255,255,.2); --b-top: #fff; --b-bot: #dfe5ee; --b-ink: #141b2c; --b-ring: rgba(5,8,18,.45); --b-shine: #fff; --panel-a: rgba(38,44,68,.96); --panel-b: rgba(20,24,42,.96); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { min-height: 100%; }
+  body { overflow-x: hidden; font-family: "Instrument Sans", system-ui, sans-serif; color: var(--ink); background: url("sky/saver-midday.png") center / cover fixed; padding: 56px 16px 40px; }
+  body.night { background-image: url("sky/saver-night.png"); }
+  main { max-width: 1020px; margin: 0 auto; }
+  h1 { font-size: 34px; line-height: 42px; font-weight: 500; letter-spacing: -.02em; }
+  .sub { font-size: 17px; line-height: 28px; color: var(--soft); margin: 6px 0 14px; }
+  .btn { font: inherit; font-size: 14px; font-weight: 500; color: var(--b-ink); border: 0; padding: 10px 15px; border-radius: 10px; cursor: pointer; background: linear-gradient(180deg, var(--b-top), var(--b-bot)); box-shadow: 0 0 0 1px var(--b-ring), inset 0 1px 0 var(--b-shine), 0 1px 2px rgba(0,0,0,.28), 0 8px 18px rgba(0,0,0,.16); }
+  .btn:focus-visible, .book:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  #stage { position: relative; height: var(--stage-h, 400px); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  #shelfUnit { position: absolute; left: 0; bottom: 0; overflow: visible; filter: drop-shadow(0 16px 14px rgba(0,0,0,.2)); }
+  .book { position: absolute; left: 0; top: 0; display: flex; align-items: center; justify-content: center; padding: 10px 0; border: 0; border-radius: 3px; overflow: hidden; cursor: grab; touch-action: none; font: inherit; will-change: transform;
+    background: linear-gradient(90deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,0) 22%, rgba(0,0,0,0) 70%, rgba(0,0,0,.28) 100%), var(--spine, #667); color: var(--spine-ink, #fff); box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 14px rgba(0,0,0,.22); }
+  .book { flex-direction: column; justify-content: space-between; gap: 6px; padding: 0; background: var(--spine); }
+  .book::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(90deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,.04) 16%, rgba(0,0,0,0) 62%, rgba(0,0,0,.3) 100%); }
+  .book .band { flex: 0 0 auto; width: 100%; height: var(--band-h, 0); background: var(--accent, transparent); }
+  .book .band.low { height: var(--band-low, 0); }
+  .book span { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-height: 0; color: var(--spine-ink); font-family: var(--type); font-size: var(--size, 13px); font-weight: var(--weight, 600); letter-spacing: var(--track, 0); text-transform: var(--case, none); }
+  .book small[hidden] { display: none; }
+  .book small { flex: 0 0 auto; writing-mode: vertical-rl; font-size: var(--author-size, 9px); line-height: 12px; font-weight: 600; letter-spacing: .03em; padding-bottom: 9px; color: var(--author-ink, var(--spine-ink)); white-space: nowrap; pointer-events: none; font-family: "Instrument Sans", sans-serif; }
+  .book.dragging { cursor: grabbing; box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 18px 34px rgba(0,0,0,.34); }
+  .book span { writing-mode: vertical-rl; white-space: nowrap; line-height: 1.15; overflow: hidden; padding: 8px 0; pointer-events: none; }
+  #tip { position: absolute; z-index: 40; pointer-events: none; opacity: 0; transition: opacity .15s ease; padding: 7px 11px; border-radius: 9px; font-size: 13px; font-weight: 500; white-space: nowrap; color: var(--b-ink); background: linear-gradient(180deg, var(--b-top), var(--b-bot)); box-shadow: 0 0 0 1px var(--b-ring), 0 8px 18px rgba(0,0,0,.2); transform: translate(-50%, -100%); }
+  #tip.on { opacity: 1; }
+  #open { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); background: rgba(10,14,28,.14); }
+  #open.on { display: flex; }
+  #panel { position: relative; display: flex; align-items: flex-end; gap: 28px; width: min(600px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 28px; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-a), var(--panel-b)); box-shadow: 0 30px 80px rgba(0,0,0,.32); animation: rise .34s cubic-bezier(.2,.9,.3,1.15); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+  #cover { width: 230px; height: auto; flex-shrink: 0; align-self: flex-start; border-radius: 3px 7px 7px 3px; box-shadow: 5px 4px 0 -1px #efe8d6, 0 30px 70px rgba(0,0,0,.42); }
+  #details { flex: 1; min-width: 0; }
+  #details h2 { font-size: 28px; line-height: 35px; font-weight: 500; letter-spacing: -.02em; padding-right: 0; }
+  #author { font-size: 16px; line-height: 24px; color: var(--soft); }
+  .status { display: inline-block; margin: 10px 0 14px; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--b-ink); background: linear-gradient(180deg, var(--b-top), var(--b-bot)); }
+  .notes-title { font-size: 14px; font-weight: 600; color: var(--soft); padding-bottom: 10px; }
+  .note { padding: 14px 0; border-top: 1px solid var(--line); }
+  .note b { display: block; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--soft); }
+  .note p { font-size: 16px; line-height: 26px; }
+  #close { position: absolute; top: 18px; right: 18px; padding: 10px 13px; }
+  @media (max-width: 640px) { :root { --stage-h: 330px; } }
+  @media (max-width: 720px) { #panel { flex-direction: column; align-items: flex-start; gap: 18px; padding: 22px; } #cover { width: 170px; } #details h2 { font-size: 26px; line-height: 34px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>What I'm reading</h1>
+  <p class="sub">Drag books around. Pull one out and see what happens. Click one to see its cover.</p>
+  <div class="controls">
+    <button class="btn" id="reset">Tidy the shelf</button>
+    <button class="btn" id="sky">Night sky</button>
+  </div>
+  <div id="stage"><div id="tip"></div><svg id="shelfUnit" aria-hidden="true"></svg></div>
+</main>
+
+<div id="open" role="dialog" aria-modal="true" aria-labelledby="bookTitle">
+  <div id="panel">
+    <img id="cover" alt="">
+    <div id="details">
+      <h2 id="bookTitle"></h2>
+      <div id="author"></div>
+    </div>
+    <button class="btn" id="close" aria-label="Close book">✕</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+<script>
+"use strict";
+const SERIF = '"Newsreader", Georgia, serif', TALL = '"Oswald", "Arial Narrow", sans-serif', HEAVY = '"Archivo Black", Impact, sans-serif', SANS = '"Instrument Sans", sans-serif';
+// Each spine is designed from its real cover's colours and type style.
+const BOOKS = [
+  { slug: "a-man-for-all-markets", title: "A Man for All Markets", author: "Edward O. Thorp", short: "THORP", w: 46, h: 272, bg: "#1f1d1c", ink: "#f4efe6", accent: "#6d6a66", type: SERIF, size: 15, band: 8, low: 0, weight: 500 },
+  { slug: "superforecasting", title: "Superforecasting", author: "Philip E. Tetlock", short: "TETLOCK", w: 40, h: 250, bg: "#0b0b0b", ink: "#ffffff", accent: "#b98a3e", authorInk: "#c79a4c", type: TALL, size: 18, band: 16, low: 0, case: "uppercase", track: ".02em" },
+  { slug: "antifragile", title: "Antifragile", author: "Nassim Nicholas Taleb", short: "TALEB", w: 58, h: 288, bg: "#f5f3ee", ink: "#b3322a", accent: "#b3322a", authorInk: "#1a1a1a", type: HEAVY, size: 22, band: 6, low: 6, weight: 400 },
+  { slug: "fooled-by-randomness", title: "Fooled by Randomness", author: "Nassim Nicholas Taleb", short: "TALEB", w: 38, h: 256, bg: "#2c2f8f", ink: "#e9c766", accent: "#e9c766", type: SERIF, size: 15, band: 4, low: 4, weight: 600 },
+  { slug: "the-signal-and-the-noise", title: "The Signal and the Noise", author: "Nate Silver", short: "SILVER", w: 50, h: 278, bg: "#f7e803", ink: "#111111", accent: "#111111", type: SANS, size: 17, band: 0, low: 0, weight: 600 },
+  { slug: "zero-to-one", title: "Zero to One", author: "Peter Thiel", short: "THIEL", w: 30, h: 240, bg: "#5f8fb6", ink: "#ffffff", accent: "#ffffff", type: SERIF, size: 16, band: 0, low: 0, weight: 500 },
+  { slug: "the-hard-thing", title: "The Hard Thing About Hard Things", author: "Ben Horowitz", short: "HOROWITZ", w: 44, h: 280, bg: "#0e0a0a", ink: "#f0612a", accent: "#f0612a", authorInk: "#f4efe6", type: TALL, size: 16, band: 0, low: 5, case: "uppercase", track: ".01em" },
+  { slug: "thinking-fast-and-slow", title: "Thinking, Fast and Slow", author: "Daniel Kahneman", short: "KAHNEMAN", w: 54, h: 268, bg: "#fbf8f0", ink: "#141414", accent: "#eab92c", type: SERIF, size: 17, band: 10, low: 0, weight: 500 },
+  { slug: "market-wizards", title: "Market Wizards", author: "Jack D. Schwager", short: "SCHWAGER", w: 42, h: 260, bg: "#14665f", ink: "#ffffff", accent: "#f2ead8", type: SERIF, size: 18, band: 12, low: 12, weight: 600, case: "uppercase" },
+  { slug: "reminiscences", title: "Reminiscences of a Stock Operator", author: "Edwin Lefèvre", short: "LEFÈVRE", w: 36, h: 284, bg: "#efe6d0", ink: "#7c5a1e", accent: "#17140f", authorInk: "#17140f", type: TALL, size: 14, band: 26, low: 0 },
+  { slug: "the-mom-test", title: "The Mom Test", author: "Rob Fitzpatrick", short: "FITZPATRICK", w: 26, h: 228, bg: "#de1a6b", ink: "#ffffff", accent: "#ffffff", type: HEAVY, size: 13, band: 0, low: 0, weight: 400 },
+];
+const { Engine, Bodies, Body, Composite, Constraint, Query, Sleeping } = Matter;
+const stage = document.getElementById("stage"), tip = document.getElementById("tip");
+const LEDGE = 12, BOOKEND_W = 12, CLICK_MOVE = 5;
+let BOOKEND_H = 130;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let engine, stageW, stageH, items = [], drag = null, running = false;
+
+function makeElement(book) {
+  const element = document.createElement("button");
+  element.className = "book";
+  element.style.width = `${book.w}px`;
+  element.style.height = `${book.h}px`;
+  element.setAttribute("aria-label", `${book.title} by ${book.author}. Open book.`);
+  const css = element.style;
+  css.setProperty("--author-size", `${Math.min(9, book.w * .34)}px`);
+  css.setProperty("--spine", book.bg); css.setProperty("--spine-ink", book.ink); css.setProperty("--accent", book.accent);
+  css.setProperty("--type", book.type); css.setProperty("--size", `${book.size}px`); css.setProperty("--band-h", `${book.band}px`); css.setProperty("--band-low", `${book.low}px`);
+  if (book.weight) css.setProperty("--weight", book.weight);
+  if (book.case) css.setProperty("--case", book.case);
+  if (book.track) css.setProperty("--track", book.track);
+  if (book.authorInk) css.setProperty("--author-ink", book.authorInk);
+  const top = document.createElement("i"); top.className = "band";
+  const label = document.createElement("span"); label.textContent = book.title;
+  const author = document.createElement("small"); author.textContent = book.short;
+  const low = document.createElement("i"); low.className = "band low";
+  element.append(top, label, author, low);
+  stage.appendChild(element);
+  return element;
+}
+
+// Books keep their proportions on desktop; on phones they get thinner but stay tall enough for their titles
+function fit(base, wide) {
+  if (wide) return base;
+  return { ...base, w: Math.round(base.w * .66), h: Math.round(base.h * .82), size: Math.max(10, Math.round(base.size * .7)), band: Math.round(base.band * .7), low: Math.round(base.low * .7) };
+}
+function applySize(item) {
+  const { book, element } = item, css = element.style;
+  css.width = `${book.w}px`; css.height = `${book.h}px`;
+  css.setProperty("--size", `${book.size}px`); css.setProperty("--band-h", `${book.band}px`); css.setProperty("--band-low", `${book.low}px`);
+}
+// Shrinks each title until it fits its spine; if space is still tight, the author's name makes way
+function fitTitles() {
+  items.forEach(item => {
+    const label = item.element.querySelector("span"), author = item.element.querySelector("small");
+    author.hidden = false;
+    let size = item.book.size;
+    item.element.style.setProperty("--size", `${size}px`);
+    const overflows = () => label.scrollHeight > label.clientHeight + 1 || label.scrollWidth > item.book.w;
+    while (overflows() && size > 9.5) { size -= .5; item.element.style.setProperty("--size", `${size}px`); }
+    if (overflows()) {
+      author.hidden = true;
+      size = item.book.size;
+      item.element.style.setProperty("--size", `${size}px`);
+      while (overflows() && size > 9.5) { size -= .5; item.element.style.setProperty("--size", `${size}px`); }
+    }
+    item.fitted = size;
+  });
+}
+function drawShelf() {
+  const svg = document.getElementById("shelfUnit"), w = stageW, h = BOOKEND_H + LEDGE, t = BOOKEND_W, l = LEDGE;
+  svg.setAttribute("width", w); svg.setAttribute("height", h); svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.innerHTML = `<defs><linearGradient id="shelfFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--b-top)"/><stop offset="1" style="stop-color:var(--b-bot)"/></linearGradient></defs>
+    <path d="M0 3 a3 3 0 0 1 3-3 h${t - 6} a3 3 0 0 1 3 3 V${h - l - 6} a6 6 0 0 0 6 6 H${w - t - 6} a6 6 0 0 0 6-6 V3 a3 3 0 0 1 3-3 h${t - 6} a3 3 0 0 1 3 3 V${h - 3} a3 3 0 0 1-3 3 H3 a3 3 0 0 1-3-3 Z" fill="url(#shelfFill)" stroke="var(--b-ring)"/>`;
+}
+
+function bodyOptions() {
+  return { friction: .85, frictionStatic: 1.4, frictionAir: .018, restitution: .02, density: .0022, slop: .02, sleepThreshold: 45 };
+}
+function build() {
+  stageW = stage.clientWidth; stageH = stage.clientHeight;
+  const wide = stageW >= 600;
+  BOOKEND_H = wide ? 130 : 96;
+  items.forEach(item => { item.book = fit(item.base, wide); applySize(item); });
+  drawShelf();
+  fitTitles();
+  const floorY = stageH - LEDGE;
+  engine = Engine.create({ enableSleeping: true, positionIterations: 12, velocityIterations: 10, constraintIterations: 4 });
+  engine.gravity.y = 1.15;
+  const statics = [
+    Bodies.rectangle(stageW / 2, floorY + 40, stageW, 80, { isStatic: true, friction: 1, label: "ledge" }),
+    // The ceiling keeps books inside their own area, so they never pass over the words above
+    Bodies.rectangle(stageW / 2, -40, stageW + 400, 80, { isStatic: true, friction: .3, label: "ceiling" }),
+    Bodies.rectangle(BOOKEND_W / 2, floorY - BOOKEND_H / 2, BOOKEND_W, BOOKEND_H, { isStatic: true, friction: .5, label: "wall" }),
+    Bodies.rectangle(stageW - BOOKEND_W / 2, floorY - BOOKEND_H / 2, BOOKEND_W, BOOKEND_H, { isStatic: true, friction: .5, label: "wall" }),
+  ];
+  Composite.add(engine.world, statics);
+  let x = BOOKEND_W + 3;
+  items.forEach(item => {
+    const narrow = x + item.book.w > stageW - 6;
+    if (narrow) { x = BOOKEND_W + 3 + (items.indexOf(item) % 3) * 8; }
+    const body = Bodies.rectangle(x + item.book.w / 2, floorY - item.book.h / 2 - (narrow ? 330 : 0), item.book.w, item.book.h, bodyOptions());
+    item.body = body; item.nudged = false; item.lonelyFor = 0;
+    Composite.add(engine.world, body);
+    x += item.book.w + 1.5;
+  });
+  // Start already settled, so the shelf doesn't jiggle on load
+  for (let i = 0; i < 240; i++) step(false);
+  render();
+}
+
+function others(item) { return items.filter(entry => entry !== item).map(entry => entry.body); }
+function walls() { return Composite.allBodies(engine.world).filter(body => body.label === "wall"); }
+
+// What a book has beside it: touching neighbours, and how far away the nearest thing is on each side
+function surroundings(item) {
+  const body = item.body, b = body.bounds, top = b.min.y + 6, bottom = b.max.y - 6;
+  const blockers = others(item).concat(walls());
+  const touching = side => Query.region(blockers, side < 0 ? { min: { x: b.min.x - 3, y: top }, max: { x: b.min.x + 1, y: bottom } } : { min: { x: b.max.x - 1, y: top }, max: { x: b.max.x + 3, y: bottom } }).length > 0;
+  const gap = side => {
+    let nearest = Infinity;
+    for (const other of blockers) {
+      if (other.bounds.max.y < top || other.bounds.min.y > bottom) continue;
+      const distance = side < 0 ? b.min.x - other.bounds.max.x : other.bounds.min.x - b.max.x;
+      if (distance >= -2 && distance < nearest) nearest = distance;
+    }
+    return nearest;
+  };
+  return { left: touching(-1), right: touching(1), gapLeft: gap(-1), gapRight: gap(1) };
+}
+
+// A real thin book can balance, but a shelf book should slump. Upright books with room to move get a gentle push.
+function applySlump(item) {
+  const body = item.body;
+  const upright = Math.abs(Math.sin(body.angle)) < .06;
+  const onLedge = body.bounds.max.y > stageH - LEDGE - 4;
+  if (!upright || !onLedge || (drag && drag.item === item)) { item.nudged = false; return; }
+  const around = surroundings(item), height = item.book.h;
+  if (around.left && around.right) { item.nudged = false; return; }
+  if (item.nudged) return;
+  let direction = 0;
+  if (!around.left && !around.right) {
+    direction = around.gapLeft <= around.gapRight ? -1 : 1;
+    if (around.gapLeft === Infinity && around.gapRight === Infinity) direction = Math.random() < .5 ? -1 : 1;
+  } else if (!around.left && around.gapLeft < height * .68) direction = -1;
+  else if (!around.right && around.gapRight < height * .68) direction = 1;
+  if (direction) {
+    Sleeping.set(body, false);
+    Body.setAngularVelocity(body, direction * .016);
+    item.nudged = true;
+  }
+}
+
+function step(withSlump = true) {
+  if (withSlump) items.forEach(applySlump);
+  items.forEach(item => {
+    // A book that goes over the end of the shelf falls back in from above
+    if (item.body.position.y > stageH + 420) {
+      Body.setPosition(item.body, { x: stageW * (.3 + Math.random() * .4), y: item.book.h / 2 + 4 });
+      Body.setAngle(item.body, 0);
+      Body.setVelocity(item.body, { x: 0, y: 0 });
+      Body.setAngularVelocity(item.body, 0);
+    }
+    const v = item.body.velocity;
+    const speed = Math.hypot(v.x, v.y);
+    if (speed > 26) Body.setVelocity(item.body, { x: v.x * 26 / speed, y: v.y * 26 / speed });
+  });
+  Engine.update(engine, 1000 / 60);
+}
+function render() {
+  items.forEach(item => {
+    const { x, y } = item.body.position;
+    item.element.style.transform = `translate(${x - item.book.w / 2}px, ${y - item.book.h / 2}px) rotate(${item.body.angle}rad)`;
+  });
+}
+function allAsleep() { return !drag && items.every(item => item.body.isSleeping || item.body.speed < .01 && item.body.angularSpeed < .001 && item.settled); }
+function wakeAll() { items.forEach(item => Sleeping.set(item.body, false)); start(); }
+function start() { if (!running) { running = true; requestAnimationFrame(loop); } }
+function loop() {
+  step(); render();
+  if (items.every(item => item.body.isSleeping) && !drag) { running = false; return; }
+  requestAnimationFrame(loop);
+}
+
+function pointerPosition(event) {
+  const rect = stage.getBoundingClientRect();
+  return { x: Math.max(-60, Math.min(stageW + 60, event.clientX - rect.left)), y: Math.max(0, Math.min(stageH - LEDGE - 2, event.clientY - rect.top)) };
+}
+function grab(item, event) {
+  event.preventDefault();
+  const point = pointerPosition(event), body = item.body;
+  wakeAll();
+  const dx = point.x - body.position.x, dy = point.y - body.position.y;
+  const cos = Math.cos(-body.angle), sin = Math.sin(-body.angle);
+  const constraint = Constraint.create({ pointA: { ...point }, bodyB: body, pointB: { x: dx * cos - dy * sin, y: dx * sin + dy * cos }, length: 0, stiffness: .1, damping: .25 });
+  Composite.add(engine.world, constraint);
+  body.frictionAir = .09;
+  drag = { item, constraint, startX: event.clientX, startY: event.clientY, moved: false, id: event.pointerId };
+  item.element.setPointerCapture(event.pointerId);
+  item.element.classList.add("dragging");
+  item.element.style.zIndex = 30;
+  hideTip();
+}
+function moveDrag(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > CLICK_MOVE) drag.moved = true;
+  const point = pointerPosition(event);
+  drag.constraint.pointA.x = point.x; drag.constraint.pointA.y = point.y;
+  Sleeping.set(drag.item.body, false);
+}
+function release(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  const { item, constraint, moved } = drag;
+  Composite.remove(engine.world, constraint);
+  item.body.frictionAir = .018;
+  item.element.classList.remove("dragging");
+  item.element.style.zIndex = "";
+  drag = null;
+  wakeAll();
+  if (!moved) openBook(item);
+}
+function showTip(item) {
+  if (drag) return;
+  tip.textContent = `${item.book.title} · ${item.book.author}`;
+  const halfWidth = Math.min(160, tip.offsetWidth / 2);
+  tip.style.left = `${Math.max(halfWidth, Math.min(stageW - halfWidth, item.body.position.x))}px`;
+  tip.style.top = `${Math.max(14, item.body.bounds.min.y - 10)}px`;
+  tip.classList.add("on");
+}
+function hideTip() { tip.classList.remove("on"); }
+
+let lastFocus = null;
+function openBook(item) {
+  lastFocus = item.element;
+  document.getElementById("cover").src = `covers/${item.book.slug}.jpg`;
+  document.getElementById("cover").alt = `Cover of ${item.book.title}`;
+  document.getElementById("bookTitle").textContent = item.book.title;
+  document.getElementById("author").textContent = item.book.author;
+  document.getElementById("open").classList.add("on");
+  document.getElementById("close").focus();
+}
+function closeBook() {
+  document.getElementById("open").classList.remove("on");
+  if (lastFocus) lastFocus.focus();
+}
+function tidy() {
+  items.forEach(item => { item.element.style.zIndex = ""; });
+  drag = null;
+  build();
+}
+
+items = BOOKS.map(base => ({ base, book: base, element: makeElement(base), body: null }));
+items.forEach(item => {
+  item.element.addEventListener("pointerdown", event => grab(item, event));
+  item.element.addEventListener("pointermove", moveDrag);
+  item.element.addEventListener("pointerup", release);
+  item.element.addEventListener("pointercancel", release);
+  item.element.addEventListener("pointerenter", () => showTip(item));
+  item.element.addEventListener("pointerleave", hideTip);
+  item.element.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openBook(item); } });
+});
+document.getElementById("reset").addEventListener("click", tidy);
+document.getElementById("sky").addEventListener("click", event => {
+  const night = document.body.classList.toggle("night");
+  event.target.textContent = night ? "Day sky" : "Night sky";
+});
+document.getElementById("close").addEventListener("click", closeBook);
+document.getElementById("open").addEventListener("click", event => { if (event.target.id === "open") closeBook(); });
+addEventListener("keydown", event => { if (event.key === "Escape") closeBook(); });
+addEventListener("resize", () => { if (Math.abs(stage.clientWidth - stageW) > 20) tidy(); });
+build();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTitles);
+
+// Hooks for automated checks only
+window.__books = {
+  items, snapshot() { return items.map(item => ({ slug: item.book.slug, x: Math.round(item.body.position.x), y: Math.round(item.body.position.y), deg: Math.round(item.body.angle * 57.3), asleep: item.body.isSleeping, around: surroundings(item) })); },
+  pullOut(slug, x, y) { const item = items.find(entry => entry.book.slug === slug); wakeAll(); Body.setPosition(item.body, { x, y }); Body.setAngle(item.body, 0); Body.setVelocity(item.body, { x: 0, y: 0 }); },
+  run(steps) { for (let i = 0; i < steps; i++) step(); render(); return this.snapshot(); },
+  get stageW() { return stageW; }, get stageH() { return stageH; }, tidy,
+};
+</script>
+</body>
+</html>
