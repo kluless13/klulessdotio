@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sky test (throwaway)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+  :root { --ink: #fff; --soft: rgba(255,255,255,.78); --edge: rgba(255,255,255,.22); --hi: rgba(255,255,255,.28); --lo: rgba(255,255,255,.06); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: #0b0f1a; overflow: hidden; font-family: "Instrument Sans", system-ui, sans-serif; color: var(--ink); }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+  button { font: inherit; color: var(--ink); cursor: pointer; }
+  @property --shimmer { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  .btn { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 10px; font-size: 14px; font-weight: 500; border: 0; color: var(--b-ink);
+    background: linear-gradient(180deg, var(--b-top), var(--b-bot)); text-shadow: none;
+    box-shadow: 0 0 0 1px var(--b-ring), inset 0 1px 0 var(--b-shine), 0 1px 2px rgba(0,0,0,.28), 0 8px 18px rgba(0,0,0,.16); transition: box-shadow .12s ease; }
+  /* Border shimmer options: a light-to-dark gradient, cut out so only the edge shows */
+  .btn::before, #player::before { content: ""; position: absolute; inset: -1.5px; border-radius: 11.5px; padding: 1.5px; pointer-events: none; opacity: 0; transition: opacity .28s ease; z-index: 1;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+  #player::before { border-radius: 13.5px; }
+  .btn:hover::before, .btn:focus-visible::before, #player.hot::before, body.runall .sample::before { opacity: 1; }
+  [data-s="sweep"]::before { background: linear-gradient(105deg, var(--g-dark) 0%, var(--g-dark) 30%, var(--g-light) 50%, var(--g-dark) 70%, var(--g-dark) 100%) 120% 0 / 300% 100%; }
+  [data-s="drift"]::before { background: linear-gradient(90deg, var(--g-light), var(--g-dark), var(--g-light)) 0 0 / 200% 100% repeat; }
+  [data-s="ring"]::before { background: conic-gradient(from var(--shimmer), var(--g-light), var(--g-dark), var(--g-light)); }
+  [data-s="breathe"]::before { background: linear-gradient(180deg, var(--g-light), var(--g-dark), var(--g-light)) 0 0 / 100% 250%; }
+  [data-s="pass"]::before { background: linear-gradient(105deg, var(--g-dark) 0%, var(--g-dark) 30%, var(--g-light) 50%, var(--g-dark) 70%, var(--g-dark) 100%) 120% 0 / 300% 100%; }
+  [data-s="sweep"]:is(:hover, :focus-visible, .hot)::before, body.runall .sample[data-s="sweep"]::before { animation: sh-sweep 2.6s ease-in-out infinite; }
+  [data-s="drift"]:is(:hover, :focus-visible, .hot)::before, body.runall .sample[data-s="drift"]::before { animation: sh-drift 3.2s linear infinite; }
+  [data-s="ring"]:is(:hover, :focus-visible, .hot)::before, body.runall .sample[data-s="ring"]::before { animation: sh-ring 6s linear infinite; }
+  [data-s="breathe"]:is(:hover, :focus-visible, .hot)::before, body.runall .sample[data-s="breathe"]::before { animation: sh-breathe 2.2s ease-in-out infinite alternate; }
+  [data-s="pass"]:is(:hover, :focus-visible, .hot)::before, body.runall .sample[data-s="pass"]::before { animation: sh-pass 1.1s ease-out forwards; }
+  @keyframes sh-sweep { from { background-position: 120% 0; } to { background-position: -20% 0; } }
+  @keyframes sh-drift { to { background-position: 200% 0; } }
+  @keyframes sh-ring { to { --shimmer: 360deg; } }
+  @keyframes sh-breathe { from { background-position: 0 0; } to { background-position: 0 100%; } }
+  @keyframes sh-pass { from { background-position: 120% 0; } to { background-position: 50% 0; } }
+  @media (prefers-reduced-motion: reduce) { .btn::before, #player::before { animation: none !important; background: linear-gradient(180deg, var(--g-light), var(--g-dark)) !important; } }
+  #shimmers { position: fixed; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: min(92vw, 720px); transition: opacity .45s ease; }
+  body.full #shimmers { opacity: 0; pointer-events: none; }
+  .btn:active { box-shadow: 0 0 0 1px var(--b-ring), inset 0 2px 4px rgba(0,0,0,.28); }
+  .btn:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .btn[aria-pressed="true"] { --b-top: #fff; --b-bot: #dfe5ee; --b-ink: #17233a; }
+  #dock img { transition: transform .22s cubic-bezier(.2,.9,.3,1.3); }
+  #dock img:hover { transform: translateY(-8px) scale(1.14); }
+  #page .row { display: flex; gap: 18px; font-size: 15px; line-height: 1.5; padding: 5px 0; }
+  #page .row span:first-child { flex: 0 0 150px; color: var(--soft); }
+  #page .actions { margin: 26px 0 8px; }
+  #saver, #page { position: fixed; inset: 0; transition: opacity .45s ease, color .8s ease; color: var(--ink); text-shadow: var(--lift, none); }
+  .greet { transition: opacity .5s ease; }
+  .kicker { font-size: 15px; color: var(--soft); font-weight: 500; margin-bottom: 10px; }
+  #panel.tucked > :not(#tuck) { display: none !important; }
+  #panel.tucked { left: auto; }
+  #saver { display: flex; flex-direction: column; justify-content: flex-start; padding: 12vh 7vw; pointer-events: none; }
+  #saver h1 { font-size: clamp(30px, 4vw, 52px); font-weight: 500; letter-spacing: -.025em; line-height: 1.1; }
+  #status { margin-top: 10px; font-size: clamp(15px, 1.4vw, 19px); color: var(--soft); }
+  #dock { position: fixed; left: 50%; bottom: 112px; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px; border-radius: 16px; border: 1px solid var(--edge);
+    background: linear-gradient(180deg, var(--hi), var(--lo)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 20px 50px rgba(0,0,0,.3); transition: opacity .45s ease; }
+  #dock img { height: 58px; width: auto; display: block; border-radius: 6px; }
+  #music { position: fixed; top: 12vh; right: 7vw; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; transition: opacity .45s ease; }
+  #player { position: relative; isolation: isolate; width: min(344px, 86vw); border-radius: 12px; background: #121212;
+    box-shadow: 0 0 0 1px var(--b-ring), 0 20px 50px rgba(0,0,0,.3); opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top right; pointer-events: none; transition: opacity .22s ease, transform .28s cubic-bezier(.2,.9,.3,1.2); }
+  /* Spotify's frame swallows mouse events, so an invisible strip around it catches the pointer on the way in */
+  #player::after { content: ""; position: absolute; inset: -14px; z-index: -1; }
+  #player.open { opacity: 1; transform: none; pointer-events: auto; }
+  #player iframe { display: block; width: 100%; height: 152px; border: 0; border-radius: 12px; }
+  .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+  .bars i { display: block; width: 2px; height: 5px; background: currentColor; border-radius: 1px; transition: height .2s ease; }
+  .bars i:nth-child(2) { height: 11px; } .bars i:nth-child(3) { height: 7px; }
+  body.full #music { opacity: 0; pointer-events: none; }
+  @media (max-width: 1100px) { #music { top: calc(12vh + 130px); right: 16px; } }
+  #page { overflow: auto; padding: 96px 7vw 200px; opacity: 0; pointer-events: none; }
+  #page .wrap { max-width: 760px; margin-left: 12vw; }
+  #page h2 { font-size: clamp(36px, 4.4vw, 60px); font-weight: 500; letter-spacing: -.025em; line-height: 1.08; margin-bottom: 36px; }
+  #page .stamp { font-size: 14px; color: var(--soft); font-weight: 600; margin: 34px 0 10px; }
+  #page p { font-size: 22px; line-height: 1.5; letter-spacing: -.01em; margin-bottom: 12px; }
+  #page p.small { font-size: 17px; color: var(--soft); }
+  body.full #page { opacity: 1; pointer-events: auto; }
+  body.full #saver, body.full #dock { opacity: 0; pointer-events: none; }
+  #panel { position: fixed; left: 16px; right: 16px; bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border-radius: 14px; color: #fff;
+    background: rgba(10,14,24,.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.14); font-size: 13px; --ink: #fff; --edge: rgba(255,255,255,.2); --hi: rgba(255,255,255,.18); --lo: rgba(255,255,255,.04); --b-top: #39414f; --b-bot: #232935; --b-ink: #fff; --b-ring: rgba(255,255,255,.14); --b-shine: rgba(255,255,255,.18); --g-light: #fff; --g-dark: #566788; }
+  #panel .btn { padding: 6px 10px; font-size: 13px; }
+  #panel label { display: inline-flex; align-items: center; gap: 8px; }
+  #panel output { min-width: 44px; font-variant-numeric: tabular-nums; }
+  #panel .tag { opacity: .6; margin-left: auto; }
+  input[type=range] { width: 150px; accent-color: #fff; }
+  #timeRange { width: 240px; }
+  @media (max-width: 720px) { #dock { bottom: 186px; } #dock img { height: 44px; } #page .wrap { margin-left: 0; } #timeRange { width: 150px; } }
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<section id="saver">
+  <h1 class="greet" id="greetA">Hi, I'm Angad.</h1>
+  <div id="status">Loading the sky over Coimbatore</div>
+</section>
+
+<div id="dock" aria-label="Posters (sample)">
+  <img alt="" src="small/perplexity inspiration/insp 1.png">
+  <img alt="" src="small/quartr design inspiration/gold 1.png">
+  <img alt="" src="small/tesla/tsla eps final A.png">
+  <img alt="" src="small/perplexity inspiration/insp 5.png">
+  <img alt="" src="small/quartr design inspiration/mcdonalds index 1.png">
+  <img alt="" src="small/bobbin study/bobbin study 3.png">
+</div>
+
+<div id="shimmers" aria-label="Shimmer options"></div>
+
+<div id="music">
+  <button class="btn" id="musicBtn" aria-expanded="false" aria-controls="player"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span id="musicLabel">Music</span></button>
+  <div id="player"></div>
+</div>
+
+<main id="page">
+  <div class="wrap">
+    <h2 class="greet" id="greetB">Hi, I'm Angad.</h2>
+    <div class="stamp">What I believe</div>
+    <p>Most fields aren't short of ideas. They're short of tools.</p>
+    <p>I follow my gut first, then go find the data.</p>
+    <p>You don't learn and then do. You do, and then you learn.</p>
+    <p class="small">I started out counting fish with a pencil, floating off the Queensland coast. Every time I looked down at my slate, the current dragged me 30 feet off the line. That problem is what taught me to code.</p>
+    <div class="stamp">What I do</div>
+    <p>Now I'm Head of AI at Truflation, building Truman, an agent built for macro. I ended up here after Truflation acquired Trufonomics, the company I founded.</p>
+    <p class="small">Most days are models, market data and whatever Truman broke overnight. Then lifting or MMA. Challah and babka when I get the time.</p>
+    <p class="actions"><button class="btn">Say hello <span aria-hidden="true">&rarr;</span></button> <button class="btn">Flick through my posters <span aria-hidden="true">&rarr;</span></button></p>
+    <div class="stamp">How I got here</div>
+    <div class="row"><span>Apr 2026 – Present</span><span>Head of AI, Truflation</span></div>
+    <div class="row"><span>Dec 2025 – Apr 2026</span><span>Founder, Trufonomics</span></div>
+    <div class="row"><span>2024 – 2025</span><span>Founder, BetBTC.win</span></div>
+    <div class="row"><span>2023 – 2025</span><span>Co-Founder, PurposeFi</span></div>
+    <div class="row"><span>2023 – 2024</span><span>Co-Founder, DeTrash</span></div>
+    <div class="row"><span>2022 – 2024</span><span>Masters in Marine Biology, James Cook University</span></div>
+    <div class="row"><span>2022 – 2023</span><span>Marine Robotics Intern, Flyingfish Tech</span></div>
+    <div class="row"><span>2022</span><span>Research Analyst, Blueshift Economy</span></div>
+    <div class="row"><span>2020 – 2022</span><span>Founder, Baked. A home bakery during the pandemic: one oven, 25 to 30 orders a week, and strangers asking if I was the bread guy. It's also when I got into web3, blockchain and ReFi.</span></div>
+    <div class="row"><span>2017 – 2020</span><span>B.Sc(H) Marine Science &amp; Tech, Amity University</span></div>
+  </div>
+</main>
+
+<div id="panel">
+  <button class="btn" id="tuck">Hide controls</button>
+  <button class="btn" id="live" aria-pressed="true">Live now</button>
+  <button class="btn" id="play">Play the day</button>
+  <label>Time <input id="timeRange" type="range" min="0" max="24" step="0.05"><output id="timeOut"></output></label>
+  <span id="weatherBtns" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span>
+  <button class="btn" id="mode">Noise</button>
+  <button class="btn" id="runall" aria-pressed="false">Run all shimmers</button>
+  <span class="tag">Throwaway test</span>
+</div>
+
+<script>
+"use strict";
+const LAT = 11.0168, LON = 76.9558;
+const WEATHER = {
+  clear:    { label: "Clear",    cover: .04, rain: 0,   fog: 0,   gray: 0,   dark: 0 },
+  partly:   { label: "Some cloud", cover: .46, rain: 0,  fog: 0,   gray: .05, dark: 0 },
+  overcast: { label: "Overcast", cover: .97, rain: 0,   fog: 0,   gray: .7,  dark: .08 },
+  fog:      { label: "Mist",     cover: .6,  rain: 0,   fog: .75, gray: .6,  dark: .03 },
+  rain:     { label: "Rain",     cover: .96, rain: .6,  fog: .18, gray: .85, dark: .25 },
+  storm:    { label: "Storm",    cover: 1,   rain: 1,   fog: .25, gray: .95, dark: .48 },
+};
+// Sky colours keyed by sun elevation in degrees: [elevation, top, middle, horizon, cloud lit, cloud shadow, sun]
+const KEYS = [
+  [-18, "#04060f", "#080d20", "#121a36", "#262e44", "#0a0d18", "#aebcd8"],
+  [-9,  "#081230", "#142348", "#35406c", "#2a2f4a", "#10142a", "#c9d4e8"],
+  [-4,  "#132a5c", "#3f5a8c", "#d98a68", "#7d6a80", "#272a4a", "#ffb37a"],
+  [0,   "#2c5a9a", "#86a3c6", "#f7b583", "#f4b596", "#6a5a78", "#ffc78a"],
+  [6,   "#3f80c4", "#9cc4e4", "#fbdcb0", "#ffe6cc", "#93889a", "#ffe2b0"],
+  [20,  "#2f7ed2", "#79b5e8", "#cfe6f4", "#ffffff", "#93a4bb", "#fff6e0"],
+  [65,  "#1f6bc6", "#5fa6e6", "#bcdcf3", "#ffffff", "#9aabc2", "#ffffff"],
+];
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const smooth = t => t * t * (3 - 2 * t);
+
+function palette(elevation) {
+  const e = Math.max(KEYS[0][0], Math.min(KEYS[KEYS.length - 1][0], elevation));
+  let i = 0;
+  while (i < KEYS.length - 2 && e > KEYS[i + 1][0]) i++;
+  const t = smooth((e - KEYS[i][0]) / (KEYS[i + 1][0] - KEYS[i][0]));
+  return KEYS[i].slice(1).map((c, n) => mix(hex(c), hex(KEYS[i + 1][n + 1]), t));
+}
+
+function dayOfYear(d) { return Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 0)) / 864e5); }
+function sunAt(hourIST, date) {
+  const n = dayOfYear(date), rad = Math.PI / 180;
+  const b = 2 * Math.PI * (n - 81) / 364;
+  const eot = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+  const decl = -23.44 * Math.cos(2 * Math.PI * (n + 10) / 365) * rad;
+  const solar = hourIST + ((LON - 82.5) * 4 + eot) / 60;
+  const angle = (solar - 12) * 15 * rad;
+  const sinE = Math.sin(LAT * rad) * Math.sin(decl) + Math.cos(LAT * rad) * Math.cos(decl) * Math.cos(angle);
+  return { elevation: Math.asin(sinE) / rad, hourAngle: angle / rad };
+}
+function istHour() {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+  const get = type => Number(parts.find(p => p.type === type).value);
+  return get("hour") + get("minute") / 60;
+}
+function formatHour(h) { const m = Math.floor((h % 24) * 60); return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+function weatherFromCode(code) {
+  if (code >= 95) return "storm";
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 86)) return "rain";
+  if (code === 45 || code === 48) return "fog";
+  if (code === 3) return "overcast";
+  if (code === 1 || code === 2) return "partly";
+  return "clear";
+}
+
+const VERT = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }";
+const FRAG = `
+precision highp float;
+uniform vec2 uRes, uFlashPos; uniform float uT, uCover, uRain, uFog, uGray, uDark, uNight, uMinL, uMaxL, uFlash;
+uniform vec2 uSun; uniform vec3 uTop, uMid, uHor, uLit, uShade, uSunCol;
+float h1(float x){ return fract(sin(x * 127.1) * 43758.5453); }
+float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * f * (f * (f * 6. - 15.) + 10.);
+  return mix(mix(h2(i), h2(i + vec2(1., 0.)), f.x), mix(h2(i + vec2(0., 1.)), h2(i + vec2(1., 1.)), f.x), f.y); }
+float fbm(vec2 p){ float v = 0., a = .5; for (int i = 0; i < 3; i++) { v += a * vn(p); p = mat2(1.6, 1.2, -1.2, 1.6) * p; a *= .5; } return v * 1.11; }
+float fbm5(vec2 p){ float v = 0., a = .5; for (int i = 0; i < 5; i++) { v += a * vn(p); p = mat2(1.6, 1.2, -1.2, 1.6) * p; a *= .5; } return v * 1.03; }
+// One layer of falling rain: thin, slightly slanted streaks, each in its own column
+float streak(vec2 uv, float aspect, float columns, float rows, float speed, float density, float seed){
+  float px = (uv.x * aspect + uv.y * .16) * columns, cx = floor(px);
+  float py = uv.y * rows + uT * speed + h1(cx + seed) * 37., cy = floor(py);
+  float r = h2(vec2(cx, cy) + seed);
+  if (r > density) return 0.;
+  float x = fract(px) - .5 + (fract(r * 91.7) - .5) * .5, l = fract(py);
+  return smoothstep(.2, .02, abs(x)) * smoothstep(0., .35, l) * smoothstep(1., .45, l) * (.45 + .55 * fract(r * 37.1));
+}
+// Rain and storms get their own sky: a low cloud deck lit from above, pale light under it, and rain falling out of it
+vec3 stormSky(vec2 uv, float aspect, vec2 ds){
+  float hard = smoothstep(.6, 1., uRain);
+  vec2 q = vec2(uv.x * aspect * .62 + uT * (.012 + hard * .012), uv.y * 2.3 - uT * .002);
+  vec2 w = vec2(fbm5(q * .8 + 1.7), fbm5(q * .8 + vec2(6.1, 2.3) + uT * .004)) - .5;
+  vec2 c = q * 1.6 + w * .85;
+  float d = fbm5(c), up = fbm5(c + vec2(.03, .16));
+  float shade = clamp((d - up) * 3.4 + .5, 0., 1.);
+  float base = .24 + fbm(vec2(uv.x * aspect * .7 + uT * .01, 3.)) * .14;
+  float deck = smoothstep(base - .17, base + .27, uv.y + (d - .5) * .3);
+  vec3 lit = mix(vec3(.5, .53, .58), vec3(.24, .26, .32), uNight);
+  vec3 dark = mix(vec3(.2, .23, .28), vec3(.075, .085, .115), uNight);
+  lit *= mix(vec3(1.), vec3(.64, .68, .74), hard);
+  dark *= mix(vec3(1.), vec3(.42, .48, .52), hard);
+  lit += uSunCol * exp(-dot(ds, ds) * 3.) * .14 * (1. - uNight);
+  vec3 cloud = mix(dark, lit, shade * smoothstep(.3, .72, d + .12));
+  cloud *= mix(.62, 1., smoothstep(base, base + .4, uv.y));
+  float horLum = dot(uHor, vec3(.3, .59, .11));
+  vec3 gapTint = mix(vec3(horLum), uHor, .6);
+  vec3 gap = mix(gapTint * (.82 - hard * .24), gapTint * .22 + vec3(.13, .11, .12), uNight);
+  vec3 col = mix(gap, cloud, deck);
+  // Rain shafts: wide, slanted curtains hanging from the cloud base
+  float sway = (fbm(vec2(uv.y * 2.6, uT * .02 + 9.)) - .5) * .28;
+  float f = fbm(vec2((uv.x * aspect + uv.y * .3 + sway) * 1.35 + uT * .018, uT * .01 + 4.));
+  float shaft = smoothstep(.24, .82, f) * (1. - smoothstep(base - .05, base + .4, uv.y) * .8);
+  col = mix(col, mix(dark, lit, .35), shaft * (.42 + hard * .22));
+  // Lightning lights the cloud from inside, so the flash shows its shape
+  if (uFlash > .001) {
+    vec2 fp = (uv - uFlashPos) * vec2(aspect, 1.4);
+    float near = exp(-dot(fp, fp) * 3.2);
+    // The lit side of each cloud catches most of the light, which keeps the shapes visible
+    col *= 1. + uFlash * (.22 + near * deck * (.5 + shade * 2.4));
+    col += vec3(.04, .05, .08) * uFlash * (near + .3);
+    // Scales the whole colour down together, since clipping one channel would tint the flash
+    float peak = max(col.r, max(col.g, col.b));
+    if (peak > .95) col *= .95 / peak;
+  }
+  float drops = streak(uv, aspect, 120., 9., 13., .1 + hard * .1, 2.) * .08 + streak(uv, aspect, 170., 22., 20., .16 + hard * .14, 9.) * .055;
+  return col + vec3(.75, .8, .88) * drops * (.6 + hard * .5) * (1. - uNight * .45);
+}
+void main(){
+  vec2 uv = gl_FragCoord.xy / uRes; float aspect = uRes.x / uRes.y;
+  // Large, slow colour fields. Nothing here has an edge or a shape.
+  vec2 wp = vec2(uv.x * aspect * .75 + uT * .007, uv.y * .85 - uT * .002);
+  vec2 warp = vec2(fbm(wp * .8 + 3.), fbm(wp * .8 + 8.)) - .5;
+  float wobble = fbm(wp * 1.1 + warp) - .5;
+  float t = clamp(uv.y + wobble * (.1 + uCover * .24), 0., 1.);
+  vec3 col = t < .42 ? mix(uHor, uMid, smoothstep(0., .42, t)) : mix(uMid, uTop, smoothstep(.42, 1., t));
+  float lum = dot(col, vec3(.3, .59, .11));
+  vec3 grayTint = vec3(lum) * vec3(.97, 1., 1.05);
+  col = mix(col, grayTint, uGray);
+  // Cloud cover: soft patches of lit and shaded colour
+  float n = fbm(wp * 1.25 + warp * 1.4);
+  float th = mix(.7, .3, uCover);
+  float patchy = smoothstep(th - .14, th + .2, n);
+  vec3 cl = mix(uShade, uLit, smoothstep(.34, .68, n));
+  cl = mix(cl, vec3(dot(cl, vec3(.3, .59, .11))), uGray * .8);
+  col = mix(col, cl, patchy * (.3 + uCover * .55));
+  // The sun or moon is only ever a glow
+  vec2 ds = (uv - uSun) * vec2(aspect, 1.);
+  float d2 = dot(ds, ds);
+  vec3 glow = uSunCol * exp(-d2 * 2.6) * .62 * (1. - uCover * .72) * (1. - uNight * .78);
+  glow += uSunCol * exp(-uv.y * 5.2) * exp(-abs(uv.x - uSun.x) * 1.1) * .34 * (1. - uGray) * (1. - uNight);
+  col = 1. - (1. - col) * (1. - clamp(glow, 0., 1.));
+  // Faint warm light from the city on the lower sky at night
+  col += vec3(.15, .09, .06) * uNight * exp(-uv.y * 4.) * (.35 + uCover * .65);
+  // Mist lifts and flattens the lower sky
+  col = mix(col, mix(vec3(.82, .85, .88) * (1. - uNight * .85), grayTint, .35), uFog * smoothstep(.85, .05, uv.y) * .8);
+  col *= 1. - uDark;
+  if (uRain > .001) col = stormSky(uv, aspect, ds);
+  vec3 lin = pow(clamp(col, 0., 1.), vec3(2.2));
+  float L = dot(lin, vec3(.2126, .7152, .0722));
+  // Brightness limits ease in gradually. A hard cut-off would flatten the sky and leave visible edges.
+  float kLo = uMinL * 1.45, kHi = uMaxL * .62;
+  if (L < kLo) { float target = kLo - (kLo - uMinL) * (1. - exp(-(kLo - L) / (kLo - uMinL))); lin = mix(lin, vec3(1.), (target - L) / (1. - L)); }
+  if (L > kHi) { float target = kHi + (uMaxL - kHi) * (1. - exp(-(L - kHi) / (uMaxL - kHi))); lin *= target / L; }
+  col = pow(lin, vec3(1. / 2.2));
+  // Rounds each colour by less than one level with no pattern, which stops slow gradients showing as thin lines
+  vec2 fc = gl_FragCoord.xy;
+  vec3 rounding = vec3(h2(fc), h2(fc + 17.3), h2(fc + 41.7)) - .5;
+  gl_FragColor = vec4(clamp(col + rounding / 255., 0., 1.), 1.);
+}`;
+
+const canvas = document.getElementById("sky");
+const gl = canvas.getContext("webgl", { antialias: false, preserveDrawingBuffer: true });
+const state = { live: true, hour: istHour(), weather: "clear", cover: null, temperature: null, tone: 1, playing: false, liveLabel: "" };
+let uniforms = {};
+
+function compile(type, source) {
+  const shader = gl.createShader(type); gl.shaderSource(shader, source); gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
+  return shader;
+}
+function setupGL() {
+  const program = gl.createProgram();
+  gl.attachShader(program, compile(gl.VERTEX_SHADER, VERT)); gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAG)); gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+  gl.useProgram(program);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.bindAttribLocation(program, 0, "p"); gl.vertexAttribPointer(gl.getAttribLocation(program, "p"), 2, gl.FLOAT, false, 0, 0);
+  for (const name of ["uRes", "uT", "uCover", "uRain", "uFog", "uGray", "uDark", "uNight", "uMinL", "uMaxL", "uSun", "uTop", "uMid", "uHor", "uLit", "uShade", "uSunCol", "uFlash", "uFlashPos"]) uniforms[name] = gl.getUniformLocation(program, name);
+}
+function resize() {
+  const pixel = 2; // Half resolution keeps the shader cheap; the gradients have no fine detail to lose
+  const w = Math.max(1, Math.round(innerWidth / pixel)), h = Math.max(1, Math.round(innerHeight / pixel));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
+}
+function currentView() {
+  const sun = sunAt(state.hour, new Date());
+  const base = WEATHER[state.weather];
+  const cover = state.live && state.cover !== null ? Math.max(state.cover, state.weather === "clear" ? 0 : base.cover * .6) : base.cover;
+  const light = sun.elevation > -1.5 && state.weather !== "rain" && state.weather !== "storm";
+  return { sun, base, cover, light, colours: palette(sun.elevation), night: 1 - smooth(Math.max(0, Math.min(1, (sun.elevation + 9) / 9))) };
+}
+function setInk(view) {
+  const lum = c => .3 * c[0] + .59 * c[1] + .11 * c[2];
+  const dark = view.light;
+  const root = document.documentElement.style;
+  root.setProperty("--ink", dark ? "#101a2e" : "#ffffff");
+  root.setProperty("--soft", dark ? "rgba(16,26,46,.92)" : "rgba(255,255,255,.92)");
+  root.setProperty("--edge", dark ? "rgba(16,26,46,.16)" : "rgba(255,255,255,.24)");
+  root.setProperty("--hi", dark ? "rgba(255,255,255,.62)" : "rgba(255,255,255,.26)");
+  root.setProperty("--lo", dark ? "rgba(255,255,255,.26)" : "rgba(255,255,255,.06)");
+  root.setProperty("--lift", dark ? "none" : "0 1px 14px rgba(0,0,0,.28)");
+  // Buttons always take the opposite tone to the sky, so they never melt into it
+  root.setProperty("--b-top", dark ? "#2b3650" : "#ffffff");
+  root.setProperty("--b-bot", dark ? "#141b2c" : "#dfe5ee");
+  root.setProperty("--b-ink", dark ? "#ffffff" : "#141b2c");
+  root.setProperty("--b-ring", dark ? "rgba(255,255,255,.2)" : "rgba(5,8,18,.45)");
+  root.setProperty("--b-shine", dark ? "rgba(255,255,255,.22)" : "#ffffff");
+  root.setProperty("--g-light", "#ffffff");
+  root.setProperty("--g-dark", dark ? "#3c4c78" : "#566788");
+}
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Lightning comes in short bursts of up to three pulses, several seconds apart. Reduced motion turns it off.
+let lightning = { next: 0, x: .5, y: .7, pulses: [] };
+function planLightning(seconds) {
+  const count = Math.random() < .35 ? 3 : 2;
+  const pulses = Array.from({ length: count }, (_, index) => ({ at: seconds + index * (.2 + Math.random() * .12), size: index === 0 ? .55 + Math.random() * .2 : .75 + Math.random() * .25 }));
+  return { next: seconds + 7 + Math.random() * 14, x: .12 + Math.random() * .76, y: .45 + Math.random() * .45, pulses };
+}
+function flashAt(seconds) {
+  if (state.flashTest !== undefined) return state.flashTest;
+  if (state.weather !== "storm" || state.snap || reduced) return 0;
+  if (seconds >= lightning.next) lightning = planLightning(seconds);
+  return Math.min(1, lightning.pulses.reduce((total, pulse) => {
+    const age = seconds - pulse.at;
+    return age < 0 ? total : total + pulse.size * Math.exp(-age * 9);
+  }, 0));
+}
+function draw(ms) {
+  const seconds = reduced ? 12 : ms / 1000;
+  const view = currentView();
+  const [top, mid, hor, lit, shade, sunCol] = view.colours;
+  const x = .5 + Math.max(-1.25, Math.min(1.25, (state.nightSide = view.sun.hourAngle) / 100)) * .42;
+  const y = .2 + Math.max(-.2, view.sun.elevation / 72) * .72;
+  const moon = view.night > .5;
+  const hourAngle = view.sun.hourAngle > 0 ? view.sun.hourAngle - 180 : view.sun.hourAngle + 180;
+  const sunX = moon ? .5 + hourAngle / 100 * .42 : x;
+  const sunY = moon ? .2 + Math.abs(Math.cos(hourAngle * Math.PI / 180)) * .55 : y;
+  gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
+  gl.uniform1f(uniforms.uT, seconds);
+  gl.uniform1f(uniforms.uCover, view.cover);
+  gl.uniform1f(uniforms.uRain, view.base.rain);
+  gl.uniform1f(uniforms.uFog, view.base.fog);
+  gl.uniform1f(uniforms.uGray, view.base.gray);
+  gl.uniform1f(uniforms.uDark, view.base.dark);
+  gl.uniform1f(uniforms.uNight, view.night);
+  gl.uniform1f(uniforms.uFlash, flashAt(seconds));
+  gl.uniform2f(uniforms.uFlashPos, lightning.x, lightning.y);
+  // Light skies stay bright enough for dark text, dark skies stay dim enough for white text
+  const goal = view.light ? 1 : 0;
+  state.tone = state.snap || reduced ? goal : state.tone + (goal - state.tone) * .06;
+  gl.uniform1f(uniforms.uMinL, .27 * state.tone);
+  gl.uniform1f(uniforms.uMaxL, .15 + (1 - .15) * state.tone);
+  gl.uniform2f(uniforms.uSun, sunX, sunY);
+  gl.uniform3fv(uniforms.uTop, top); gl.uniform3fv(uniforms.uMid, mid); gl.uniform3fv(uniforms.uHor, hor);
+  gl.uniform3fv(uniforms.uLit, lit); gl.uniform3fv(uniforms.uShade, shade); gl.uniform3fv(uniforms.uSunCol, sunCol);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  setInk(view);
+}
+let last = 0;
+function loop(ms) {
+  if (state.playing) {
+    state.hour = (state.hour + (ms - last) / 1000 * .55) % 24;
+    syncControls();
+  } else if (state.live) {
+    state.hour = istHour();
+  }
+  last = ms;
+  draw(ms);
+  if (!reduced || state.playing) requestAnimationFrame(loop);
+}
+
+function syncControls() {
+  document.getElementById("timeRange").value = state.hour;
+  document.getElementById("timeOut").textContent = formatHour(state.hour);
+  document.getElementById("live").setAttribute("aria-pressed", String(state.live));
+  document.getElementById("play").textContent = state.playing ? "Pause" : "Play the day";
+  for (const button of document.querySelectorAll("[data-weather]")) {
+    button.setAttribute("aria-pressed", String(!state.live && button.dataset.weather === state.weather));
+  }
+  const weatherText = WEATHER[state.weather].label.toLowerCase();
+  const temp = state.live && state.temperature !== null ? `, ${Math.round(state.temperature)}°C` : "";
+  document.getElementById("status").textContent = `${formatHour(state.hour)} in Coimbatore, ${weatherText}${temp}`;
+  if (reduced && !state.playing) draw(0);
+}
+function buildWeatherButtons() {
+  const holder = document.getElementById("weatherBtns");
+  for (const [key, value] of Object.entries(WEATHER)) {
+    const button = document.createElement("button");
+    button.className = "btn"; button.textContent = value.label; button.dataset.weather = key;
+    button.addEventListener("click", () => { state.live = false; state.weather = key; syncControls(); });
+    holder.appendChild(button);
+  }
+}
+async function loadLiveWeather() {
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=11.0168&longitude=76.9558&current=temperature_2m,weather_code,cloud_cover,is_day&timezone=Asia%2FKolkata&forecast_days=1";
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Weather request failed: ${response.status}`);
+    const current = (await response.json()).current;
+    state.liveWeather = weatherFromCode(current.weather_code);
+    state.temperature = current.temperature_2m;
+    state.cover = current.cloud_cover / 100;
+    if (state.live) state.weather = state.liveWeather;
+  } catch (error) {
+    console.error("Could not load live weather", error);
+    state.liveWeather = "clear";
+  }
+  syncControls();
+}
+// Translations are drafts and need checking by native speakers before going live.
+const GREETINGS = [
+  ["en", "Hi, I'm Angad."], ["ta", "வணக்கம், நான் அங்கத்."], ["es", "Hola, soy Angad."], ["zh", "你好，我是 Angad。"], ["ja", "こんにちは、Angad です。"],
+  ["hi", "नमस्ते, मैं अंगद हूँ।"], ["fr", "Salut, je suis Angad."], ["ko", "안녕하세요, Angad입니다."], ["pt", "Olá, eu sou o Angad."], ["ar", "مرحبًا، أنا Angad."], ["de", "Hallo, ich bin Angad."],
+];
+let greetingIndex = 0;
+function showGreeting(index) {
+  const [lang, words] = GREETINGS[index];
+  for (const el of document.querySelectorAll(".greet")) {
+    el.style.opacity = 0;
+    setTimeout(() => { el.textContent = words; el.lang = lang; el.dir = lang === "ar" ? "rtl" : "ltr"; el.style.opacity = 1; }, 500);
+  }
+}
+if (!reduced) setInterval(() => { greetingIndex = (greetingIndex + 1) % GREETINGS.length; showGreeting(greetingIndex); }, 5000);
+const SHIMMERS = [["sweep", "1. Sweep"], ["drift", "2. Drift"], ["ring", "3. Ring"], ["breathe", "4. Breathe"], ["pass", "5. Single pass"]];
+function applyShimmer(choice) {
+  for (const el of document.querySelectorAll(".btn:not(.sample), #player")) el.dataset.s = choice;
+  for (const button of document.querySelectorAll(".sample")) {
+    const [key, label] = SHIMMERS.find(item => item[0] === button.dataset.s);
+    button.textContent = key === choice ? `${label} ✓` : label;
+  }
+}
+function buildShimmerButtons() {
+  const holder = document.getElementById("shimmers");
+  for (const [key, label] of SHIMMERS) {
+    const button = document.createElement("button");
+    button.className = "btn sample"; button.dataset.s = key; button.textContent = label;
+    button.addEventListener("click", () => applyShimmer(key));
+    holder.appendChild(button);
+  }
+  applyShimmer("sweep");
+}
+function placeDock() {
+  const panel = document.getElementById("panel"), dock = document.getElementById("dock");
+  const bottom = panel.offsetHeight + 28;
+  dock.style.bottom = `${bottom}px`;
+  document.getElementById("shimmers").style.bottom = `${bottom + dock.offsetHeight + 16}px`;
+}
+function relLum(c) { const f = v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); return .2126 * f(c[0]) + .7152 * f(c[1]) + .0722 * f(c[2]); }
+function contrast(a, b) { const x = relLum(a), y = relLum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); }
+function samples(x0, x1, y0, y1, n) {
+  const out = [], px = new Uint8Array(4);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const x = Math.floor((x0 + (x1 - x0) * i / (n - 1)) * (canvas.width - 1));
+    const y = Math.floor((1 - (y0 + (y1 - y0) * j / (n - 1))) * (canvas.height - 1));
+    gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    out.push([px[0] / 255, px[1] / 255, px[2] / 255]);
+  }
+  return out;
+}
+function parseColour(v) { v = v.trim(); return v.startsWith("#") ? hex(v) : null; }
+function audit() {
+  const saved = { live: state.live, hour: state.hour, weather: state.weather, playing: state.playing };
+  state.live = false; state.playing = false; state.snap = true;
+  const report = {};
+  for (const weather of Object.keys(WEATHER)) {
+    const row = { textMin: 99, softMin: 99, buttonEdgeMin: 99, labelMin: 99, worstTextHour: null, textFails: 0, softFails: 0, buttonFails: 0, states: 0 };
+    for (let hour = 0; hour < 24; hour += .5) {
+      state.hour = hour; state.weather = weather; draw(5000);
+      const style = document.documentElement.style;
+      const ink = parseColour(style.getPropertyValue("--ink"));
+      const inkDark = ink[0] < .5;
+      const top = parseColour(style.getPropertyValue("--b-top")), bot = parseColour(style.getPropertyValue("--b-bot"));
+      const surface = mix(top, bot, .5), label = parseColour(style.getPropertyValue("--b-ink"));
+      const softAlpha = .92;
+      let text = 99, soft = 99, edge = 99;
+      for (const sky of samples(.05, .75, .05, .95, 9)) {
+        text = Math.min(text, contrast(ink, sky));
+        soft = Math.min(soft, contrast(mix(sky, ink, softAlpha), sky));
+        edge = Math.min(edge, contrast(surface, sky));
+      }
+      row.states++;
+      if (text < 4.5) row.textFails++;
+      if (soft < 4.5) row.softFails++;
+      if (edge < 3) row.buttonFails++;
+      if (text < row.textMin) { row.textMin = text; row.worstTextHour = hour; }
+      row.softMin = Math.min(row.softMin, soft);
+      row.buttonEdgeMin = Math.min(row.buttonEdgeMin, edge);
+      row.labelMin = Math.min(row.labelMin, contrast(label, top), contrast(label, bot));
+    }
+    for (const key of ["textMin", "softMin", "buttonEdgeMin", "labelMin"]) row[key] = Number(row[key].toFixed(2));
+    report[weather] = row;
+  }
+  Object.assign(state, saved, { snap: false });
+  syncControls();
+  return report;
+}
+window.__sky = {
+  set(options) { state.live = false; state.playing = false; Object.assign(state, options); state.snap = true; syncControls(); draw(performance.now()); state.snap = false; },
+  sunAt, state, showGreeting, GREETINGS, audit, applyShimmer,
+};
+document.getElementById("live").addEventListener("click", () => { state.live = true; state.playing = false; state.weather = state.liveWeather || "clear"; syncControls(); });
+document.getElementById("play").addEventListener("click", () => { state.playing = !state.playing; state.live = false; syncControls(); if (reduced && state.playing) requestAnimationFrame(loop); });
+document.getElementById("timeRange").addEventListener("input", event => { state.live = false; state.playing = false; state.hour = Number(event.target.value); syncControls(); });
+document.getElementById("mode").addEventListener("click", event => {
+  const full = document.body.classList.toggle("full");
+  event.target.textContent = full ? "Quiet" : "Noise";
+});
+// The player loads only when asked for, and leaving screensaver mode removes it, which stops the music
+const PLAYLIST_URL = "https://open.spotify.com/embed/playlist/1HhwGBbAHTamfntjxtLPTa?utm_source=generator&theme=0";
+function setPlayerOpen(open) {
+  const player = document.getElementById("player");
+  player.classList.toggle("open", open);
+  document.getElementById("musicBtn").setAttribute("aria-expanded", String(open));
+  document.getElementById("musicLabel").textContent = open ? "Hide player" : "Music";
+}
+document.addEventListener("pointermove", event => {
+  document.getElementById("player").classList.toggle("hot", Boolean(event.target.closest && event.target.closest("#player")));
+});
+document.documentElement.addEventListener("pointerleave", event => {
+  // Moving into Spotify's frame also counts as leaving this page, so only act when the pointer really exits the window
+  const inside = event.clientX > 0 && event.clientY > 0 && event.clientX < innerWidth && event.clientY < innerHeight;
+  if (!inside) document.getElementById("player").classList.remove("hot");
+});
+function removePlayer() { document.getElementById("player").replaceChildren(); setPlayerOpen(false); }
+document.getElementById("musicBtn").addEventListener("click", () => {
+  const player = document.getElementById("player");
+  if (!player.firstChild) {
+    const frame = document.createElement("iframe");
+    frame.src = PLAYLIST_URL;
+    frame.title = "Angad's Spotify playlist";
+    frame.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+    player.appendChild(frame);
+  }
+  setPlayerOpen(!player.classList.contains("open"));
+});
+document.getElementById("mode").addEventListener("click", () => { if (document.body.classList.contains("full")) removePlayer(); });
+document.getElementById("runall").addEventListener("click", event => {
+  const on = document.body.classList.toggle("runall");
+  event.target.setAttribute("aria-pressed", String(on));
+});
+document.getElementById("tuck").addEventListener("click", event => {
+  const tucked = document.getElementById("panel").classList.toggle("tucked");
+  event.target.textContent = tucked ? "Show controls" : "Hide controls";
+  placeDock();
+});
+addEventListener("resize", () => { resize(); placeDock(); if (reduced) draw(0); });
+
+if (!gl) {
+  document.getElementById("status").textContent = "This browser can't draw the sky (WebGL is off).";
+} else {
+  setupGL(); resize(); buildWeatherButtons(); buildShimmerButtons(); syncControls(); placeDock(); loadLiveWeather();
+  requestAnimationFrame(ms => { last = ms; loop(ms); });
+  if (reduced) draw(0);
+}
+</script>
+</body>
+</html>
