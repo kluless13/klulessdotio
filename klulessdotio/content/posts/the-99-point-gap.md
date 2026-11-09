@@ -108,4 +108,4 @@ That's why I keep coming back to prediction markets. They're the one place I kno
 
 ---
 
-*Survey data: Data for Progress, February 2026, 1,228 likely voters. Market data from Kalshi and Polymarket, December 2025. Code: github.com/kluless13/pm-data-analyses*
+*Survey data: Data for Progress, February 2026, 1,228 likely voters. Market data from Kalshi and Polymarket, December 2025. Code: [the research repo](https://github.com/kluless13/pm-data-analyses)*

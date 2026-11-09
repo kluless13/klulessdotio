@@ -107,4 +107,4 @@ So my answer to my own question stands. Knowledge, access, or luck, and usually 
 
 ---
 
-*Method, full paper and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket, December 2025.*

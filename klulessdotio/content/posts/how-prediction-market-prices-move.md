@@ -123,4 +123,4 @@ If the answer is no, the price is a guess. A good guess, often. But it's the las
 
 ---
 
-*Method, full paper and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Kalshi, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Kalshi, December 2025.*

@@ -128,4 +128,4 @@ If that's how it works, then the question isn't whether prediction markets are a
 
 ---
 
-*Method, full paper and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Kalshi and Polymarket, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Kalshi and Polymarket, December 2025.*

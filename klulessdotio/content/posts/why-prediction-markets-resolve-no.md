@@ -131,4 +131,4 @@ What usually fails is the specific prediction. This person, this number, by this
 
 ---
 
-*Method, full papers and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket and Kalshi, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket and Kalshi, December 2025.*

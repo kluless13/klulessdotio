@@ -103,4 +103,4 @@ What I can tell you is to be suspicious of a number like 124x. Including when it
 
 ---
 
-*Method, full paper and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket, December 2025.*

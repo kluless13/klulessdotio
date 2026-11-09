@@ -121,4 +121,4 @@ So judge a trader, or yourself, on the long record. Not the last month, and not 
 
 ---
 
-*Method, full papers and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket, December 2025.*

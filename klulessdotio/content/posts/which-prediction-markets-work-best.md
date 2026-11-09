@@ -109,4 +109,4 @@ The YES rate by category is mostly about how the questions are written. The volu
 
 ---
 
-*Method, full papers and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket and Kalshi, December 2025.*
+*Method and code: [the research repo](https://github.com/kluless13/pm-data-analyses). Data from Polymarket and Kalshi, December 2025.*

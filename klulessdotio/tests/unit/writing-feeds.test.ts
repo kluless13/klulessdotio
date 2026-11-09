@@ -65,6 +65,11 @@ describe("rss", () => {
     expect(xml).toContain(`<pubDate>${new Date(`${p.date}T00:00:00Z`).toUTCString()}</pubDate>`)
     expect(xml).toContain("<title>Angad Maniyambath, writing</title>")
   })
+  it("declares the atom namespace and a self link", () => {
+    const xml = rssXml([])
+    expect(xml).toContain('xmlns:atom="http://www.w3.org/2005/Atom"')
+    expect(xml).toContain('<atom:link href="https://1tx.dev/writing/rss.xml" rel="self" type="application/rss+xml" />')
+  })
 })
 
 describe("llms", () => {
@@ -84,7 +89,7 @@ describe("llms", () => {
     let last = -1
     for (const p of posts) {
       expect(t).toContain(`# ${p.title}`)
-      expect(t).toContain(p.body.trim())
+      expect(t).toContain(postMarkdown(p).split("\n\n").slice(2).join("\n\n").trim())
       const i = t.indexOf(`# ${p.title}`)
       expect(i).toBeGreaterThan(last)
       last = i
@@ -97,6 +102,28 @@ describe("llms", () => {
     expect(m).toContain(`https://1tx.dev/writing/${p.slug}`)
     expect(m).toContain(p.date)
     expect(m).toContain(`\n\n${p.body.trim()}`)
+  })
+})
+
+describe("absolute links in markdown", () => {
+  const body = "![a](images/x.png) and [b](/writing/other) and [c](https://example.com/y) and [d](http://example.com/z)"
+  it("postMarkdown rewrites relative images and root-relative links, leaving absolute ones", () => {
+    const m = postMarkdown({ ...posts[0], body })
+    expect(m).toContain(`![a](https://1tx.dev/writing/${posts[0].slug}/x.png)`)
+    expect(m).toContain("[b](https://1tx.dev/writing/other)")
+    expect(m).toContain("[c](https://example.com/y)")
+    expect(m).toContain("[d](http://example.com/z)")
+  })
+  it("llmsFullTxt has no relative targets", () => {
+    const t = llmsFullTxt([{ ...posts[0], body }])
+    expect(t).not.toContain("](images/")
+    expect(t).not.toContain("](/")
+  })
+  it("real content has no relative targets in llms-full", () => {
+    const real = loadPosts(path.join(process.cwd(), "content/posts"))
+    const t = llmsFullTxt(real)
+    expect(t).not.toContain("](images/")
+    expect(t).not.toContain("](/")
   })
 })
 

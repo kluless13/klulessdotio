@@ -65,10 +65,11 @@ export function rssXml(posts: readonly Post[]): string {
   })
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<rss version="2.0">',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
     "  <channel>",
     "    <title>Angad Maniyambath, writing</title>",
     `    <link>${SITE_URL}/writing</link>`,
+    `    <atom:link href="${SITE_URL}/writing/rss.xml" rel="self" type="application/rss+xml" />`,
     `    <description>${escapeXml(INTRO)}</description>`,
     "    <language>en</language>",
     ...items,
@@ -85,8 +86,13 @@ export function llmsTxt(posts: readonly Post[]): string {
   return `${header()}\n## Writing\n\n${lines.join("\n")}\n\n## About\n\n- [About](${SITE_URL}/about)\n`
 }
 
+/** Plain-markdown consumers have no base URL, so relative image and site links become absolute. */
+function absolutise(body: string, slug: string): string {
+  return body.replace(/\]\(images\//g, `](${postUrl(slug)}/`).replace(/\]\(\/(?!\/)/g, `](${SITE_URL}/`)
+}
+
 export function postMarkdown(post: Post): string {
-  return `# ${post.title}\n\n${postUrl(post.slug)}\n${post.date}\n\n${post.body.trim()}\n`
+  return `# ${post.title}\n\n${postUrl(post.slug)}\n${post.date}\n\n${absolutise(post.body.trim(), post.slug)}\n`
 }
 
 export function llmsFullTxt(posts: readonly Post[]): string {
