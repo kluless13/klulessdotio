@@ -238,4 +238,9 @@ test.describe("Post page", () => {
     expect(bytes.readUInt32BE(16)).toBe(1200)
     expect(bytes.readUInt32BE(20)).toBe(630)
   })
+
+  test("opengraph-image for an unknown slug is 404", async ({ request }) => {
+    const response = await request.get("/writing/not-a-real-post/opengraph-image")
+    expect(response.status()).toBe(404)
+  })
 })

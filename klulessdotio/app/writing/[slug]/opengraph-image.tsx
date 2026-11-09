@@ -17,13 +17,34 @@ export function generateStaticParams() {
   return loadPosts().map((post) => ({ slug: post.slug }))
 }
 
+const COVER_BOX = { width: 396, height: 438 }
+
+function titleSize(title: string): { fontSize: number; lineHeight: string } {
+  const fontSize = title.length <= 40 ? 60 : title.length <= 60 ? 52 : 46
+  return { fontSize, lineHeight: `${Math.round(fontSize * 1.1)}px` }
+}
+
+/** Fit the cover inside the panel, keeping its proportions (PNG header gives the real size). */
+function fitCover(bytes: Buffer): { width: number; height: number } {
+  const isPng = bytes.length > 24 && bytes.subarray(1, 4).toString("ascii") === "PNG"
+  if (!isPng) return COVER_BOX
+  const w = bytes.readUInt32BE(16)
+  const h = bytes.readUInt32BE(20)
+  if (!w || !h) return COVER_BOX
+  const scale = Math.min(COVER_BOX.width / w, COVER_BOX.height / h)
+  return { width: Math.round(w * scale), height: Math.round(h * scale) }
+}
+
 const dataUri = (mime: string, bytes: Buffer): string => `data:${mime};base64,${bytes.toString("base64")}`
 
-async function readCover(slug: string, cover: string): Promise<string | null> {
+type Cover = { src: string; width: number; height: number }
+
+async function readCover(slug: string, cover: string): Promise<Cover | null> {
   const file = path.join(process.cwd(), "public", "writing", slug, path.basename(cover))
   const mime = file.endsWith(".png") ? "image/png" : file.endsWith(".webp") ? "image/webp" : "image/jpeg"
   try {
-    return dataUri(mime, await readFile(file))
+    const bytes = await readFile(file)
+    return { src: dataUri(mime, bytes), ...fitCover(bytes) }
   } catch (error) {
     console.error(`Share image: cover not readable for ${slug}`, error)
     return null
@@ -47,8 +68,8 @@ export default async function Image({ params }: { params: { slug: string } }) {
         <div style={{ display: "flex", justifyContent: "space-between", width: 1200, height: 630, padding: 64 }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 590, padding: "8px 0" }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ fontSize: 60, lineHeight: "66px", letterSpacing: "-0.025em", color: INK }}>{post.title}</div>
-              <div style={{ fontSize: 24, lineHeight: "34px", color: SOFT, paddingTop: 18 }}>{post.description}</div>
+              <div style={{ ...titleSize(post.title), letterSpacing: "-0.025em", color: INK }}>{post.title}</div>
+              <div style={{ fontSize: 24, lineHeight: "34px", color: SOFT, marginTop: 18, maxHeight: 102, overflow: "hidden", lineClamp: 3 }}>{post.description}</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 20, lineHeight: "28px", color: INK }}>Angad Maniyambath</div>
@@ -62,6 +83,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
                 alignItems: "center",
                 justifyContent: "center",
                 width: 436,
+                overflow: "hidden",
                 borderRadius: 36,
                 background: "rgba(255,255,255,0.55)",
                 border: "1.5px solid rgba(255,255,255,0.85)",
@@ -69,7 +91,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={cover} alt="" width={396} style={{ borderRadius: 18 }} />
+              <img src={cover.src} alt="" width={cover.width} height={cover.height} style={{ borderRadius: 18 }} />
             </div>
           ) : null}
         </div>
