@@ -1,0 +1,125 @@
+/* Post page: the reading sheet, its head and the short version */
+.post-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  width: 100%;
+  padding: 24px 0 140px;
+}
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: min(760px, calc(100% - 24px));
+  padding: 64px 64px 56px;
+  border-radius: 28px;
+  color: var(--s-ink);
+  background: var(--s-bg);
+  border: 1px solid var(--s-border);
+  box-shadow: var(--s-shadow);
+  transition: background-color 0.8s ease, border-color 0.8s ease, color 0.8s ease;
+}
+
+/* Head */
+.post-head {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.post-title {
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.post-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.post-meta {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+
+/* Share: a quiet chip on the sheet, keeping the site's button shimmer */
+.writing .share-chip {
+  flex-shrink: 0;
+  gap: 7px;
+  padding: 7px 12px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--s-ink);
+  background: var(--s-chip);
+  box-shadow: none;
+}
+.writing .share-chip:active {
+  box-shadow: none;
+  background: var(--s-tint);
+}
+
+/* The short version */
+.short-version {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--s-tint);
+  font-size: 16px;
+  line-height: 26px;
+}
+.short-version-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .post-page {
+    gap: 32px;
+    padding: 4px 0 48px;
+  }
+  .sheet {
+    gap: 24px;
+    padding: 28px 22px 24px;
+    border-radius: 24px;
+  }
+  .post-head {
+    gap: 16px;
+  }
+  .post-title {
+    font-size: 30px;
+    line-height: 36px;
+  }
+  .post-meta {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    line-height: 19px;
+  }
+  .post-meta-dot {
+    display: none;
+  }
+  .writing .share-chip {
+    padding: 9px;
+  }
+  .writing .share-chip:not([data-copied]) .share-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .short-version {
+    padding: 18px 20px;
+    font-size: 15px;
+    line-height: 24px;
+  }
+}

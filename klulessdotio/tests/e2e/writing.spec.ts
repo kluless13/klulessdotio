@@ -108,3 +108,123 @@ test.describe("Writing index without JavaScript", () => {
     await expect(page.locator('[data-category] a[href^="/writing/"]')).toHaveCount(4)
   })
 })
+
+test.describe("Post page", () => {
+  const PART_1 = "/writing/are-prediction-markets-accurate"
+  const PART_2 = "/writing/why-prediction-markets-resolve-no"
+  const toneIs = (page: import("@playwright/test").Page, tone: string) => expect(page.locator(".writing")).toHaveAttribute("data-tone", tone)
+
+  test("post renders title, meta line, the short version and body in Newsreader", async ({ page }) => {
+    await page.goto(`${PART_1}?weather=clear&hour=12`)
+    await expect(page.getByRole("heading", { level: 1, name: "Are prediction markets accurate" })).toBeVisible()
+    await expect(page.locator(".post-meta")).toHaveText("9 November 2026 · 1 min read · Prediction markets · Part 1 of 7")
+    const short = page.getByRole("region", { name: "The short version" })
+    await expect(short).toContainText("A short blurb.")
+    const para = page.locator(".post-body p").first()
+    await expect(para).toContainText("A prediction market price never sits still.")
+    const type = await para.evaluate((el) => {
+      const style = getComputedStyle(el)
+      return { family: style.fontFamily, size: style.fontSize, lead: style.lineHeight, weight: style.fontWeight }
+    })
+    expect(type.family).toContain("Newsreader")
+    expect(type).toMatchObject({ size: "20px", lead: "32px", weight: "400" })
+    await expect(page.locator(".post-body h2").first()).toHaveText("What I looked at")
+    await expect(page).toHaveTitle("Are prediction markets accurate · Angad Maniyambath")
+    await expect(page.locator('head link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", "https://1tx.dev/writing/rss.xml")
+  })
+
+  test("figures render with captions and follow the tone", async ({ page }) => {
+    await page.goto(`${PART_1}?weather=clear&hour=12`)
+    await toneIs(page, "day")
+    const figures = page.locator(".post-body figure")
+    await expect(figures).toHaveCount(2)
+    await expect(figures.first().locator("figcaption")).toHaveText("Prices against how often things happened.")
+    await expect(figures.nth(1).locator("figcaption")).toHaveText("A chart with no dark version")
+    await expect(figures.first().locator("img.fig-light")).toBeVisible()
+    await expect(figures.first().locator("img.fig-dark")).toBeHidden()
+    await expect(figures.nth(1)).toHaveClass(/fig-card/)
+    await expect(figures.nth(1).locator("img")).toBeVisible()
+    await page.goto(`${PART_1}?weather=clear&hour=22`)
+    await toneIs(page, "night")
+    await expect(figures.first().locator("img.fig-dark")).toBeVisible()
+    await expect(figures.first().locator("img.fig-light")).toBeHidden()
+    await expect(figures.nth(1).locator("img")).toBeVisible()
+  })
+
+  test("series nav shows next only on part 1 and previous on part 2, where part 3 isn't out", async ({ page }) => {
+    await page.goto(PART_1)
+    const series = page.getByRole("navigation", { name: "Series" })
+    await expect(series).toContainText("Prediction market research")
+    await expect(series).toContainText("Part 1 of 7")
+    await expect(series.locator(".seg-on")).toHaveCount(1)
+    await expect(series.locator(".seg")).toHaveCount(7)
+    await expect(series.getByRole("link")).toHaveCount(1)
+    await expect(series.getByRole("link", { name: /Next: Why prediction markets resolve no/ })).toHaveAttribute("href", PART_2)
+    await page.goto(PART_2)
+    await expect(series).toContainText("Part 2 of 7")
+    await expect(series.getByRole("link")).toHaveCount(1)
+    await expect(series.getByRole("link", { name: /Previous: Are prediction markets accurate/ })).toHaveAttribute("href", PART_1)
+    await page.goto("/writing/the-99-point-gap")
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("The 99 point gap")
+    await expect(series).toHaveCount(0)
+  })
+
+  test("related shows two cards", async ({ page }) => {
+    await page.goto(PART_1)
+    const related = page.getByRole("region", { name: "Related" })
+    const cards = related.getByRole("link")
+    await expect(cards).toHaveCount(2)
+    await expect(cards.first()).toHaveAttribute("href", PART_2)
+    await expect(cards.first()).toContainText("Why prediction markets resolve no")
+    await expect(cards.first()).toContainText("A short blurb.")
+    await expect(cards.first()).toContainText("9 Nov 2026 · 1 min read")
+  })
+
+  test("share copies the link when Web Share is missing", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true })
+      const copied: string[] = []
+      Object.defineProperty(window, "__copied", { value: copied })
+      Object.defineProperty(navigator, "clipboard", { value: { writeText: async (text: string) => void copied.push(text) }, configurable: true })
+    })
+    await page.goto(PART_1)
+    const share = page.getByRole("button", { name: "Share" })
+    await share.click()
+    await expect(page.getByRole("button", { name: "Link copied" })).toBeVisible()
+    expect(await page.evaluate(() => (window as unknown as { __copied: string[] }).__copied)).toEqual([
+      "https://1tx.dev/writing/are-prediction-markets-accurate",
+    ])
+    await expect(page.getByRole("button", { name: "Share" })).toBeVisible({ timeout: 4000 })
+  })
+
+  test("share uses Web Share when it exists", async ({ page }) => {
+    await page.addInitScript(() => {
+      const shared: unknown[] = []
+      Object.defineProperty(window, "__shared", { value: shared })
+      Object.defineProperty(Navigator.prototype, "share", { value: async (data: unknown) => void shared.push(data), configurable: true })
+    })
+    await page.goto(PART_1)
+    await page.getByRole("button", { name: "Share" }).click()
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: unknown[] }).__shared)).toEqual([
+      { title: "Are prediction markets accurate", url: "https://1tx.dev/writing/are-prediction-markets-accurate" },
+    ])
+  })
+
+  test("json-ld BlogPosting is present", async ({ page }) => {
+    await page.goto(PART_1)
+    const blocks = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((b) => JSON.parse(b))
+    const posting = blocks.find((d) => d["@type"] === "BlogPosting")
+    expect(posting).toMatchObject({
+      headline: "Are prediction markets accurate",
+      url: "https://1tx.dev/writing/are-prediction-markets-accurate",
+      isPartOf: { name: "Prediction market research" },
+    })
+    const crumbs = blocks.find((d) => d["@type"] === "BreadcrumbList")
+    expect(crumbs.itemListElement.map((i: { name: string }) => i.name)).toEqual(["Home", "Writing", "Are prediction markets accurate"])
+  })
+
+  test("unknown slug is 404", async ({ page }) => {
+    const response = await page.goto("/writing/not-a-real-post")
+    expect(response?.status()).toBe(404)
+  })
+})

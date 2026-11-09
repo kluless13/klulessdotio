@@ -6,8 +6,16 @@ import type { ReactNode } from "react"
 import "./globals.css"
 
 const instrument = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-instrument", display: "swap" })
-// These only style the book spines, so they aren't loaded up front
-const newsreader = Newsreader({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-newsreader", display: "swap", preload: false, adjustFontFallback: false })
+// Book spines use 500 and 600, posts read in 400 and 400 italic. None of it is loaded up front
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-newsreader",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+})
 const oswald = Oswald({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-oswald", display: "swap", preload: false })
 const archivo = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo-black", display: "swap", preload: false })
 
