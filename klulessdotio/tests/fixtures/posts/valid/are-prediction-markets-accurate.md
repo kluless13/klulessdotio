@@ -18,7 +18,7 @@ It's a bit like superposition. Until the outcome lands, the price isn't a fact w
 
 The Brier score of the last trade before close is **0.063**.
 
-![Kalshi prices against how often things happened](images/fixture-chart.png)
+![Kalshi prices against how often things happened](/writing/_test/fixture-chart.png)
 
 *Prices against how often things happened.*
 
@@ -26,7 +26,7 @@ When the market said 80 cents, the thing happened about 84% of the time. The cur
 
 ## Not every market can be sharp
 
-![A chart with no dark version](images/fixture-card.png)
+![A chart with no dark version](/writing/_test/fixture-card.png)
 
 | Method | Observations | Brier score |
 | --- | ---: | ---: |

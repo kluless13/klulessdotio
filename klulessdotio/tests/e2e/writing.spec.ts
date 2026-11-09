@@ -142,6 +142,7 @@ test.describe("Post page", () => {
     await expect(figures.nth(1).locator("figcaption")).toHaveText("A chart with no dark version")
     await expect(figures.first().locator("img.fig-light")).toBeVisible()
     await expect(figures.first().locator("img.fig-dark")).toBeHidden()
+    await expect(figures.first().locator("img.fig-dark")).toHaveAttribute("src", "/writing/_test/fixture-chart-dark.png")
     await expect(figures.nth(1)).toHaveClass(/fig-card/)
     await expect(figures.nth(1).locator("img")).toBeVisible()
     await page.goto(`${PART_1}?weather=clear&hour=22`)
