@@ -7,6 +7,9 @@ const NAME = "Angad Maniyambath"
 const PERSON_ID = `${SITE_URL}/#angad`
 const SUFFIX = ` · ${NAME}`
 
+/** The feed link for the head of /writing and every post (`alternates.types`). */
+export const RSS_ALTERNATE = { "application/rss+xml": `${SITE_URL}/writing/rss.xml` } as const
+
 export function personJsonLd() {
   return {
     "@context": CONTEXT,

@@ -11,7 +11,6 @@ test.describe("Noise", () => {
     await expect(page.getByText("Head of AI, Truflation")).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Telegram" })).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Published in SoftwareX, 2026" })).toHaveAttribute("href", /S2352711026001366/)
-    await expect(page.getByText("Writing")).toHaveCount(0)
   })
 
   test("Say hello opens the four ways to reach out, with no email", async ({ page }) => {
@@ -58,7 +57,7 @@ test.describe("Noise", () => {
   })
 
   test("old pages redirect home", async ({ page }) => {
-    for (const path of ["/writing", "/portfolio"]) {
+    for (const path of ["/portfolio"]) {
       await page.goto(path)
       await expect(page).toHaveURL(/\/$/)
     }

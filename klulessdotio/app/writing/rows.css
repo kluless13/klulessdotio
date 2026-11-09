@@ -1,0 +1,96 @@
+/* /writing post rows: one line on desktop, stacked on phone */
+/* Post rows */
+.row-card {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 20px 26px;
+  border-radius: 20px;
+}
+.row-words {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.row-title {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+}
+.row-short {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--w-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  width: 300px;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--w-soft);
+}
+.row-when {
+  display: flex;
+  gap: 16px;
+  white-space: nowrap;
+}
+.row-dot {
+  display: none;
+}
+@media (hover: hover) {
+  .row-card {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  .row-card:hover {
+    transform: translateY(-1px);
+  }
+}
+.row-card:focus-visible {
+  border-radius: 20px;
+}
+
+@media (max-width: 640px) {
+  .row-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    padding: 16px 18px;
+    border-radius: 18px;
+  }
+  .row-title {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .row-short {
+    font-size: 14px;
+    line-height: 20px;
+    white-space: normal;
+  }
+  .row-meta {
+    justify-content: flex-start;
+    gap: 10px;
+    width: auto;
+    padding-top: 6px;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .row-meta .pill {
+    font-size: 11px;
+    line-height: 15px;
+  }
+  .row-when {
+    display: block;
+  }
+  .row-dot {
+    display: inline;
+  }
+}

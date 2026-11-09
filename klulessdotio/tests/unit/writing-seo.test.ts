@@ -2,7 +2,7 @@ import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { JsonLd } from "@/components/writing/JsonLd"
-import { blogPostingJsonLd, breadcrumbJsonLd, pageMetadata, personJsonLd, postMetadata, websiteJsonLd } from "@/lib/writing/seo"
+import { RSS_ALTERNATE, blogPostingJsonLd, breadcrumbJsonLd, pageMetadata, personJsonLd, postMetadata, websiteJsonLd } from "@/lib/writing/seo"
 import type { PostMeta } from "@/lib/writing/types"
 
 const post: PostMeta = {
@@ -75,5 +75,9 @@ describe("writing seo", () => {
     expect(html).toContain('type="application/ld+json"')
     expect(html).not.toContain("</script><b>")
     expect(html).toContain("\\u003c/script>")
+  })
+
+  it("points the feed alternate at the absolute RSS url", () => {
+    expect(RSS_ALTERNATE).toEqual({ "application/rss+xml": "https://1tx.dev/writing/rss.xml" })
   })
 })
