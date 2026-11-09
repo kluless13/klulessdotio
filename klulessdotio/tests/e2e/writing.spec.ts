@@ -228,4 +228,14 @@ test.describe("Post page", () => {
     const response = await page.goto("/writing/not-a-real-post")
     expect(response?.status()).toBe(404)
   })
+
+  test("opengraph-image returns a 1200x630 png for a post", async ({ request }) => {
+    const response = await request.get("/writing/are-prediction-markets-accurate/opengraph-image")
+    expect(response.status()).toBe(200)
+    expect(response.headers()["content-type"]).toContain("image/png")
+    const bytes = await response.body()
+    expect(bytes.subarray(1, 4).toString("ascii")).toBe("PNG")
+    expect(bytes.readUInt32BE(16)).toBe(1200)
+    expect(bytes.readUInt32BE(20)).toBe(630)
+  })
 })
