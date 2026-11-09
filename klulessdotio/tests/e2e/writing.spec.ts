@@ -335,3 +335,33 @@ test.describe("Email gate", () => {
     await expect(page.locator(".email-gate")).toHaveCount(0)
   })
 })
+
+test.describe("Reading on the sheet", () => {
+  test("charts without a dark variant sit on a card at night", async ({ page }) => {
+    await page.goto("/writing/are-prediction-markets-accurate?hour=22&weather=clear")
+    await expect(page.locator(".writing")).toHaveAttribute("data-tone", "night")
+    const card = page.locator(".post-figure.fig-card img")
+    await expect(card).toHaveCount(1)
+    await expect(card).toBeVisible()
+    const style = await card.evaluate((img) => {
+      const css = getComputedStyle(img)
+      return { background: css.backgroundColor, radius: parseFloat(css.borderTopLeftRadius) }
+    })
+    expect(style.background).toBe("rgb(255, 255, 255)")
+    expect(style.radius).toBeGreaterThan(0)
+    const paired = page.locator(".post-figure:not(.fig-card)")
+    await expect(paired.locator(".fig-dark")).toBeVisible()
+    await expect(paired.locator(".fig-light")).toBeHidden()
+  })
+
+  test("at 390px the index, a post and about have no horizontal scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    for (const path of ["/writing", "/writing/are-prediction-markets-accurate", "/writing/claude-code-notes", "/about"]) {
+      for (const hour of [12, 22]) {
+        await page.goto(`${path}?hour=${hour}&weather=clear`)
+        const { scroll, client } = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }))
+        expect(scroll, `${path} at hour ${hour}`).toBeLessThanOrEqual(client)
+      }
+    }
+  })
+})
