@@ -244,3 +244,27 @@ test.describe("Post page", () => {
     expect(response.status()).toBe(404)
   })
 })
+
+test.describe("About", () => {
+  test("about renders portrait, bio, Elsewhere with four links including ORCID, and Person json-ld", async ({ page }) => {
+    await page.goto("/about?hour=12&weather=clear")
+    await expect(page.getByRole("heading", { level: 1, name: "About" })).toBeVisible()
+    await expect(page.locator("img.about-photo")).toHaveAttribute("src", /angad\.jpg/)
+    await expect(page.locator(".about-bio")).toContainText("Head of AI at Truflation")
+    await expect(page.locator(".about-bio")).toContainText("SoftwareX")
+    const links = page.getByRole("region", { name: "Elsewhere" }).getByRole("link")
+    await expect(links).toHaveCount(4)
+    await expect(links.nth(3)).toHaveAttribute("href", "https://orcid.org/0009-0000-0985-4721")
+    await expect(page.getByRole("link", { name: /Writing/ }).last()).toBeVisible()
+    const blocks = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((b) => JSON.parse(b))
+    expect(blocks.find((d) => d["@type"] === "Person")).toMatchObject({ "@id": "https://1tx.dev/#angad", jobTitle: "Head of AI" })
+    expect(blocks.find((d) => d["@type"] === "BreadcrumbList")).toBeTruthy()
+  })
+
+  test("home has Person json-ld", async ({ page }) => {
+    await page.goto("/?weather=partly&hour=12")
+    const blocks = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((b) => JSON.parse(b))
+    expect(blocks.find((d) => d["@type"] === "Person")).toMatchObject({ "@id": "https://1tx.dev/#angad" })
+    expect(blocks.find((d) => d["@type"] === "WebSite")).toBeTruthy()
+  })
+})
