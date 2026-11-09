@@ -20,7 +20,7 @@ export { readingMinutes } from "./format"
 // js-yaml (bundled with gray-matter) turns 2026-13-45 into a rolled-over Date.
 // The core schema has no timestamp type, so dates stay strings and get validated.
 const MATTER_OPTIONS = {
-  engines: { yaml: (s: string) => yaml.safeLoad(s, { schema: yaml.CORE_SCHEMA }) },
+  engines: { yaml: (s: string): object => (yaml.safeLoad(s, { schema: yaml.CORE_SCHEMA }) as object | undefined) ?? {} },
 }
 
 function contentDir(): string {
