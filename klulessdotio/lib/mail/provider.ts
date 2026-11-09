@@ -50,7 +50,7 @@ export function resendProvider(env: Env = process.env): MailProvider {
         result = await resend.emails.send({
           from,
           to: email,
-          subject: `Your download: ${title}`,
+          subject: `Your download: ${title.replace(/[\r\n]+/g, " ")}`,
           html: downloadEmailHtml(title, link),
           text: downloadEmailText(title, link),
         })

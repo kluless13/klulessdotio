@@ -62,6 +62,22 @@ describe("resendProvider", () => {
     ).resolves.toBeUndefined()
   })
 
+  it("duplicate detected by message alone counts as success", async () => {
+    create.mockResolvedValue({
+      data: null,
+      error: { name: "validation_error", message: "Already exists", statusCode: null },
+    })
+    await expect(
+      resendProvider(env).addContact({ email: EMAIL, downloadId: "d", slug: "s" })
+    ).resolves.toBeUndefined()
+  })
+
+  it("strips line breaks from the subject", async () => {
+    send.mockResolvedValue(ok)
+    await resendProvider(env).sendDownloadEmail({ email: EMAIL, title: "A\r\nBcc: x", link: "l" })
+    expect(send.mock.calls[0][0].subject).toBe("Your download: A Bcc: x")
+  })
+
   it("provider errors never include the email", async () => {
     create.mockResolvedValue({
       data: null,

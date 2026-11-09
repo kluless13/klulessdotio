@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto"
 import { Redis } from "@upstash/redis"
 
-type Counter = Pick<Redis, "incr" | "expire">
+type Counter = Pick<Redis, "incr" | "expire" | "ttl">
 
 export function hashKey(kind: "ip" | "email", value: string): string {
   const normalised = kind === "email" ? value.trim().toLowerCase() : value
@@ -16,7 +16,12 @@ export async function allow(
   windowSeconds: number
 ): Promise<boolean> {
   const count = await redis.incr(key)
-  if (count === 1) await redis.expire(key, windowSeconds)
+  if (count === 1) {
+    await redis.expire(key, windowSeconds)
+  } else if ((await redis.ttl(key)) === -1) {
+    // A previous EXPIRE failed or never ran; heal the key so it cannot block forever.
+    await redis.expire(key, windowSeconds)
+  }
   return count <= limit
 }
 
