@@ -110,4 +110,4 @@ There's no "I" in it. Nothing for the label to hold on to.
 
 ---
 
-*A rewrite of "The Identity Trap", first published on Substack. Sources: Leslie, Cimpian, Meyer and Freeland, "Expectations of brilliance underlie gender distributions across academic disciplines", Science (2015). Bucher-Koenen, Alessie, Lusardi and van Rooij, "Fearless Woman: Financial Literacy and Stock Market Participation" (GFLEC working paper).*
+*A rewrite of "The Identity Trap", first published on Substack. Sources: Leslie, Cimpian, Meyer and Freeland, "Expectations of brilliance underlie gender distributions across academic disciplines", Science (2015). Bucher-Koenen, Alessie, Lusardi and van Rooij, "Fearless Woman: Financial Literacy and Stock Market Participation" (GFLEC working paper). FishTally paper: [SoftwareX](https://www.sciencedirect.com/science/article/pii/S2352711026001366).*
