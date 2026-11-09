@@ -10,9 +10,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  async rewrites() {
+    return [{ source: "/writing/:slug.md", destination: "/writing/md/:slug" }]
+  },
   async redirects() {
     return [
-      { source: "/writing", destination: "/", permanent: true },
       { source: "/portfolio", destination: "/", permanent: true },
     ]
   },
