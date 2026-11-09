@@ -74,8 +74,8 @@ export function pageMetadata(path: string, title: string, description: string): 
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, siteName: "1tx.dev", type: "website" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title, description, url, siteName: "1tx.dev", type: "website", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Hi, I'm Angad." }] },
+    twitter: { card: "summary_large_image", title, description, images: ["/og.png"] },
   }
 }
 

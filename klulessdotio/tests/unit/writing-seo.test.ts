@@ -65,6 +65,9 @@ describe("writing seo", () => {
     expect(m.twitter).toMatchObject({ card: "summary_large_image" })
     const p = pageMetadata("/writing", "Writing · Angad Maniyambath", "Posts.")
     expect(p.alternates?.canonical).toBe("https://1tx.dev/writing")
+    expect(p.openGraph?.images).toEqual([{ url: "/og.png", width: 1200, height: 630, alt: "Hi, I'm Angad." }])
+    expect(p.twitter?.images).toEqual(["/og.png"])
+    expect(m.openGraph?.images).toBeUndefined()
   })
 
   it("JsonLd escapes closing script tags", () => {
