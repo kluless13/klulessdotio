@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { ImageResponse } from "next/og"
 import { notFound } from "next/navigation"
+import { fitCover, type CoverSize } from "@/lib/writing/og-cover"
 import { getPost, loadPosts } from "@/lib/writing/posts"
 
 export const runtime = "nodejs"
@@ -17,27 +18,14 @@ export function generateStaticParams() {
   return loadPosts().map((post) => ({ slug: post.slug }))
 }
 
-const COVER_BOX = { width: 396, height: 438 }
-
 function titleSize(title: string): { fontSize: number; lineHeight: string } {
   const fontSize = title.length <= 40 ? 60 : title.length <= 60 ? 52 : 46
   return { fontSize, lineHeight: `${Math.round(fontSize * 1.1)}px` }
 }
 
-/** Fit the cover inside the panel, keeping its proportions (PNG header gives the real size). */
-function fitCover(bytes: Buffer): { width: number; height: number } {
-  const isPng = bytes.length > 24 && bytes.subarray(1, 4).toString("ascii") === "PNG"
-  if (!isPng) return COVER_BOX
-  const w = bytes.readUInt32BE(16)
-  const h = bytes.readUInt32BE(20)
-  if (!w || !h) return COVER_BOX
-  const scale = Math.min(COVER_BOX.width / w, COVER_BOX.height / h)
-  return { width: Math.round(w * scale), height: Math.round(h * scale) }
-}
-
 const dataUri = (mime: string, bytes: Buffer): string => `data:${mime};base64,${bytes.toString("base64")}`
 
-type Cover = { src: string; width: number; height: number }
+type Cover = CoverSize & { src: string }
 
 async function readCover(slug: string, cover: string): Promise<Cover | null> {
   const file = path.join(process.cwd(), "public", "writing", slug, path.basename(cover))
@@ -69,7 +57,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 590, padding: "8px 0" }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ ...titleSize(post.title), letterSpacing: "-0.025em", color: INK }}>{post.title}</div>
-              <div style={{ fontSize: 24, lineHeight: "34px", color: SOFT, marginTop: 18, maxHeight: 102, overflow: "hidden", lineClamp: 3 }}>{post.description}</div>
+              <div style={{ fontSize: 24, lineHeight: "34px", color: SOFT, marginTop: 18, maxHeight: 102, overflow: "hidden" }}>{post.description}</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 20, lineHeight: "28px", color: INK }}>Angad Maniyambath</div>
