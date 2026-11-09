@@ -16,9 +16,14 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
     <div className="noise">
       <header className="site-header">
         <span className="site-name">Angad Maniyambath</span>
-        <button type="button" className="btn" onClick={onQuiet}>
-          Quiet
-        </button>
+        <nav className="site-nav" aria-label="Main">
+          <a className="btn" href="/writing">
+            Writing
+          </a>
+          <button type="button" className="btn" onClick={onQuiet}>
+            Quiet
+          </button>
+        </nav>
       </header>
       <main className="column">
         <Greeting className="greeting-page" />
@@ -53,7 +58,10 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
         <Projects />
         <Activity />
         <Timeline />
-        <footer className="foot">{COPYRIGHT}</footer>
+        <footer className="foot">
+          <a href="/about">About</a>
+          <span>{COPYRIGHT}</span>
+        </footer>
       </main>
       <PageBottom />
     </div>

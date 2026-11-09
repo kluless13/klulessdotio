@@ -1,0 +1,142 @@
+/* /writing: header, filter, featured series and post rows */
+/* Index header */
+.w-index {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.w-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 40px 70px 36px;
+}
+.w-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.w-title h1 {
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.w-title p {
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--w-soft);
+}
+
+/* Segmented filter */
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 11px;
+  background: var(--w-track);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.segment {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--w-soft);
+}
+.segment[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--w-thumb);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.segment:focus-visible {
+  border-radius: 8px;
+}
+
+/* Sections */
+.w-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  padding: 0 70px 96px;
+}
+.w-empty {
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--w-soft);
+}
+.w-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.w-group-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.w-count {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--w-soft);
+}
+.w-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+[data-category][hidden],
+[data-all-only][hidden] {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .w-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px 16px 24px;
+  }
+  .w-title {
+    gap: 4px;
+  }
+  .w-title h1 {
+    font-size: 32px;
+    line-height: 38px;
+  }
+  .w-title p {
+    font-size: 15px;
+    line-height: 22px;
+  }
+  .segmented {
+    align-self: flex-start;
+    max-width: calc(100% + 16px);
+    margin-right: -16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
+  .segment {
+    flex-shrink: 0;
+  }
+  .w-sections {
+    gap: 28px;
+    padding: 0 16px 48px;
+  }
+  .w-group {
+    gap: 12px;
+  }
+  .w-rows {
+    gap: 10px;
+  }
+}

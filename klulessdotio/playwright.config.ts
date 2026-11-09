@@ -15,7 +15,7 @@ export default defineConfig({
     launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] },
   },
   webServer: {
-    command: `NEXT_DIST_DIR=.next-e2e NEXT_PUBLIC_SKY_AUDIT=1 npx next dev -p ${PORT}`,
+    command: `NEXT_DIST_DIR=.next-e2e NEXT_PUBLIC_SKY_AUDIT=1 WRITING_CONTENT_DIR=tests/fixtures/posts/valid DOWNLOAD_URL_CLAUDE_CODE_STARTER_KIT=http://localhost:${PORT}/test-download.txt npx next dev -p ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
     timeout: 120000,

@@ -1,0 +1,94 @@
+/* The email gate at the end of a post with a download */
+.email-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--s-tint);
+  font-size: 16px;
+  line-height: 26px;
+}
+.email-gate-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.email-gate-title {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.email-gate-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.email-gate-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.email-gate-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.email-gate-input {
+  min-width: 0;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--s-chip);
+  color: var(--s-ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
+}
+.email-gate-input::placeholder {
+  color: var(--s-soft);
+}
+.email-gate-input:focus-visible {
+  outline: 2px solid var(--s-ink);
+  outline-offset: 2px;
+}
+.email-gate-button {
+  justify-content: center;
+  cursor: pointer;
+}
+.email-gate-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.email-gate-note {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--s-soft);
+}
+.email-gate-status {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.email-gate-status:empty {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .email-gate {
+    padding: 18px 20px;
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .email-gate-form {
+    grid-template-columns: 1fr;
+  }
+}

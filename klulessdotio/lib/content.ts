@@ -1,3 +1,5 @@
+export const SITE_DESCRIPTION = "Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro."
+
 // Translations are drafts. Any language not confirmed by a native speaker before launch should be removed from this list.
 export const GREETINGS = [
   { lang: "en", text: "Hi, I'm Angad.", dir: "ltr" },

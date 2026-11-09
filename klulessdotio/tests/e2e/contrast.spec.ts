@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 import { WEATHER_KEYS, contrast, inkVars, skyView } from "../../lib/sky/model"
 
 const hex = (value: string) => [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
@@ -28,4 +28,93 @@ test("text and buttons stay readable across every half hour in all weather", asy
     }
   }
   expect(failures.slice(0, 10)).toEqual([])
+})
+
+type Rgba = [number, number, number, number]
+
+// Runs in the page: for every text element on the sheet, composites the text and every background up to the sheet
+// over each sampled sky colour and returns the worst ratio.
+function measureSheet(skies: number[][]) {
+  const parse = (value: string): Rgba => {
+    const m = value.match(/rgba?\(([^)]+)\)/)
+    if (!m) return [0, 0, 0, 0]
+    const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number)
+    return [r, g, b, a]
+  }
+  const over = (top: Rgba, under: number[]) => [0, 1, 2].map((i) => top[i] * top[3] + under[i] * (1 - top[3]))
+  const lum = (c: number[]) => {
+    const [r, g, b] = c.map((v) => {
+      const s = v / 255
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const ratio = (a: number[], b: number[]) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)
+  const sheet = document.querySelector(".sheet") as HTMLElement
+  const results: { label: string; worst: number }[] = []
+  const walker = document.createTreeWalker(sheet, NodeFilter.SHOW_TEXT)
+  const seen = new Set<Element>()
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const el = node.parentElement
+    if (!el || seen.has(el) || !node.textContent?.trim()) continue
+    seen.add(el)
+    if (getComputedStyle(el).display === "none" || el.closest(".btn")) continue // buttons draw on gradients and have their own check
+    const layers: Rgba[] = []
+    for (let cur: Element | null = el; cur; cur = cur === sheet ? null : cur.parentElement) layers.push(parse(getComputedStyle(cur).backgroundColor))
+    const text = parse(getComputedStyle(el).color)
+    const worst = Math.min(
+      ...skies.map((sky) => {
+        let bg = sky
+        for (const layer of [...layers].reverse()) bg = over(layer, bg)
+        return ratio(over(text, bg), bg)
+      }),
+    )
+    results.push({ label: `${el.tagName.toLowerCase()}.${el.className} "${(el.textContent ?? "").trim().slice(0, 30)}"`, worst })
+  }
+  return results
+}
+
+// Hides the sheet, screenshots the sky behind it and returns its darkest and lightest sampled pixels.
+async function sampleSky(page: Page): Promise<number[][]> {
+  await page.addStyleTag({ content: ".sheet{visibility:hidden!important}" })
+  const box = await page.locator(".sheet").boundingBox()
+  if (!box) throw new Error("sheet not found")
+  const shot = (await page.screenshot({ clip: { x: box.x, y: Math.max(0, box.y), width: box.width, height: Math.min(box.height, 700) } })).toString("base64")
+  return page.evaluate(async (data) => {
+    const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob())
+    const canvas = document.createElement("canvas")
+    canvas.width = bitmap.width
+    canvas.height = bitmap.height
+    const ctx = canvas.getContext("2d")!
+    ctx.drawImage(bitmap, 0, 0)
+    const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+    let dark = [255, 255, 255]
+    let light = [0, 0, 0]
+    const sum = (c: number[]) => c[0] + c[1] + c[2]
+    for (let i = 0; i < px.length; i += 4 * 7) {
+      const c = [px[i], px[i + 1], px[i + 2]]
+      if (sum(c) < sum(dark)) dark = c
+      if (sum(c) > sum(light)) light = c
+    }
+    return [dark, light]
+  }, shot)
+}
+
+test.describe("Reading sheet contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`post text and soft text on the sheet pass 4.5:1 in ${tone}`, async ({ page }) => {
+      for (const path of ["/writing/claude-code-notes", "/writing/are-prediction-markets-accurate"]) {
+        await page.goto(`${path}?hour=${hour}&weather=clear`)
+        await expect(page.locator(".writing")).toHaveAttribute("data-tone", tone)
+        await page.waitForTimeout(1000) // let the sheet colour transition settle
+        const skies = await sampleSky(page)
+        const results = await page.evaluate(measureSheet, skies)
+        expect(results.length).toBeGreaterThan(10)
+        // The sheet has both an ink and a soft colour in use, so both are covered by the element sweep
+        expect(new Set(results.map((r) => r.label.split(" ")[0])).size).toBeGreaterThan(3)
+        const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
+        expect(failing, `${tone} ${path}`).toEqual([])
+      }
+    })
+  }
 })
