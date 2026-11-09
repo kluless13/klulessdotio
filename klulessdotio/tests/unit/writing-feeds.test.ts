@@ -26,6 +26,12 @@ describe("sitemap", () => {
     const entry = entries.find((e) => e.url === `https://1tx.dev/writing/${first.slug}`)
     expect(entry?.lastModified).toBe(first.updated ?? first.date)
   })
+  it("uses the latest updated-or-date across all posts for site pages", () => {
+    const older = { ...posts[posts.length - 1], updated: "2030-05-05" }
+    const entries = sitemapEntries([posts[0], older])
+    expect(entries[0].lastModified).toBe("2030-05-05")
+    expect(entries[1].lastModified).toBe("2030-05-05")
+  })
   it("uses updated over date", () => {
     const p = { ...posts[0], updated: "2027-01-01" }
     expect(sitemapEntries([p])[3].lastModified).toBe("2027-01-01")
@@ -39,7 +45,9 @@ describe("robots", () => {
     const star = rules.find((x) => x.userAgent === "*")
     expect(star?.disallow).toBe("/api/")
     for (const bot of AI_CRAWLERS) {
-      expect(rules.find((x) => x.userAgent === bot)?.allow).toBe("/")
+      const rule = rules.find((x) => x.userAgent === bot)
+      expect(rule?.allow).toBe("/")
+      expect(rule?.disallow).toBe("/api/")
     }
     expect(r.sitemap).toBe("https://1tx.dev/sitemap.xml")
   })

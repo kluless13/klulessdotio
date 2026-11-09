@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { SITE_DESCRIPTION } from "@/lib/content"
 import { Analytics } from "@vercel/analytics/next"
 import { Archivo_Black, Instrument_Sans, Newsreader, Oswald } from "next/font/google"
 import type { ReactNode } from "react"
@@ -11,7 +12,7 @@ const oswald = Oswald({ subsets: ["latin"], weight: ["500", "600"], variable: "-
 const archivo = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo-black", display: "swap", preload: false })
 
 const TITLE = "Angad Maniyambath"
-const DESCRIPTION = "Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro."
+const DESCRIPTION = SITE_DESCRIPTION
 
 export const metadata: Metadata = {
   title: TITLE,

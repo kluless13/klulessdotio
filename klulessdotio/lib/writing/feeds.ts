@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import { SITE_DESCRIPTION } from "@/lib/content"
 import type { Post } from "@/lib/writing/types"
 
 export const SITE_URL = "https://1tx.dev"
@@ -14,14 +15,14 @@ export const AI_CRAWLERS = [
   "Applebot-Extended",
 ] as const
 
-const SUMMARY = "Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro."
+const SUMMARY = SITE_DESCRIPTION
 const INTRO =
   "Angad Maniyambath is Head of AI at Truflation. He writes research and essays on prediction markets, AI and building."
 
 const postUrl = (slug: string) => `${SITE_URL}/writing/${slug}`
 
 export function sitemapEntries(posts: readonly Post[]): { url: string; lastModified: string }[] {
-  const latest = posts[0]?.updated ?? posts[0]?.date ?? "2026-11-09"
+  const latest = posts.reduce((m, p) => ((p.updated ?? p.date) > m ? (p.updated ?? p.date) : m), "") || "2026-11-09"
   return [
     { url: `${SITE_URL}/`, lastModified: latest },
     { url: `${SITE_URL}/writing`, lastModified: latest },
@@ -34,7 +35,7 @@ export function robotsRules(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: "*", allow: "/", disallow: "/api/" },
-      ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: "/" })),
+      ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: "/", disallow: "/api/" })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
   }
