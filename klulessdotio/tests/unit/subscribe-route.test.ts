@@ -20,7 +20,10 @@ function setup(over: Partial<SubscribeDeps> = {}, counts: Record<string, number>
       keys.push(k)
       return 1
     }),
-    ttl: vi.fn(async () => 100),
+    ttl: vi.fn(async (k: string) => {
+      keys.push(k)
+      return 100
+    }),
   }
   const provider = {
     addContact: vi.fn(async (_i: { email: string; downloadId: string; slug: string }) => undefined),
@@ -73,6 +76,7 @@ describe("handleSubscribe", () => {
   it("unknown or unavailable download is 404", async () => {
     const unknown = setup()
     expect((await handleSubscribe({ ...good, downloadId: "nope" }, "1.1.1.1", unknown.deps)).body.error).toBe("unavailable")
+    expect(unknown.logs).toEqual([["rejected"]])
     const unset = setup({ env: { DOWNLOAD_SIGNING_SECRET: SECRET } })
     const res = await handleSubscribe(good, "1.1.1.1", unset.deps)
     expect(res).toEqual({ status: 404, body: { success: false, error: "unavailable" } })
@@ -156,6 +160,7 @@ describe("handleSubscribe", () => {
       expect(s.keys.length + s.logs.length).toBeGreaterThan(0)
       expect(dump.toLowerCase()).not.toContain(EMAIL)
       expect(dump).not.toContain("1.1.1.1")
+      expect(dump).not.toContain("9.9.9.")
     }
   })
 })

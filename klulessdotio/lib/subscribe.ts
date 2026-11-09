@@ -64,7 +64,10 @@ export async function handleSubscribe(
   }
   const { email, downloadId, slug } = parsed.data
 
-  if (!isDownloadAvailable(downloadId, deps.env)) return fail(404, "unavailable")
+  if (!isDownloadAvailable(downloadId, deps.env)) {
+    deps.log("rejected")
+    return fail(404, "unavailable")
+  }
 
   const secret = deps.env.DOWNLOAD_SIGNING_SECRET
   if (!secret) {

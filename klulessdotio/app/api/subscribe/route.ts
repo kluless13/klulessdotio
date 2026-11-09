@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { SITE_URL } from "@/lib/writing/feeds"
 import { resendProvider } from "@/lib/mail/provider"
 import { getRateLimitRedis } from "@/lib/ratelimit"
+import { guardSubscribeRequest } from "@/lib/subscribe-guard"
 import { handleSubscribe, type SubscribeEvent } from "@/lib/subscribe"
 
 export const dynamic = "force-dynamic"
@@ -26,12 +27,19 @@ const lazyRedis = {
 }
 
 export async function POST(request: Request) {
+  const production = process.env.NODE_ENV === "production"
+  const rejection = guardSubscribeRequest(request.headers, new URL(SITE_URL).origin, production)
+  if (rejection) {
+    log("rejected")
+    return NextResponse.json({ success: false, error: rejection.error }, { status: rejection.status })
+  }
   let body: unknown
   try {
     body = await request.json()
   } catch {
     body = undefined
   }
+  // Relies on Vercel overwriting x-forwarded-for with the real client IP.
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
 
   const result = await handleSubscribe(body, ip, {

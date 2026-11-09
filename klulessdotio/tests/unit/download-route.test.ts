@@ -32,11 +32,13 @@ describe("download route", () => {
     expect(res.headers.get("Content-Type")).toBe("application/zip")
     expect(res.headers.get("Content-Disposition")).toBe('attachment; filename="claude-code-starter-kit.zip"')
     expect(res.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff")
     expect(fetchMock.mock.calls[0][0]).toBe(BLOB)
   })
 
   it("expired token links back to the post", async () => {
     const res = await call(signToken({ ...payload, slug: "a<b>", exp: Date.now() - 1 }, SECRET))
+    expect(res.status).toBe(410)
     expect(res.headers.get("Content-Type")).toBe("text/html; charset=utf-8")
     const html = await res.text()
     expect(html).toContain("This link has expired.")
@@ -72,10 +74,52 @@ describe("download route", () => {
   })
 })
 
+describe("subscribe route guards", () => {
+  const post = (headers: Record<string, string>) =>
+    POST(new Request("https://1tx.dev/api/subscribe", { method: "POST", body: "{}", headers }))
+  const json = { "content-type": "application/json" }
+
+  it("wrong content-type is 415", async () => {
+    expect((await post({ "content-type": "text/plain" })).status).toBe(415)
+    expect((await post({})).status).toBe(415)
+  })
+
+  it("production rejects a foreign or missing Origin with 403", async () => {
+    vi.stubEnv("NODE_ENV", "production")
+    expect((await post({ ...json, origin: "https://evil.example" })).status).toBe(403)
+    expect((await post(json)).status).toBe(403)
+  })
+
+  it("production accepts the site Origin", async () => {
+    vi.stubEnv("NODE_ENV", "production")
+    expect((await post({ ...json, origin: "https://1tx.dev" })).status).toBe(400)
+  })
+
+  it("development allows any Origin", async () => {
+    expect((await post({ ...json, origin: "http://localhost:3000" })).status).toBe(400)
+  })
+})
+
 describe("subscribe route", () => {
   it("malformed JSON is 400 invalid_email", async () => {
-    const res = await POST(new Request("https://1tx.dev/api/subscribe", { method: "POST", body: "{" }))
+    const res = await POST(new Request("https://1tx.dev/api/subscribe", { method: "POST", body: "{", headers: { "content-type": "application/json" } }))
     expect(res.status).toBe(400)
     expect(await res.json()).toEqual({ success: false, error: "invalid_email" })
+  })
+})
+
+describe("file name guard", () => {
+  it("falls back to download for an unsafe file name", async () => {
+    vi.resetModules()
+    vi.doMock("@/content/downloads", () => ({
+      DOWNLOADS: [{ id: "claude-code-starter-kit", title: "t", description: "d", fileName: 'a"; x=.zip' }],
+    }))
+    vi.stubEnv("DOWNLOAD_SIGNING_SECRET", SECRET)
+    vi.stubEnv("DOWNLOAD_URL_CLAUDE_CODE_STARTER_KIT", BLOB)
+    vi.stubGlobal("fetch", vi.fn(async (_url: string) => new Response("z")))
+    const { serveDownload } = await import("@/lib/downloads/serve")
+    const res = await serveDownload(signToken(payload, SECRET))
+    expect(res.headers.get("Content-Disposition")).toBe('attachment; filename="download"')
+    vi.doUnmock("@/content/downloads")
   })
 })

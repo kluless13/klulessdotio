@@ -23,6 +23,9 @@ function expiredPage(slug: string): Response {
   })
 }
 
+const SAFE_FILE_NAME = /^[\w.-]+$/
+const safeFileName = (name: string) => (SAFE_FILE_NAME.test(name) ? name : "download")
+
 export async function serveDownload(token: string, env: Env = process.env): Promise<Response> {
   const result = verifyToken(token, env.DOWNLOAD_SIGNING_SECRET ?? "")
   if (!result.ok) {
@@ -49,7 +52,8 @@ export async function serveDownload(token: string, env: Env = process.env): Prom
     status: 200,
     headers: {
       "Content-Type": upstream.headers.get("content-type") ?? "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${meta.fileName}"`,
+      "Content-Disposition": `attachment; filename="${safeFileName(meta.fileName)}"`,
+      "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, no-store",
     },
   })
