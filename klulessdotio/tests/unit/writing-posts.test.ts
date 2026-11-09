@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
@@ -16,6 +16,20 @@ import { DOWNLOADS } from "@/content/downloads"
 
 const fixtures = path.join(process.cwd(), "tests/fixtures/posts")
 const validDir = path.join(fixtures, "valid")
+
+const tempDirs: string[] = []
+function tempDir(files: Record<string, string>): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "posts-"))
+  tempDirs.push(dir)
+  for (const [name, text] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), text)
+  return dir
+}
+const post = (extra: string, over: Record<string, string> = {}) =>
+  `---\ntitle: T\ndescription: d\nshort: s\ndate: ${over.date ?? "2026-11-09"}\ncategory: Thinking\n${extra}---\nBody\n`
+
+afterEach(() => {
+  for (const d of tempDirs.splice(0)) fs.rmSync(d, { recursive: true, force: true })
+})
 
 describe("loadPosts", () => {
   it("loads valid fixtures newest first with words and minutes", () => {
@@ -46,31 +60,41 @@ describe("loadPosts", () => {
     )
   })
 
-  it("rejects a part that is wrong for a real series slug", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "posts-"))
-    fs.writeFileSync(
-      path.join(dir, "why-prediction-markets-resolve-no.md"),
-      "---\ntitle: T\ndescription: d\nshort: s\ndate: 2026-11-09\ncategory: Prediction markets\nseries:\n  id: prediction-markets\n  part: 1\n---\nBody\n",
-    )
-    expect(() => loadPosts(dir)).toThrow(expect.objectContaining({ field: "series" }))
-  })
-
   it("rejects a description over 160 characters", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "posts-"))
-    fs.writeFileSync(
-      path.join(dir, "long.md"),
-      `---\ntitle: T\ndescription: ${"a".repeat(161)}\nshort: s\ndate: 2026-11-09\ncategory: Thinking\n---\nBody\n`,
-    )
+    const dir = tempDir({ "long.md": post("").replace("description: d", `description: ${"a".repeat(161)}`) })
     expect(() => loadPosts(dir)).toThrow(expect.objectContaining({ field: "description" }))
   })
 
   it("rejects an unknown download", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "posts-"))
-    fs.writeFileSync(
-      path.join(dir, "d.md"),
-      "---\ntitle: T\ndescription: d\nshort: s\ndate: 2026-11-09\ncategory: Thinking\ndownload: nope\n---\nBody\n",
-    )
+    const dir = tempDir({ "d.md": post("download: nope\n") })
     expect(() => loadPosts(dir)).toThrow(expect.objectContaining({ field: "download" }))
+  })
+
+  it("rejects an unknown series id", () => {
+    const dir = tempDir({ "s.md": post("series:\n  id: nope\n  part: 1\n") })
+    expect(() => loadPosts(dir)).toThrow(expect.objectContaining({ field: "series" }))
+  })
+
+  it("rejects impossible dates", () => {
+    expect(() => loadPosts(tempDir({ "a.md": post("", { date: "2026-13-45" }) }))).toThrow(
+      expect.objectContaining({ field: "date" }),
+    )
+    expect(() => loadPosts(tempDir({ "b.md": post("updated: 2026-02-30\n") }))).toThrow(
+      expect.objectContaining({ field: "updated" }),
+    )
+  })
+
+  it("rejects an empty cover", () => {
+    expect(() => loadPosts(tempDir({ "c.md": post('cover: ""\n') }))).toThrow(
+      expect.objectContaining({ field: "cover" }),
+    )
+  })
+
+  it("throws on a non-md file but ignores hidden files", () => {
+    expect(() => loadPosts(tempDir({ "a.mdx": post("") }))).toThrow(
+      expect.objectContaining({ file: "a.mdx", field: "file" }),
+    )
+    expect(loadPosts(tempDir({ ".gitkeep": "", ".DS_Store": "", "ok.md": post("") }))).toHaveLength(1)
   })
 
   it("returns an empty list for a missing directory", () => {

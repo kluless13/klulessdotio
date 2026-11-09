@@ -6,6 +6,6 @@ date: 2026-11-09
 category: Prediction markets
 series:
   id: prediction-markets
-  part: 3
+  part: 1
 ---
 Some plain body text for the fixture post.

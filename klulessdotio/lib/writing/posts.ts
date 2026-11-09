@@ -1,6 +1,7 @@
 import fs from "node:fs"
 import path from "node:path"
 import matter from "gray-matter"
+import yaml from "js-yaml"
 import { SERIES } from "@/content/series"
 import { DOWNLOADS } from "@/content/downloads"
 import { frontMatterSchema, normaliseDates } from "./schema"
@@ -16,6 +17,12 @@ import {
 
 export { readingMinutes } from "./format"
 
+// js-yaml (bundled with gray-matter) turns 2026-13-45 into a rolled-over Date.
+// The core schema has no timestamp type, so dates stay strings and get validated.
+const MATTER_OPTIONS = {
+  engines: { yaml: (s: string) => yaml.safeLoad(s, { schema: yaml.CORE_SCHEMA }) },
+}
+
 function contentDir(): string {
   return process.env.WRITING_CONTENT_DIR ?? path.join(process.cwd(), "content/posts")
 }
@@ -23,7 +30,7 @@ function contentDir(): string {
 function parseFile(dir: string, file: string): Post {
   const slug = file.replace(/\.md$/, "")
   const raw = fs.readFileSync(path.join(dir, file), "utf8")
-  const parsed = matter(raw)
+  const parsed = matter(raw, MATTER_OPTIONS)
   const result = frontMatterSchema.safeParse(normaliseDates(parsed.data))
   if (!result.success) {
     const issue = result.error.issues[0]
@@ -48,10 +55,10 @@ function parseFile(dir: string, file: string): Post {
 
 export function loadPosts(dir: string = contentDir()): readonly Post[] {
   if (!fs.existsSync(dir)) return []
-  const posts = fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
-    .map((f) => parseFile(dir, f))
+  const files = fs.readdirSync(dir).filter((f) => !f.startsWith("."))
+  const stray = files.find((f) => !f.endsWith(".md"))
+  if (stray) throw new PostError(stray, "file", "post files must end in .md")
+  const posts = files.map((f) => parseFile(dir, f))
   return Object.freeze([...posts].sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)))
 }
 
