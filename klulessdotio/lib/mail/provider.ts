@@ -23,7 +23,11 @@ function isDuplicate(error: { message?: string; statusCode?: number | null }): b
 }
 
 export function resendProvider(env: Env = process.env): MailProvider {
-  const client = () => new Resend(requireEnv(env, "RESEND_API_KEY"))
+  const client = () => {
+    const apiKey = env.RESEND_API_KEY || env.Resend
+    if (!apiKey) throw new Error("RESEND_API_KEY (or Resend) is not configured")
+    return new Resend(apiKey)
+  }
 
   return {
     async addContact({ email }) {

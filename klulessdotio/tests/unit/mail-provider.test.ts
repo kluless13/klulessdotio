@@ -2,8 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 
 const create = vi.fn()
 const send = vi.fn()
+const ctorKey = vi.fn()
 vi.mock("resend", () => ({
   Resend: class {
+    constructor(key: string) {
+      ctorKey(key)
+    }
     contacts = { create }
     emails = { send }
   },
@@ -23,6 +27,7 @@ const ok = { data: { id: "x" }, error: null }
 beforeEach(() => {
   create.mockReset()
   send.mockReset()
+  ctorKey.mockReset()
 })
 
 describe("resendProvider", () => {
@@ -92,6 +97,27 @@ describe("resendProvider", () => {
       expect(e.message).toBe("mail provider failed")
       expect(e.message).not.toContain(EMAIL)
     }
+  })
+
+  it("reads the api key from Resend alone", async () => {
+    create.mockResolvedValue(ok)
+    await resendProvider({ Resend: "alias-key", MAIL_FROM: "a" }).addContact({ email: EMAIL, downloadId: "d", slug: "s" })
+    expect(ctorKey).toHaveBeenCalledWith("alias-key")
+  })
+
+  it("RESEND_API_KEY wins when both are set, empty counts as unset", async () => {
+    create.mockResolvedValue(ok)
+    const input = { email: EMAIL, downloadId: "d", slug: "s" }
+    await resendProvider({ RESEND_API_KEY: "main", Resend: "alias" }).addContact(input)
+    expect(ctorKey).toHaveBeenLastCalledWith("main")
+    await resendProvider({ RESEND_API_KEY: "", Resend: "alias" }).addContact(input)
+    expect(ctorKey).toHaveBeenLastCalledWith("alias")
+  })
+
+  it("throws naming both names when neither key is set", async () => {
+    await expect(
+      resendProvider({ MAIL_FROM: "a" }).addContact({ email: EMAIL, downloadId: "d", slug: "s" })
+    ).rejects.toThrow(/RESEND_API_KEY \(or Resend\)/)
   })
 
   it("throws a clear error when required env is missing", async () => {
