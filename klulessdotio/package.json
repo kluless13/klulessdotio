@@ -22,6 +22,11 @@
     "next": "14.2.16",
     "react": "^18",
     "react-dom": "^18",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "unified": "^11.0.5",
     "zod": "3.25.67"
   },
   "devDependencies": {
