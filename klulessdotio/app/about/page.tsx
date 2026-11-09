@@ -4,6 +4,7 @@ import { ElsewhereList } from "@/components/writing/ElsewhereList"
 import { JsonLd } from "@/components/writing/JsonLd"
 import { Sheet } from "@/components/writing/Sheet"
 import { WritingShell } from "@/components/writing/WritingShell"
+import { SITE_DESCRIPTION } from "@/lib/content"
 import { BIO, ELSEWHERE, POINTERS } from "@/content/about"
 import { SITE_URL } from "@/lib/writing/feeds"
 import { breadcrumbJsonLd, pageMetadata, personJsonLd } from "@/lib/writing/seo"
@@ -11,7 +12,7 @@ import "../writing/writing.css"
 import "../writing/post.css"
 import "./about.css"
 
-export const metadata: Metadata = pageMetadata("/about", "About · Angad Maniyambath", BIO[0])
+export const metadata: Metadata = pageMetadata("/about", "About · Angad Maniyambath", SITE_DESCRIPTION)
 
 const CRUMBS = breadcrumbJsonLd([
   { name: "Home", url: SITE_URL },

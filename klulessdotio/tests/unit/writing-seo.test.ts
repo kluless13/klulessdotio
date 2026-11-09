@@ -36,7 +36,7 @@ describe("writing seo", () => {
 
   it("blog posting references the person id and has dates, wordCount and image", () => {
     const b = blogPostingJsonLd({ ...post, updated: "2026-02-03" })
-    expect(b.author).toEqual({ "@id": "https://1tx.dev/#angad" })
+    expect(b.author).toEqual({ "@id": "https://1tx.dev/#angad", "@type": "Person", name: "Angad Maniyambath", url: "https://1tx.dev/about" })
     expect(b.headline).toBe("Hello world")
     expect(b.datePublished).toBe("2026-01-02")
     expect(b.dateModified).toBe("2026-02-03")

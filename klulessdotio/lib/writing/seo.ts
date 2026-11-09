@@ -49,7 +49,7 @@ export function blogPostingJsonLd(post: PostMeta, seriesTitle?: string) {
     description: post.description,
     datePublished: post.date,
     dateModified: post.updated ?? post.date,
-    author: { "@id": PERSON_ID },
+    author: { "@id": PERSON_ID, "@type": "Person", name: NAME, url: `${SITE_URL}/about` },
     image: `${url}/opengraph-image`,
     mainEntityOfPage: url,
     url,

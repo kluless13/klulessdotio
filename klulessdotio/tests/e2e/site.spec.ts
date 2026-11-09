@@ -2,6 +2,12 @@ import { expect, test } from "@playwright/test"
 
 const DAY = "/?weather=partly&hour=12"
 
+test("home head has the canonical and keeps the layout open graph", async ({ page }) => {
+  await page.goto("/")
+  await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute("href", "https://1tx.dev")
+  await expect(page.locator('head meta[property="og:site_name"]')).toHaveAttribute("content", "1tx.dev")
+})
+
 test.describe("Noise", () => {
   test("shows sections in the agreed order and keeps things closed until found", async ({ page }) => {
     await page.goto(DAY)

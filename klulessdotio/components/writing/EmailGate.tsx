@@ -31,7 +31,7 @@ async function subscribe(payload: Record<string, unknown>): Promise<Status> {
 
 export function EmailGate({ download, slug }: { download: Download; slug: string }) {
   const [email, setEmail] = useState("")
-  const [website, setWebsite] = useState("")
+  const [trap, setTrap] = useState("")
   const [status, setStatus] = useState<Status>("idle")
   const titleId = useId()
   const inputId = useId()
@@ -40,7 +40,7 @@ export function EmailGate({ download, slug }: { download: Download; slug: string
     event.preventDefault()
     if (status === "sending") return
     setStatus("sending")
-    setStatus(await subscribe({ email: email.trim(), downloadId: download.id, slug, consent: true, website }))
+    setStatus(await subscribe({ email: email.trim(), downloadId: download.id, slug, consent: true, company_url: trap }))
   }
 
   const message = status in MESSAGES ? MESSAGES[status as keyof typeof MESSAGES] : ""
@@ -70,16 +70,19 @@ export function EmailGate({ download, slug }: { download: Download; slug: string
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            className="email-gate-trap"
-            type="text"
-            name="website"
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            value={website}
-            onChange={(e) => setWebsite(e.target.value)}
-          />
+          <div aria-hidden="true">
+            <input
+              className="email-gate-trap"
+              type="text"
+              name="company_url"
+              tabIndex={-1}
+              autoComplete="new-password"
+              data-1p-ignore
+              data-lpignore="true"
+              value={trap}
+              onChange={(e) => setTrap(e.target.value)}
+            />
+          </div>
           <button className="btn email-gate-button" type="submit" disabled={status === "sending"}>
             Send it to me
           </button>

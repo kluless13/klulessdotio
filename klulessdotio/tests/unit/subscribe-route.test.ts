@@ -46,7 +46,7 @@ const good = { email: EMAIL, downloadId: "claude-code-starter-kit", consent: tru
 describe("handleSubscribe", () => {
   it("honeypot returns success and touches nothing", async () => {
     const { deps, redis, provider, logs } = setup()
-    const res = await handleSubscribe({ ...good, website: "http://spam" }, "1.1.1.1", deps)
+    const res = await handleSubscribe({ ...good, company_url: "http://spam" }, "1.1.1.1", deps)
     expect(res).toEqual({ status: 200, body: { success: true } })
     expect(redis.incr).not.toHaveBeenCalled()
     expect(provider.addContact).not.toHaveBeenCalled()
@@ -126,20 +126,22 @@ describe("handleSubscribe", () => {
     provider.sendDownloadEmail.mockRejectedValueOnce(new Error("boom"))
     const res = await handleSubscribe(good, "1.1.1.1", deps)
     expect(res).toEqual({ status: 502, body: { success: false, error: "server" } })
-    expect(logs.at(-1)).toEqual(["failed"])
+    expect(logs.at(-1)).toEqual(["failed:send"])
   })
 
   it("missing signing secret is 502 server", async () => {
-    const { deps, provider } = setup({ env: { DOWNLOAD_URL_CLAUDE_CODE_STARTER_KIT: "https://x" } })
+    const { deps, provider, logs } = setup({ env: { DOWNLOAD_URL_CLAUDE_CODE_STARTER_KIT: "https://x" } })
     const res = await handleSubscribe(good, "1.1.1.1", deps)
     expect(res.status).toBe(502)
     expect(provider.sendDownloadEmail).not.toHaveBeenCalled()
+    expect(logs).toEqual([["failed:secret"]])
   })
 
   it("rate limiter outage fails closed with 502 server", async () => {
-    const { deps, redis, provider } = setup()
+    const { deps, redis, provider, logs } = setup()
     redis.incr.mockRejectedValueOnce(new Error("redis down"))
     const res = await handleSubscribe(good, "1.1.1.1", deps)
+    expect(logs).toEqual([["failed:limiter"]])
     expect(res).toEqual({ status: 502, body: { success: false, error: "server" } })
     expect(provider.sendDownloadEmail).not.toHaveBeenCalled()
   })

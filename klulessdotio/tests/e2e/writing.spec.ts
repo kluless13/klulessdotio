@@ -289,7 +289,7 @@ test.describe("Email gate", () => {
     await gate.getByLabel("Email").fill("reader@example.com")
     await gate.getByRole("button", { name: "Send it to me" }).click()
     await expect(gate).toContainText("Check your inbox. The link works for 7 days.")
-    expect(body).toEqual({ email: "reader@example.com", downloadId: "claude-code-starter-kit", slug: "claude-code-notes", consent: true, website: "" })
+    expect(body).toEqual({ email: "reader@example.com", downloadId: "claude-code-starter-kit", slug: "claude-code-notes", consent: true, company_url: "" })
     expect(contentType).toContain("application/json")
   })
 

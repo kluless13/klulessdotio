@@ -5,7 +5,7 @@ import { signToken, TOKEN_TTL_MS } from "@/lib/downloads/token"
 import type { MailProvider } from "@/lib/mail/provider"
 import { allow, hashKey } from "@/lib/ratelimit"
 
-export type SubscribeEvent = "subscribed" | "rejected" | "rate_limited" | "failed" | "contact_failed"
+export type SubscribeEvent = "subscribed" | "rejected" | "rate_limited" | "failed:secret" | "failed:limiter" | "failed:send" | "contact_failed"
 export type SubscribeError = "invalid_email" | "rate_limited" | "unavailable" | "server"
 export interface SubscribeResult {
   status: number
@@ -28,7 +28,7 @@ const schema = z.object({
   email: z.string().trim().email().max(254),
   downloadId: z.string(),
   consent: z.literal(true),
-  website: z.string().max(0).optional(),
+  company_url: z.string().max(0).optional(),
   slug: z.string().min(1).max(200),
 })
 
@@ -40,8 +40,8 @@ const OK: SubscribeResult = { status: 200, body: { success: true } }
 
 function isHoneypotFilled(body: unknown): boolean {
   if (typeof body !== "object" || body === null) return false
-  const website = (body as { website?: unknown }).website
-  return typeof website === "string" && website.length > 0
+  const trap = (body as { company_url?: unknown }).company_url
+  return typeof trap === "string" && trap.length > 0
 }
 
 async function withinLimits(deps: SubscribeDeps, ip: string, email: string): Promise<boolean> {
@@ -71,7 +71,7 @@ export async function handleSubscribe(
 
   const secret = deps.env.DOWNLOAD_SIGNING_SECRET
   if (!secret) {
-    deps.log("failed")
+    deps.log("failed:secret")
     return fail(502, "server")
   }
 
@@ -82,7 +82,7 @@ export async function handleSubscribe(
     }
   } catch {
     // Fail closed: without a working limiter we do not send mail.
-    deps.log("failed")
+    deps.log("failed:limiter")
     return fail(502, "server")
   }
 
@@ -98,7 +98,7 @@ export async function handleSubscribe(
     }
     await deps.provider.sendDownloadEmail({ email, title, link })
   } catch {
-    deps.log("failed")
+    deps.log("failed:send")
     return fail(502, "server")
   }
 
