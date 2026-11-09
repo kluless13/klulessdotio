@@ -268,3 +268,70 @@ test.describe("About", () => {
     expect(blocks.find((d) => d["@type"] === "WebSite")).toBeTruthy()
   })
 })
+
+test.describe("Email gate", () => {
+  const WITH_DOWNLOAD = "/writing/claude-code-notes"
+  const ok = { status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) }
+  const fail = (status: number, error: string) => ({ status, contentType: "application/json", body: JSON.stringify({ success: false, error }) })
+
+  test("shows success copy after submit", async ({ page }) => {
+    let body: unknown
+    let contentType: string | undefined
+    await page.route("**/api/subscribe", async (route) => {
+      body = route.request().postDataJSON()
+      contentType = route.request().headers()["content-type"]
+      await route.fulfill(ok)
+    })
+    await page.goto(WITH_DOWNLOAD)
+    const gate = page.getByRole("region", { name: "Claude Code starter kit" })
+    await expect(gate).toContainText("My CLAUDE.md, rules, hooks and agent setup, ready to copy.")
+    await expect(gate).toContainText("I'll email you the link and add you to my list. One click to unsubscribe, any time.")
+    await gate.getByLabel("Email").fill("reader@example.com")
+    await gate.getByRole("button", { name: "Send it to me" }).click()
+    await expect(gate).toContainText("Check your inbox. The link works for 7 days.")
+    expect(body).toEqual({ email: "reader@example.com", downloadId: "claude-code-starter-kit", slug: "claude-code-notes", consent: true, website: "" })
+    expect(contentType).toContain("application/json")
+  })
+
+  test("shows the invalid email copy on 400", async ({ page }) => {
+    await page.route("**/api/subscribe", (route) => route.fulfill(fail(400, "invalid_email")))
+    await page.goto(WITH_DOWNLOAD)
+    await page.getByLabel("Email").fill("reader@example.com")
+    await page.getByRole("button", { name: "Send it to me" }).click()
+    await expect(page.getByText("That email doesn't look right.")).toBeVisible()
+  })
+
+  test("shows the right copy for rate limits and server errors", async ({ page }) => {
+    await page.route("**/api/subscribe", (route) => route.fulfill(fail(429, "rate_limited")))
+    await page.goto(WITH_DOWNLOAD)
+    await page.getByLabel("Email").fill("reader@example.com")
+    await page.getByRole("button", { name: "Send it to me" }).click()
+    await expect(page.getByText("Too many tries. Give it an hour.")).toBeVisible()
+    await page.unroute("**/api/subscribe")
+    await page.route("**/api/subscribe", (route) => route.abort())
+    await page.getByRole("button", { name: "Send it to me" }).click()
+    await expect(page.getByText("Something went wrong on my end. Try again in a minute.")).toBeVisible()
+  })
+
+  test("disables the button while sending", async ({ page }) => {
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    await page.route("**/api/subscribe", async (route) => {
+      await gate
+      await route.fulfill(ok)
+    })
+    await page.goto(WITH_DOWNLOAD)
+    await page.getByLabel("Email").fill("reader@example.com")
+    const button = page.getByRole("button", { name: "Send it to me" })
+    await button.click()
+    await expect(button).toBeDisabled()
+    release()
+    await expect(page.getByText("Check your inbox. The link works for 7 days.")).toBeVisible()
+  })
+
+  test("gate is absent on posts without a download", async ({ page }) => {
+    await page.goto("/writing/are-prediction-markets-accurate")
+    await expect(page.getByRole("button", { name: "Send it to me" })).toHaveCount(0)
+    await expect(page.locator(".email-gate")).toHaveCount(0)
+  })
+})
