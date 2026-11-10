@@ -7,6 +7,7 @@ import { ListRow } from "@/components/library/ListRow"
 import { GROW, Sheet, tileFor } from "@/components/library/Sheet"
 import { Tile } from "@/components/library/Tile"
 import { itemsFor, sectionsFor } from "@/lib/library/catalogue"
+import { VisitorToast } from "@/components/VisitorToast"
 import { fontFamily } from "@/lib/library/fonts"
 import { LIBRARY_PATH, itemPath, slugFromPath } from "@/lib/library/history"
 import type { Filter } from "@/lib/library/types"
@@ -149,6 +150,7 @@ export function LibraryView({ initialSlug }: { initialSlug?: string }) {
           {openIndex >= 0 ? <Sheet key="sheet" items={sheetItems} index={openIndex} onStep={stepTo} onClose={closeSheet} /> : null}
         </AnimatePresence>
       </LayoutGroup>
+      <VisitorToast />
     </main>
   )
 }

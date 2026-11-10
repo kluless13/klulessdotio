@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Archivo_Black, Instrument_Sans, Newsreader, Oswald } from "next/font/google"
 import type { ReactNode } from "react"
 import "./globals.css"
+import "./visitor.css"
 
 const instrument = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-instrument", display: "swap" })
 // Book spines use 500 and 600, posts read in 400 and 400 italic. None of it is loaded up front

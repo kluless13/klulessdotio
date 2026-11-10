@@ -3,7 +3,7 @@ import { Redis } from "@upstash/redis"
 
 type Counter = Pick<Redis, "incr" | "expire" | "ttl">
 
-export function hashKey(kind: "ip" | "email", value: string): string {
+export function hashKey(kind: "ip" | "email" | "visitor", value: string): string {
   const normalised = kind === "email" ? value.trim().toLowerCase() : value
   const digest = createHash("sha256").update(normalised).digest("hex")
   return `rl:${kind}:${digest}`

@@ -8,6 +8,7 @@ import { Projects } from "@/components/noise/Projects"
 import { Row } from "@/components/noise/Row"
 import { SayHello } from "@/components/noise/SayHello"
 import { Timeline } from "@/components/noise/Timeline"
+import { VisitorToast } from "@/components/VisitorToast"
 import { BELIEFS, BUILD, COPYRIGHT, MY_DAYS, ORIGIN } from "@/lib/content"
 import { ArrowRight } from "lucide-react"
 
@@ -67,6 +68,7 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
         </footer>
       </main>
       <PageBottom />
+      <VisitorToast />
     </div>
   )
 }
