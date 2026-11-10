@@ -29,19 +29,6 @@
   line-height: 26px;
   color: var(--w-soft);
 }
-/* A quiet pointer to the starter kit: small, but in full ink so it reads on every sky */
-.w-title .w-kit-line {
-  padding-top: 4px;
-  font-size: 15px;
-  line-height: 22px;
-  color: var(--ink);
-}
-.w-kit-line a {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
 /* Segmented filter */
 .segmented {
   display: flex;

@@ -2,6 +2,7 @@
 
 import { AnimatePresence } from "framer-motion"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { KitBar } from "@/components/KitBar"
 import { NoiseView } from "@/components/noise/NoiseView"
 import { PosterViewer } from "@/components/posters/PosterViewer"
 import { QuietView } from "@/components/quiet/QuietView"
@@ -54,6 +55,8 @@ export function Site() {
     <SkyProvider>
       <SkyCanvas />
       <div ref={noiseRef} className={`layer ${hideNoise ? "layer-hidden" : ""}`} data-testid="noise">
+        {/* Inside the Noise layer, so Quiet and the posters hide it too */}
+        <KitBar />
         <NoiseView onPosters={openPosters} onQuiet={() => change("quiet")} />
       </div>
       <AnimatePresence>

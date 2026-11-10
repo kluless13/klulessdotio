@@ -1,6 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
+import { KitBar } from "@/components/KitBar"
 import { SkyCanvas } from "@/components/sky/SkyCanvas"
 import { SkyProvider, useSky } from "@/components/sky/SkyProvider"
 import { Footer } from "@/components/writing/Footer"
@@ -32,6 +33,7 @@ export function ToneShell({
     <SkyProvider>
       <SkyCanvas />
       <Tone className={className}>
+        <KitBar />
         <TopBar current={current} />
         {children}
         <Footer />

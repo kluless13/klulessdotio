@@ -46,9 +46,6 @@ export default function WritingIndex() {
           <div className="w-title">
             <h1>Writing</h1>
             <p>Things I looked into, and what I found.</p>
-            <p className="w-kit-line">
-              New: a free <a href="/kit">starter kit</a> for getting AI to do real work in your tools.
-            </p>
           </div>
           {groups.length > 0 ? <CategoryFilter categories={groups.map((g) => g.category)} /> : null}
         </div>

@@ -75,9 +75,9 @@ function measureSheet({ skies, selector }: { skies: number[][]; selector: string
   return results
 }
 
-// Hides the sheet, screenshots the sky behind it and returns its darkest and lightest sampled pixels.
-async function sampleSky(page: Page, selector = ".sheet"): Promise<number[][]> {
-  const style = await page.addStyleTag({ content: `${selector}, .visitor-toast{visibility:hidden!important}` })
+// Hides the sheet (or just what sits on it), screenshots what's behind and returns its darkest and lightest sampled pixels.
+async function sampleSky(page: Page, selector = ".sheet", hide = selector): Promise<number[][]> {
+  const style = await page.addStyleTag({ content: `${hide}, .visitor-toast{visibility:hidden!important}` })
   const box = await page.locator(selector).boundingBox()
   const view = page.viewportSize()
   if (!box || !view) throw new Error("sheet not found")
@@ -217,6 +217,24 @@ test.describe("Kit contrast", () => {
           const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
           expect(failing, `${tone} ${name}`).toEqual([])
         }).toPass({ timeout: 10000 })
+      }
+    })
+  }
+})
+
+// The bar is the same sky strip by day and night, so its words are measured over the strip itself, wide and narrow.
+test.describe("Kit bar contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`the kit bar text passes 4.5:1 in ${tone}`, async ({ page }) => {
+      for (const width of [1280, 390]) {
+        await page.setViewportSize({ width, height: 800 })
+        await page.goto(`/writing?hour=${hour}&weather=clear`)
+        await expect(page.locator(".writing")).toHaveAttribute("data-tone", tone)
+        const skies = await sampleSky(page, ".kitbar", ".kitbar-content, .kitbar-close")
+        const results = await page.evaluate(measureSheet, { skies, selector: ".kitbar" })
+        expect(results.length, `${tone} ${width}`).toBeGreaterThan(0)
+        const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
+        expect(failing, `${tone} ${width}`).toEqual([])
       }
     })
   }
