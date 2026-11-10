@@ -92,7 +92,9 @@ describe("llms", () => {
   it("llms.txt has the H1, the blockquote and one line per post linking to the .md copy", () => {
     const t = llmsTxt(posts)
     expect(t.startsWith("# Angad Maniyambath\n")).toBe(true)
-    expect(t).toContain("> Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro.")
+    expect(t).toContain(
+      "> Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro. Research, essays and things I like, all in one place."
+    )
     for (const p of posts) {
       expect(t).toContain(`- [${p.title}](https://1tx.dev/writing/${p.slug}.md): ${p.description}`)
     }

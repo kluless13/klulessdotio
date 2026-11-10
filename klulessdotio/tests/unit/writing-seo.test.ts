@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { JsonLd } from "@/components/writing/JsonLd"
 import { itemJsonLd, itemMetadata, libraryMetadata } from "@/lib/library/seo"
-import { itemBySlug } from "@/lib/library/catalogue"
+import { allItems, itemBySlug } from "@/lib/library/catalogue"
+import { SITE_DESCRIPTION, WRITING_DESCRIPTION } from "@/lib/content"
 import { RSS_ALTERNATE, collectionPageJsonLd, blogPostingJsonLd, breadcrumbJsonLd, pageMetadata, personJsonLd, postMetadata, websiteJsonLd } from "@/lib/writing/seo"
 import type { PostMeta } from "@/lib/writing/types"
 
@@ -102,16 +103,42 @@ describe("library seo", () => {
     expect(m.alternates?.canonical).toBe("https://1tx.dev/library")
     expect(m.openGraph?.images).toEqual([{ url: "/library/og.jpg", width: 1200, height: 630, alt: "Library" }])
     expect(m.twitter?.images).toEqual(["/library/og.jpg"])
+    expect(m.description).toBe(
+      "Fonts and buttons I keep coming back to, from Mac OS 8 and Aqua to liquid glass. Rebuilt in CSS, each one live to try, with code to copy."
+    )
   })
 
   it("a font describes its category and maker, a button its source", () => {
     const geist = itemBySlug("geist")!
     expect(itemMetadata(geist).title).toBe("Geist · Library · Angad Maniyambath")
-    expect(itemMetadata(geist).description).toBe("Simple and elegant. Sans serif, by Vercel.")
+    expect(itemMetadata(geist).description).toBe(
+      "Simple and elegant. Sans serif, by Vercel. See every weight, a full specimen and where to get it in Angad's Library."
+    )
     expect(itemMetadata(geist).alternates?.canonical).toBe("https://1tx.dev/library/geist")
     const aqua = itemBySlug("aqua")!
-    expect(itemMetadata(aqua).description).toBe("Glassy, a bit of jelly. Mac OS X, 2001.")
+    expect(itemMetadata(aqua).description).toBe(
+      "Glassy, a bit of jelly. Mac OS X, 2001. Try it live, see how it's made and copy the CSS in Angad's Library."
+    )
     expect(itemMetadata(aqua).twitter?.images).toEqual(["/library/og.jpg"])
+  })
+
+  it("every Library description fits what search engines show, and has no em dash", () => {
+    const lengths = allItems().map((item) => String(itemMetadata(item).description))
+    for (const d of [...lengths, String(libraryMetadata().description)]) {
+      expect(d.length).toBeGreaterThanOrEqual(95)
+      expect(d.length).toBeLessThanOrEqual(160)
+      expect(d).not.toContain("—")
+    }
+  })
+
+  it("the site description reads as one full sentence pair for search results", () => {
+    expect(SITE_DESCRIPTION).toBe(
+      "Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro. Research, essays and things I like, all in one place."
+    )
+    expect(SITE_DESCRIPTION.length).toBeLessThanOrEqual(160)
+    expect(WRITING_DESCRIPTION).toBe(
+      "Research and essays on prediction markets, AI and building things alone. What I looked into, how I did it, and what I found."
+    )
   })
 
   it("item breadcrumbs run Home, Library, item", () => {

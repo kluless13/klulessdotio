@@ -1,4 +1,8 @@
-export const SITE_DESCRIPTION = "Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro."
+// Search descriptions sit between about 100 and 160 characters, the range Bing and Google show in full.
+export const SITE_DESCRIPTION =
+  "Hi, I'm Angad. Head of AI at Truflation, building Truman, an agent built for macro. Research, essays and things I like, all in one place."
+export const WRITING_DESCRIPTION =
+  "Research and essays on prediction markets, AI and building things alone. What I looked into, how I did it, and what I found."
 
 // Translations are drafts. Any language not confirmed by a native speaker before launch should be removed from this list.
 export const GREETINGS = [
