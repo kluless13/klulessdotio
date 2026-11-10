@@ -247,4 +247,29 @@ test.describe("Unsubscribe page", () => {
       page.getByText("You're unsubscribed. Your kit link still works."),
     ).toBeVisible();
   });
+
+  const PRIVATE = { "referrer-policy": "no-referrer", "x-robots-tag": "noindex, nofollow" };
+
+  test("the page that carries the token keeps it from referrers and search", async ({ request }) => {
+    const res = await request.get("/unsubscribe?token=abc.def");
+    expect(res.status()).toBe(200);
+    expect(res.headers()).toMatchObject(PRIVATE);
+  });
+
+  test("the unsubscribe link keeps its token from referrers and search, even on its redirect", async ({ request }) => {
+    const res = await request.get("/api/unsubscribe/abc.def", { maxRedirects: 0 });
+    expect(res.status()).toBe(303);
+    expect(res.headers()).toMatchObject(PRIVATE);
+  });
+});
+
+test.describe("Kit share image", () => {
+  test("is served without the private headers that kit links carry", async ({ request }) => {
+    const res = await request.get("/kit/og.jpg");
+    expect(res.status()).toBe(200);
+    expect(res.headers()["x-robots-tag"]).toBeUndefined();
+    expect(res.headers()["referrer-policy"]).toBeUndefined();
+    const link = await request.get(`/kit/${signKitToken("e2e@example.com", SECRET)}`);
+    expect(link.headers()["x-robots-tag"]).toContain("noindex");
+  });
 });

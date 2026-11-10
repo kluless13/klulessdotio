@@ -50,16 +50,23 @@ describe("/kit/[token]", () => {
     expect(meta.robots).toEqual({ index: false, follow: false })
   })
 
-  it("sends no referrer and a noindex header for kit links", async () => {
+  it("sends no referrer and a noindex header for kit and unsubscribe links, but not the share image", async () => {
     const { default: config } = await import("@/next.config.mjs")
-    const rules = (await config.headers?.()) ?? []
-    const kit = rules.find((r: { source: string }) => r.source === "/kit/:token")
-    expect(kit?.headers).toEqual(
-      expect.arrayContaining([
-        { key: "Referrer-Policy", value: "no-referrer" },
-        { key: "X-Robots-Tag", value: "noindex, nofollow" },
-      ]),
-    )
+    const rules: { source: string; headers: { key: string; value: string }[] }[] = (await config.headers?.()) ?? []
+    const private_ = [
+      { key: "Referrer-Policy", value: "no-referrer" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+    ]
+    for (const source of ["/unsubscribe", "/api/unsubscribe/:token"]) {
+      expect(rules.find((r) => r.source === source)?.headers, source).toEqual(private_)
+    }
+    const kit = rules.find((r) => r.source.startsWith("/kit/"))
+    expect(kit?.headers).toEqual(private_)
+    // The kit rule matches a token but not the share image
+    const { pathToRegexp } = await import("next/dist/compiled/path-to-regexp")
+    const matches = pathToRegexp(kit!.source)
+    expect(matches.test("/kit/abc.def")).toBe(true)
+    expect(matches.test("/kit/og.jpg")).toBe(false)
   })
 
   it("renders the kit for a valid token, reading the text from the server's env only", async () => {
