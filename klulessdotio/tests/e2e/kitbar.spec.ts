@@ -65,6 +65,52 @@ test("the bar is reachable by keyboard", async ({ page }) => {
   await expect(bar(page).getByRole("button", { name: "Close" })).toBeFocused()
   await page.keyboard.press("Enter")
   await expect(bar(page)).toHaveCount(0)
+  await expect(page.locator(".top-bar a").first()).toBeFocused()
+})
+
+test("closing on the home page hands focus to the first nav link", async ({ page }) => {
+  await page.goto("/?hour=12&weather=clear")
+  await bar(page).getByRole("button", { name: "Close" }).focus()
+  await page.keyboard.press("Enter")
+  await expect(bar(page)).toHaveCount(0)
+  await expect(page.locator(".site-nav a").first()).toBeFocused()
+})
+
+test.describe("for a visitor whose stored mode is Quiet", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      if (!window.sessionStorage.getItem("seeded")) {
+        window.sessionStorage.setItem("seeded", "1")
+        window.localStorage.setItem("1tx-mode", "quiet")
+      }
+    })
+  })
+
+  test("the bar still shows and takes focus off the home page", async ({ page }) => {
+    for (const path of ["/writing", "/library", "/about", "/writing/claude-code-notes"]) {
+      await page.goto(`${path}?hour=12&weather=clear`)
+      await expect(bar(page), path).toBeVisible()
+      await expect(page.locator(".kitbar"), path).toHaveCSS("visibility", "visible")
+      const link = bar(page).getByRole("link", { name: "Get the free kit" })
+      await link.focus()
+      await expect(link, path).toBeFocused()
+    }
+  })
+
+  test("the home page never paints the bar, and Noise brings it back", async ({ page }) => {
+    // Before React runs, the head script's start-quiet class alone keeps it hidden
+    await page.route("**/_next/static/**/*.js", (route) => route.abort())
+    await page.goto("/?hour=12&weather=clear")
+    await expect(page.locator(".kitbar")).toBeHidden()
+    await page.unroute("**/_next/static/**/*.js")
+
+    await page.goto("/?hour=12&weather=clear")
+    await expect(page.getByRole("button", { name: "Noise" })).toBeVisible()
+    await expect(page.locator(".kitbar")).toBeHidden()
+    await page.getByRole("button", { name: "Noise" }).click()
+    await expect(bar(page)).toBeVisible()
+    await expect(bar(page).getByRole("link", { name: "Get the free kit" })).toBeVisible()
+  })
 })
 
 test("Quiet and the posters hide the bar on the home page", async ({ page }) => {

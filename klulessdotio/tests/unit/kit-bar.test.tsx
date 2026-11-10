@@ -47,6 +47,43 @@ describe("KitBar", () => {
     expect(bar()).toBeNull()
   })
 
+  it("moves focus to the top bar's first link when closed", () => {
+    render(
+      <>
+        <KitBar />
+        <header>
+          <span>Angad</span>
+          <a href="/">Home</a>
+          <a href="/writing">Writing</a>
+        </header>
+      </>,
+    )
+    const close = screen.getByRole("button", { name: "Close" })
+    close.focus()
+    fireEvent.click(close)
+    expect(document.activeElement).toBe(screen.getByRole("link", { name: "Home" }))
+  })
+
+  it("lets go of focus when nothing follows it", () => {
+    render(<KitBar />)
+    const close = screen.getByRole("button", { name: "Close" })
+    close.focus()
+    fireEvent.click(close)
+    expect(document.activeElement).toBe(document.body)
+  })
+
+  it("follows client-side navigation into and out of the kit", () => {
+    nav.pathname = "/kit"
+    const { rerender } = render(<KitBar />)
+    expect(bar()).toBeNull()
+    nav.pathname = "/writing"
+    rerender(<KitBar />)
+    expect(bar()).not.toBeNull()
+    nav.pathname = "/kit/abc.def"
+    rerender(<KitBar />)
+    expect(bar()).toBeNull()
+  })
+
   it.each(["/kit", "/kit/abc.def"])("is not rendered on %s", (path) => {
     nav.pathname = path
     render(<KitBar />)

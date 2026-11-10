@@ -90,11 +90,12 @@
   border-radius: 8px;
 }
 
-/* Closed before, or hidden with the rest of the home page in Quiet and behind the posters */
+/* Closed before, or hidden with the home page's Noise layer in Quiet and behind the posters.
+   start-quiet is set on every page but only means something on the home page, so it's scoped to the layer. */
 :root.kitbar-off .kitbar {
   display: none;
 }
-:root.start-quiet .kitbar,
+:root.start-quiet .layer .kitbar,
 .layer-hidden .kitbar {
   visibility: hidden;
 }
