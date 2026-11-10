@@ -1,9 +1,12 @@
 import fs from "node:fs"
-import { Redis } from "@upstash/redis"
 import { KIT_CONTENT_KEY } from "../lib/kit/content"
 import { parseKit } from "../lib/kit/parse"
+import { makeKitRedis } from "../lib/kit/redis"
 import { validateKit } from "../lib/kit/validate"
 
+// Usage: npm run kit:upload -- [path] [--dry-run]
+// vite-node does not load .env.local. Export the KV_REST_API_URL/TOKEN for production
+// (for example via `vercel env pull` into your shell) before running kit:upload.
 const DEFAULT_PATH = "docs/writing/kit/kit.md"
 
 async function main(): Promise<number> {
@@ -25,13 +28,12 @@ async function main(): Promise<number> {
     return 0
   }
 
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) {
+  const redis = makeKitRedis(process.env)
+  if (!redis) {
     console.error("Redis env vars not configured (KV_REST_API_URL/TOKEN or UPSTASH_REDIS_REST_URL/TOKEN).")
     return 1
   }
-  await new Redis({ url, token }).set(KIT_CONTENT_KEY, markdown)
+  await redis.set(KIT_CONTENT_KEY, markdown)
   console.log(`Uploaded ${summary}`)
   return 0
 }
