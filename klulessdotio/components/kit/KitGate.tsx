@@ -1,12 +1,13 @@
 "use client"
 
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, LoaderCircle } from "lucide-react"
 import { useEffect, useId, useRef, useState, type FormEvent } from "react"
+import { KitGateSent } from "@/components/kit/KitGateSent"
 
 type Status = "idle" | "sending" | "done" | "invalid-email" | "rate-limited" | "server"
+type Problem = "invalid-email" | "rate-limited" | "server"
 
-const MESSAGES: Record<"done" | "invalid-email" | "rate-limited" | "server", string> = {
-  done: "Check your inbox. Your link works for good.",
+const MESSAGES: Record<Problem, string> = {
   "invalid-email": "That email doesn't look right.",
   "rate-limited": "Too many tries. Give it an hour.",
   server: "Something went wrong on my end. Try again in a minute.",
@@ -34,14 +35,16 @@ export function KitGate() {
   const [email, setEmail] = useState("")
   const [trap, setTrap] = useState("")
   const [status, setStatus] = useState<Status>("idle")
+  const [retried, setRetried] = useState(false)
   const titleId = useId()
+  const sentId = useId()
   const inputId = useId()
-  const statusRef = useRef<HTMLParagraphElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  // The form disappears once sent, so focus moves to the message instead of falling back to the page
+  // After "Try again" the form comes back with the address kept, ready to correct
   useEffect(() => {
-    if (status === "done") statusRef.current?.focus()
-  }, [status])
+    if (retried && status === "idle") inputRef.current?.focus()
+  }, [retried, status])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -50,11 +53,24 @@ export function KitGate() {
     setStatus(await requestKit(email.trim(), trap))
   }
 
-  const message = status in MESSAGES ? MESSAGES[status as keyof typeof MESSAGES] : ""
-  const done = status === "done"
+  function retry() {
+    setRetried(true)
+    setStatus("idle")
+  }
+
+  const sending = status === "sending"
+  const message = status in MESSAGES ? MESSAGES[status as Problem] : ""
+
+  if (status === "done") {
+    return (
+      <section className="kit-gate" data-state="done" aria-labelledby={sentId}>
+        <KitGateSent email={email.trim()} titleId={sentId} onRetry={retry} />
+      </section>
+    )
+  }
 
   return (
-    <section className="kit-gate" aria-labelledby={titleId}>
+    <section className="kit-gate" data-state={status} aria-labelledby={titleId}>
       <div className="kit-gate-text">
         <h2 className="kit-gate-title" id={titleId}>
           Unlock it for free
@@ -64,42 +80,51 @@ export function KitGate() {
           click to unsubscribe, any time.
         </p>
       </div>
-      {done ? null : (
-        <form className="kit-gate-form" onSubmit={onSubmit}>
-          <label className="kit-gate-label" htmlFor={inputId}>
-            Email
-          </label>
+      <form className="kit-gate-form" onSubmit={onSubmit}>
+        <label className="kit-gate-label" htmlFor={inputId}>
+          Email
+        </label>
+        <input
+          ref={inputRef}
+          className="kit-gate-input"
+          id={inputId}
+          type="email"
+          name="email"
+          autoComplete="email"
+          placeholder="Your email"
+          required
+          readOnly={sending}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <div className="kit-gate-trap" aria-hidden="true">
           <input
-            className="kit-gate-input"
-            id={inputId}
-            type="email"
-            name="email"
-            autoComplete="email"
-            placeholder="Your email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            name="company_url"
+            tabIndex={-1}
+            autoComplete="new-password"
+            data-1p-ignore
+            data-lpignore="true"
+            value={trap}
+            onChange={(e) => setTrap(e.target.value)}
           />
-          <div className="kit-gate-trap" aria-hidden="true">
-            <input
-              type="text"
-              name="company_url"
-              tabIndex={-1}
-              autoComplete="new-password"
-              data-1p-ignore
-              data-lpignore="true"
-              value={trap}
-              onChange={(e) => setTrap(e.target.value)}
-            />
-          </div>
-          <button className="btn kit-gate-button" type="submit" disabled={status === "sending"}>
-            Send me the kit
-            <ArrowRight size={15} aria-hidden="true" />
-          </button>
-          <p className="kit-gate-note">The link arrives by email, usually within a minute.</p>
-        </form>
-      )}
-      <p ref={statusRef} className="kit-gate-status" data-state={status} aria-live="polite" tabIndex={-1}>
+        </div>
+        <button className="btn kit-gate-button" type="submit" aria-disabled={sending}>
+          {sending ? (
+            <>
+              <LoaderCircle className="kit-gate-spinner" size={15} aria-hidden="true" />
+              Sending
+            </>
+          ) : (
+            <>
+              Send me the kit
+              <ArrowRight size={15} aria-hidden="true" />
+            </>
+          )}
+        </button>
+        <p className="kit-gate-note">The link arrives by email, usually within a minute.</p>
+      </form>
+      <p className="kit-gate-status" data-state={status} aria-live="polite">
         {message}
       </p>
     </section>

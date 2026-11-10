@@ -291,7 +291,7 @@ mark.hl[data-inked] {
   justify-content: center;
   cursor: pointer;
 }
-.kit-gate-button:disabled {
+.kit-gate-button[aria-disabled="true"] {
   opacity: 0.6;
   cursor: default;
 }
@@ -311,6 +311,182 @@ mark.hl[data-inked] {
 }
 .kit-gate-status:empty {
   display: none;
+}
+
+/* The sent moment. The end state is the default; the motion is layered on below */
+.kit-sent {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.kit-sent-badge {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--hl-fallback);
+  color: var(--s-ink);
+}
+.kit-sent-envelope,
+.kit-sent-check {
+  grid-area: 1 / 1;
+}
+.kit-sent-envelope {
+  opacity: 0;
+}
+.kit-sent-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.kit-sent-title {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.kit-sent-title:focus {
+  outline: none;
+}
+.kit-sent-line {
+  overflow-wrap: anywhere;
+}
+.kit-sent-hint,
+.kit-sent-retry {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+.kit-sent-retry-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--s-ink);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.kit-sent-retry-button:focus-visible {
+  outline: 2px solid var(--s-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kit-gate-spinner {
+    animation: kit-spin 0.8s linear infinite;
+  }
+  .kit-gate[data-state="done"] {
+    animation: kit-sent-glow 1.6s ease-out 0.6s both;
+  }
+  /* The envelope pops in, then lifts off up and to the right */
+  .kit-sent-envelope {
+    animation: kit-envelope 0.9s cubic-bezier(0.45, 0, 0.75, 0.2) both;
+  }
+  .kit-sent-check {
+    animation: kit-check 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) 0.72s both;
+  }
+  .kit-sent-badge {
+    animation: kit-badge 0.9s ease-out both;
+  }
+  /* One ripple out from the badge as the tick lands */
+  .kit-sent-badge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--hl-fallback);
+    animation: kit-ripple 0.9s ease-out 0.72s both;
+  }
+  .kit-sent-text > * {
+    animation: kit-rise 0.5s ease-out both;
+  }
+  .kit-sent-text > :nth-child(1) {
+    animation-delay: 0.3s;
+  }
+  .kit-sent-text > :nth-child(2) {
+    animation-delay: 0.42s;
+  }
+  .kit-sent-text > :nth-child(3) {
+    animation-delay: 0.54s;
+  }
+  .kit-sent-text > :nth-child(4) {
+    animation-delay: 0.66s;
+  }
+}
+@keyframes kit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes kit-envelope {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(28px, -32px) rotate(-14deg) scale(0.7);
+  }
+}
+@keyframes kit-check {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes kit-badge {
+  from {
+    background: var(--s-chip);
+  }
+  to {
+    background: var(--hl-fallback);
+  }
+}
+@keyframes kit-ripple {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+@keyframes kit-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes kit-sent-glow {
+  from {
+    box-shadow: 0 0 0 0 var(--hl-fallback);
+  }
+  to {
+    box-shadow: 0 0 0 14px transparent;
+  }
 }
 
 @media (min-width: 900px) {

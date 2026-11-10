@@ -48,6 +48,7 @@ export default function KitSignupPage() {
             <p className="kit-dek">A free starter kit for getting AI agents to do real work in your tools. No code.</p>
             <Byline />
           </header>
+          <KitGate />
           <div className="kit-prose">
             <p>
               It&apos;s for people who have only ever chatted with AI. Business owners, teachers, accountants, scientists: anyone with
@@ -84,7 +85,6 @@ export default function KitSignupPage() {
               ))}
             </div>
           </section>
-          <KitGate />
         </article>
       </main>
     </ToneShell>

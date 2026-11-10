@@ -49,6 +49,17 @@ test.describe("Kit signup page", () => {
     await expect(page.getByText(/min read/i)).toHaveCount(0);
   });
 
+  test("the email form sits right under the title, above the intro", async ({
+    page,
+  }) => {
+    await page.goto(`/kit?${SKY}`);
+    const form = await page.locator(".kit-gate").boundingBox();
+    const intro = await page.locator(".kit-prose").boundingBox();
+    const head = await page.locator(".kit-head").boundingBox();
+    expect(form!.y).toBeGreaterThan(head!.y + head!.height - 1);
+    expect(form!.y).toBeLessThan(intro!.y);
+  });
+
   test("highlights are inked with SVG strokes", async ({ page }) => {
     await page.goto(`/kit?${SKY}`);
     const mark = page.locator("mark.hl").first();
@@ -67,8 +78,11 @@ test.describe("Kit signup page", () => {
     await page.goto(`/kit?${SKY}`);
     await page.getByLabel("Email", { exact: true }).fill("reader@example.com");
     await page.getByRole("button", { name: "Send me the kit" }).click();
-    await expect(page.locator(".kit-gate-status")).toHaveText(
-      "Check your inbox. Your link works for good.",
+    await expect(
+      page.getByRole("heading", { name: "It's on its way." }),
+    ).toBeFocused();
+    await expect(page.locator(".kit-sent-line")).toHaveText(
+      "Sent to reader@example.com. Your link works for good.",
     );
     expect(body).toMatchObject({ kind: "kit", email: "reader@example.com" });
   });

@@ -24,7 +24,7 @@ describe("KitGate", () => {
     globalThis.fetch = fetchMock as unknown as typeof fetch
     render(<KitGate />)
     submit("  reader@example.com ")
-    await screen.findByText("Check your inbox. Your link works for good.")
+    await screen.findByRole("heading", { name: "It's on its way." })
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
@@ -39,21 +39,51 @@ describe("KitGate", () => {
     })
   })
 
-  it("shows the success line and hides the form on a 200", async () => {
+  it("shows the sent state with the reader's own address and hides the form on a 200", async () => {
     globalThis.fetch = reply(200) as unknown as typeof fetch
     render(<KitGate />)
     submit("reader@example.com")
-    expect(await screen.findByText("Check your inbox. Your link works for good.")).toBeTruthy()
+    expect(await screen.findByRole("heading", { name: "It's on its way." })).toBeTruthy()
+    expect(screen.getByText("Sent to reader@example.com. Your link works for good.")).toBeTruthy()
+    expect(screen.getByText("Not in your inbox? Check Promotions and drag it to Primary.")).toBeTruthy()
     expect(screen.queryByRole("button", { name: "Send me the kit" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Unlock it for free" })).toBeNull()
   })
 
-  it("moves focus to the status message once sent, so keyboard users keep their place", async () => {
+  it("moves focus to the sent heading, so keyboard and screen reader users hear it", async () => {
     globalThis.fetch = reply(200) as unknown as typeof fetch
     render(<KitGate />)
     submit("reader@example.com")
-    const status = await screen.findByText("Check your inbox. Your link works for good.")
-    await waitFor(() => expect(document.activeElement).toBe(status))
-    expect(status.getAttribute("tabindex")).toBe("-1")
+    const heading = await screen.findByRole("heading", { name: "It's on its way." })
+    await waitFor(() => expect(document.activeElement).toBe(heading))
+    expect(heading.getAttribute("tabindex")).toBe("-1")
+  })
+
+  it("shows a sending state while the request is in flight", async () => {
+    let finish: (value: unknown) => void = () => undefined
+    globalThis.fetch = vi.fn(
+      () => new Promise((resolve) => (finish = resolve))
+    ) as unknown as typeof fetch
+    render(<KitGate />)
+    submit("reader@example.com")
+    const button = await screen.findByRole("button", { name: "Sending" })
+    expect(button.getAttribute("aria-disabled")).toBe("true")
+    fireEvent.click(button)
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole("textbox", { name: "Email" }).hasAttribute("readonly")).toBe(true)
+    finish({ ok: true, status: 200, json: async () => ({}) })
+    expect(await screen.findByRole("heading", { name: "It's on its way." })).toBeTruthy()
+  })
+
+  it("Try again brings the form back with the address kept and focused", async () => {
+    globalThis.fetch = reply(200) as unknown as typeof fetch
+    render(<KitGate />)
+    submit("reader@example.com")
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }))
+    const input = screen.getByRole("textbox", { name: "Email" }) as HTMLInputElement
+    expect(input.value).toBe("reader@example.com")
+    await waitFor(() => expect(document.activeElement).toBe(input))
+    expect(screen.getByRole("button", { name: "Send me the kit" })).toBeTruthy()
   })
 
   it("shows the rate-limited message on a 429", async () => {
@@ -85,7 +115,7 @@ describe("KitGate", () => {
     expect(trap?.closest('[aria-hidden="true"]')).not.toBeNull()
   })
 
-  it("shows the form copy and no email address, before or after sending", async () => {
+  it("shows the form copy and no email address before sending, and only the reader's after", async () => {
     globalThis.fetch = reply(200) as unknown as typeof fetch
     const { container } = render(<KitGate />)
     expect(screen.getByRole("heading", { name: "Unlock it for free" })).toBeTruthy()
@@ -99,7 +129,8 @@ describe("KitGate", () => {
     expect(container.querySelector('[placeholder*="@"]')).toBeNull()
 
     submit("reader@example.com")
-    await screen.findByText("Check your inbox. Your link works for good.")
-    expect(container.textContent).not.toContain("@")
+    await screen.findByRole("heading", { name: "It's on its way." })
+    const addresses = container.textContent?.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []
+    expect(addresses).toEqual(["reader@example.com"])
   })
 })
