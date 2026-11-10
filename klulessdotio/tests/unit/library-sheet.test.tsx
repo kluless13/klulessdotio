@@ -173,6 +173,34 @@ describe("Library sheet", () => {
     await waitFor(() => expect(dialog()).toBeNull())
   })
 
+  it("closes a reloaded sheet this page had pushed by going back, not replacing", async () => {
+    window.history.replaceState({ library: "geist" }, "", "/library/geist")
+    const history = spyHistory()
+    render(<LibraryView initialSlug="geist" />)
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    expect(history.back).toHaveBeenCalledTimes(1)
+    expect(history.replace).not.toHaveBeenCalledWith(null, "", "/library")
+    await waitFor(() => expect(dialog()).toBeNull())
+  })
+
+  it("keeps focus on the Close button after stepping, including between fonts and buttons", () => {
+    render(<LibraryView initialSlug="geist" />)
+    const closeFocused = () => document.activeElement === screen.getByRole("button", { name: "Close" })
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "ArrowRight" })
+    expect(sheetTitle()).toBe("Inter")
+    expect(closeFocused()).toBe(true)
+    // Wraps from the first font back to the last item, a button sheet.
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "ArrowLeft" })
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "ArrowLeft" })
+    expect(within(screen.getByRole("dialog")).queryByRole("button", { name: "Copy CSS" })).not.toBeNull()
+    expect(closeFocused()).toBe(true)
+    // Back to a font sheet, which has no Copy CSS to hold focus.
+    screen.getByRole("button", { name: "Copy CSS" }).focus()
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "ArrowRight" })
+    expect(sheetTitle()).toBe("Geist")
+    expect(closeFocused()).toBe(true)
+  })
+
   it("closes on a click on the dimmed page", async () => {
     spyHistory()
     const { container } = render(<LibraryView initialSlug="geist" />)

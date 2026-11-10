@@ -56,6 +56,12 @@ export function LibraryView({ initialSlug }: { initialSlug?: string }) {
 
   useEffect(() => setView(readView(browserStorage())), [])
 
+  // After a reload the entry may be one this page pushed earlier (it carries the slug), so close can still go back.
+  useEffect(() => {
+    const state: unknown = window.history.state
+    pushed.current = initialSlug !== undefined && (state as { library?: string } | null)?.library === initialSlug
+  }, [initialSlug])
+
   // Back and forward open and close the sheet. Next's router restores the same page alongside.
   useEffect(() => {
     const onPopState = () => {
@@ -101,7 +107,8 @@ export function LibraryView({ initialSlug }: { initialSlug?: string }) {
   const stepTo = (index: number) => {
     const slug = sheetItems[index].slug
     setOpenSlug(slug)
-    window.history.replaceState({ library: slug }, "", itemPath(slug))
+    // Only an entry this page pushed carries the slug; the page's own entry stays unmarked.
+    window.history.replaceState(pushed.current ? { library: slug } : null, "", itemPath(slug))
   }
 
   const closeSheet = () => {

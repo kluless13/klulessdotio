@@ -390,6 +390,7 @@ export const BUTTONS: readonly ButtonItem[] = [
   color: #fff;
   font: 500 14px Roboto, sans-serif;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.24), 0 0 2px rgba(0, 0, 0, 0.12);
 }`),
   button("Flat and Material", "Floating action", "Material Design, 2014", "One round button for the main thing.", [

@@ -104,10 +104,11 @@ export function Sheet({ items, index, onStep, onClose }: SheetProps) {
     return () => root.classList.remove("no-scroll")
   }, [])
 
-  // Stepping can remove the focused control (a font sheet has no Copy CSS), so keep focus inside.
+  // Stepping remounts the frame and can remove the focused control (a font sheet has no Copy CSS),
+  // so put focus back on a control, not the bare dialog layer.
   useEffect(() => {
     const layer = layerRef.current
-    if (layer && !layer.contains(document.activeElement)) layer.focus({ preventScroll: true })
+    if (layer && !layer.contains(document.activeElement)) (closeRef.current ?? layer).focus({ preventScroll: true })
   }, [item.slug])
 
   useEffect(() => {
