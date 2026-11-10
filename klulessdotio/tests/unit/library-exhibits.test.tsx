@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest"
-import { cleanup, render } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { BUTTONS } from "@/content/library"
 import { EXHIBITS, Exhibit } from "@/components/library/exhibits"
 
@@ -73,4 +73,118 @@ describe("library exhibits", () => {
   it("unknown slug throws", () => {
     expect(() => Exhibit({ slug: "nope" })).toThrow(/Unknown library exhibit/)
   })
+})
+
+describe("playable live exhibits", () => {
+  it("gel switch flips aria-checked and the label", () => {
+    render(<Exhibit slug="gel-switch" />)
+    const toggle = screen.getByRole("switch")
+    expect(toggle.getAttribute("aria-checked")).toBe("true")
+    expect(toggle.textContent).toContain("ON")
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute("aria-checked")).toBe("false")
+    expect(toggle.textContent).toContain("OFF")
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute("aria-checked")).toBe("true")
+  })
+
+  it("segmented moves the selection to the clicked segment", () => {
+    render(<Exhibit slug="segmented" />)
+    expect(screen.getByRole("button", { name: "Week" }).getAttribute("aria-pressed")).toBe("true")
+    fireEvent.click(screen.getByRole("button", { name: "Day" }))
+    expect(screen.getByRole("button", { name: "Day" }).getAttribute("aria-pressed")).toBe("true")
+    expect(screen.getByRole("button", { name: "Week" }).getAttribute("aria-pressed")).toBe("false")
+  })
+
+  it("keycaps press K on a k keydown and clear after 150ms", () => {
+    vi.useFakeTimers()
+    try {
+      render(<Exhibit slug="keycaps" />)
+      const k = screen.getByText("K")
+      expect(k.getAttribute("data-pressed")).toBeNull()
+      act(() => {
+        fireEvent.keyDown(window, { key: "k" })
+      })
+      expect(k.getAttribute("data-pressed")).toBe("true")
+      expect(screen.getByText("⌘").getAttribute("data-pressed")).toBeNull()
+      act(() => {
+        vi.advanceTimersByTime(150)
+      })
+      expect(k.getAttribute("data-pressed")).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("keycaps press the command key for a Meta keydown and never prevent default", () => {
+    render(<Exhibit slug="keycaps" />)
+    let event!: KeyboardEvent
+    act(() => {
+      event = new KeyboardEvent("keydown", { key: "Meta", metaKey: true, cancelable: true })
+      window.dispatchEvent(event)
+    })
+    expect(screen.getByText("⌘").getAttribute("data-pressed")).toBe("true")
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it("keycaps ignore keys typed in an input", () => {
+    render(
+      <>
+        <input aria-label="field" />
+        <Exhibit slug="keycaps" />
+      </>,
+    )
+    fireEvent.keyDown(screen.getByLabelText("field"), { key: "k" })
+    expect(screen.getByText("K").getAttribute("data-pressed")).toBeNull()
+  })
+
+  it("keycaps remove their listener on unmount", () => {
+    const remove = vi.spyOn(window, "removeEventListener")
+    const { unmount } = render(<Exhibit slug="keycaps" />)
+    unmount()
+    expect(remove).toHaveBeenCalledWith("keydown", expect.any(Function))
+    expect(() => fireEvent.keyDown(window, { key: "k" })).not.toThrow()
+    remove.mockRestore()
+  })
+
+  it("keycaps in a forced state do not listen", () => {
+    const add = vi.spyOn(window, "addEventListener")
+    render(<Exhibit slug="keycaps" state="pressed" />)
+    expect(add).not.toHaveBeenCalledWith("keydown", expect.any(Function))
+    add.mockRestore()
+  })
+
+  it.each(["floating-action", "neumorphic", "liquid-glass"])("%s toggles aria-pressed on click", (slug) => {
+    render(<Exhibit slug={slug} />)
+    const button = screen.getByRole("button")
+    expect(button.getAttribute("aria-pressed")).toBe("false")
+    fireEvent.click(button)
+    expect(button.getAttribute("aria-pressed")).toBe("true")
+    fireEvent.click(button)
+    expect(button.getAttribute("aria-pressed")).toBe("false")
+  })
+
+  it("neumorphic keeps its label while the icon changes", () => {
+    const { container } = render(<Exhibit slug="neumorphic" />)
+    const button = screen.getByRole("button")
+    const before = container.querySelector("svg")?.getAttribute("class")
+    fireEvent.click(button)
+    expect(button.textContent).toContain("Play")
+    expect(container.querySelector("svg")?.getAttribute("class")).not.toBe(before)
+  })
+
+  it("glossy download replays its bounce on each click", () => {
+    const { container } = render(<Exhibit slug="glossy-download" />)
+    expect(container.querySelector(".lx-bounce")).toBeNull()
+    fireEvent.click(screen.getByRole("button"))
+    expect(container.querySelector(".lx-bounce")).not.toBeNull()
+  })
+
+  it.each(["gel-switch", "segmented", "keycaps", "floating-action", "neumorphic", "liquid-glass", "glossy-download"])(
+    "%s renders no button or switch in a forced state",
+    (slug) => {
+      const { container } = render(<Exhibit slug={slug} state="pressed" />)
+      expect(container.querySelector('button, [role="switch"]')).toBeNull()
+    },
+  )
 })
