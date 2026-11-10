@@ -10,6 +10,8 @@ const nextConfig = {
   experimental: {
     outputFileTracingIncludes: {
       "/writing/[slug]/opengraph-image": ["./assets/**/*", "./content/posts/**/*", "./public/writing/**/*"],
+      // Reads the posts at request time to build the sitemap list
+      "/api/cron/indexnow": ["./content/posts/**/*"],
     },
   },
   images: {

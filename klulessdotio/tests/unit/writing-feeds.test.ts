@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import path from "node:path"
 import { allItems } from "@/lib/library/catalogue"
+import { LIBRARY_UPDATED } from "@/content/library"
 import { loadPosts } from "@/lib/writing/posts"
 import {
   AI_CRAWLERS,
@@ -40,6 +41,12 @@ describe("sitemap", () => {
     const entries = sitemapEntries([posts[0], older])
     expect(entries[0].lastModified).toBe("2030-05-05")
     expect(entries[1].lastModified).toBe("2030-05-05")
+  })
+  it("dates the Library by its own last edit, not by the newest post", () => {
+    const newer = { ...posts[0], updated: "2030-05-05" }
+    const library = sitemapEntries([newer]).filter((e) => e.url.startsWith("https://1tx.dev/library"))
+    expect(library.length).toBe(43)
+    expect(library.every((e) => e.lastModified === LIBRARY_UPDATED)).toBe(true)
   })
   it("uses updated over date", () => {
     const p = { ...posts[0], updated: "2027-01-01" }
