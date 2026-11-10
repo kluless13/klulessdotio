@@ -36,6 +36,18 @@ describe("download route", () => {
     expect(fetchMock.mock.calls[0][0]).toBe(BLOB)
   })
 
+  it("forwards the upstream content-length", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("zipdata", { headers: { "content-length": "123" } })))
+    const res = await call(signToken(payload, SECRET))
+    expect(res.headers.get("Content-Length")).toBe("123")
+  })
+
+  it("omits content-length when upstream has none", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(new ReadableStream({ start: (c) => c.close() }))))
+    const res = await call(signToken(payload, SECRET))
+    expect(res.headers.get("Content-Length")).toBeNull()
+  })
+
   it("expired token links back to the post", async () => {
     const res = await call(signToken({ ...payload, slug: "a<b>", exp: Date.now() - 1 }, SECRET))
     expect(res.status).toBe(410)

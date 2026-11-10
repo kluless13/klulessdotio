@@ -26,9 +26,15 @@ const lazyRedis = {
   ttl: (key: string) => getRateLimitRedis().ttl(key),
 }
 
+// The site's own origin, plus this deployment's, so previews can sign up.
+const allowedOrigins = (): string[] =>
+  [new URL(SITE_URL).origin, process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]
+    .filter((host): host is string => Boolean(host))
+    .map((host) => (host.startsWith("http") ? host : `https://${host}`))
+
 export async function POST(request: Request) {
   const production = process.env.NODE_ENV === "production"
-  const rejection = guardSubscribeRequest(request.headers, new URL(SITE_URL).origin, production)
+  const rejection = guardSubscribeRequest(request.headers, allowedOrigins(), production)
   if (rejection) {
     log("rejected")
     return NextResponse.json({ success: false, error: rejection.error }, { status: rejection.status })

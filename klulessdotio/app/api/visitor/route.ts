@@ -15,7 +15,7 @@ const lazyRedis = {
 
 export async function POST(request: Request) {
   const production = process.env.NODE_ENV === "production"
-  const rejection = guardSubscribeRequest(request.headers, new URL(SITE_URL).origin, production)
+  const rejection = guardSubscribeRequest(request.headers, [new URL(SITE_URL).origin], production)
   if (rejection) {
     return NextResponse.json({ success: false, error: "server" }, { status: rejection.status })
   }

@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { handleSubscribe, type SubscribeDeps } from "@/lib/subscribe"
-import { verifyToken } from "@/lib/downloads/token"
+import { verifyToken, verifyKitToken, verifyUnsubToken, kitSubject } from "@/lib/downloads/token"
 
 const EMAIL = "reader.person@example.com"
 const SECRET = "test-secret"
@@ -166,5 +166,111 @@ describe("handleSubscribe", () => {
       expect(dump).not.toContain("1.1.1.1")
       expect(dump).not.toContain("9.9.9.")
     }
+  })
+})
+
+describe("handleSubscribe kit branch", () => {
+  const kit = { kind: "kit", kit: "starter-kit", email: EMAIL, consent: true }
+  const kitEnv = { KIT_SIGNING_SECRET: "kit-secret", RESEND_SEGMENT_ID: "seg-all", RESEND_KIT_SEGMENT_ID: "seg-kit" }
+
+  it("sends one kit email whose links verify", async () => {
+    const { deps, provider, logs } = setup({ env: kitEnv })
+    const res = await handleSubscribe({ ...kit, email: ` ${EMAIL.toUpperCase()} ` }, "1.1.1.1", deps)
+    expect(res).toEqual({ status: 200, body: { success: true } })
+    expect(provider.sendKitEmail).toHaveBeenCalledTimes(1)
+    const sent = provider.sendKitEmail.mock.calls[0][0]
+    expect(sent.link.startsWith("https://1tx.dev/kit/")).toBe(true)
+    const kitToken = verifyKitToken(sent.link.split("/kit/")[1], "kit-secret")
+    expect(kitToken).toEqual({ ok: true, subject: kitSubject(EMAIL) })
+    expect(sent.unsubscribeLink.startsWith("https://1tx.dev/api/unsubscribe/")).toBe(true)
+    const unsub = verifyUnsubToken(sent.unsubscribeLink.split("/api/unsubscribe/")[1], "kit-secret")
+    expect(unsub).toEqual({ ok: true, email: EMAIL })
+    expect(logs).toEqual([["subscribed"]])
+  })
+
+  it("adds the contact to both segments when both are set", async () => {
+    const { deps, provider } = setup({ env: kitEnv })
+    await handleSubscribe(kit, "1.1.1.1", deps)
+    expect(provider.addContact).toHaveBeenCalledWith({ email: EMAIL, segments: ["seg-all", "seg-kit"] })
+  })
+
+  it("adds the contact to one segment when the kit segment is not set", async () => {
+    const { deps, provider } = setup({ env: { ...kitEnv, RESEND_KIT_SEGMENT_ID: undefined } })
+    await handleSubscribe(kit, "1.1.1.1", deps)
+    expect(provider.addContact).toHaveBeenCalledWith({ email: EMAIL, segments: ["seg-all"] })
+  })
+
+  it("addContact failure still sends and returns 200", async () => {
+    const { deps, provider, logs } = setup({ env: kitEnv })
+    provider.addContact.mockRejectedValueOnce(new Error("boom"))
+    const res = await handleSubscribe(kit, "1.1.1.1", deps)
+    expect(res.status).toBe(200)
+    expect(provider.sendKitEmail).toHaveBeenCalled()
+    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+  })
+
+  it("sendKitEmail rejection is 502 server", async () => {
+    const { deps, provider, logs } = setup({ env: kitEnv })
+    provider.sendKitEmail.mockRejectedValueOnce(new Error("boom"))
+    const res = await handleSubscribe(kit, "1.1.1.1", deps)
+    expect(res).toEqual({ status: 502, body: { success: false, error: "server" } })
+    expect(logs.at(-1)).toEqual(["failed:send"])
+  })
+
+  it("missing secret is 502 and sends nothing", async () => {
+    const { deps, provider, logs } = setup({ env: {} })
+    const res = await handleSubscribe(kit, "1.1.1.1", deps)
+    expect(res.status).toBe(502)
+    expect(provider.sendKitEmail).not.toHaveBeenCalled()
+    expect(logs).toEqual([["failed:secret"]])
+  })
+
+  it("honeypot returns 200 and sends nothing", async () => {
+    const { deps, provider, redis } = setup({ env: kitEnv })
+    const res = await handleSubscribe({ ...kit, company_url: "http://spam" }, "1.1.1.1", deps)
+    expect(res).toEqual({ status: 200, body: { success: true } })
+    expect(provider.sendKitEmail).not.toHaveBeenCalled()
+    expect(redis.incr).not.toHaveBeenCalled()
+  })
+
+  it("rejects a bad email or missing consent with 400", async () => {
+    const { deps, provider } = setup({ env: kitEnv })
+    expect((await handleSubscribe({ ...kit, email: "nope" }, "1.1.1.1", deps)).status).toBe(400)
+    expect((await handleSubscribe({ ...kit, consent: false }, "1.1.1.1", deps)).status).toBe(400)
+    expect(provider.sendKitEmail).not.toHaveBeenCalled()
+  })
+
+  it("applies the email limit", async () => {
+    const { deps } = setup({ env: kitEnv })
+    let last = { status: 0 }
+    for (let i = 0; i < 4; i++) last = await handleSubscribe(kit, `4.4.4.${i}`, deps)
+    expect(last.status).toBe(429)
+  })
+})
+
+describe("limiter timeout", () => {
+  afterEach(() => vi.useRealTimers())
+  const hang = () => new Promise<never>(() => undefined)
+
+  it("kit: a limiter that never resolves gives 502 server and sends nothing", async () => {
+    vi.useFakeTimers()
+    const { deps, redis, provider, logs } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    redis.incr.mockImplementation(hang)
+    const pending = handleSubscribe({ kind: "kit", kit: "starter-kit", email: EMAIL, consent: true }, "1.1.1.1", deps)
+    await vi.advanceTimersByTimeAsync(5001)
+    expect(await pending).toEqual({ status: 502, body: { success: false, error: "server" } })
+    expect(logs).toEqual([["failed:limiter"]])
+    expect(provider.sendKitEmail).not.toHaveBeenCalled()
+  })
+
+  it("download: a limiter that never resolves gives 502 server and sends nothing", async () => {
+    vi.useFakeTimers()
+    const { deps, redis, provider, logs } = setup()
+    redis.incr.mockImplementation(hang)
+    const pending = handleSubscribe(good, "1.1.1.1", deps)
+    await vi.advanceTimersByTimeAsync(5001)
+    expect(await pending).toEqual({ status: 502, body: { success: false, error: "server" } })
+    expect(logs).toEqual([["failed:limiter"]])
+    expect(provider.sendDownloadEmail).not.toHaveBeenCalled()
   })
 })

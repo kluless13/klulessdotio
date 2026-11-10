@@ -1,9 +1,10 @@
 import { z } from "zod"
 import { DOWNLOADS } from "@/content/downloads"
 import { isDownloadAvailable } from "@/lib/downloads/registry"
-import { signToken, TOKEN_TTL_MS } from "@/lib/downloads/token"
+import { kitSecret, signKitToken, signToken, signUnsubToken, TOKEN_TTL_MS } from "@/lib/downloads/token"
 import type { MailProvider } from "@/lib/mail/provider"
 import { allow, hashKey } from "@/lib/ratelimit"
+import { withTimeout } from "@/lib/timeout"
 
 export type SubscribeEvent = "subscribed" | "rejected" | "rate_limited" | "failed:secret" | "failed:limiter" | "failed:send" | "contact_failed"
 export type SubscribeError = "invalid_email" | "rate_limited" | "unavailable" | "server"
@@ -21,6 +22,7 @@ export interface SubscribeDeps {
   log: (event: SubscribeEvent) => void
 }
 
+const LIMITER_TIMEOUT_MS = 5000
 const IP_LIMIT = { max: 5, windowSeconds: 3600 }
 const EMAIL_LIMIT = { max: 3, windowSeconds: 86400 }
 
@@ -30,6 +32,14 @@ const schema = z.object({
   consent: z.literal(true),
   company_url: z.string().max(0).optional(),
   slug: z.string().min(1).max(200),
+})
+
+const kitSchema = z.object({
+  kind: z.literal("kit"),
+  kit: z.literal("starter-kit"),
+  email: z.string().trim().email().max(254),
+  consent: z.literal(true),
+  company_url: z.string().max(0).optional(),
 })
 
 const fail = (status: number, error: SubscribeError): SubscribeResult => ({
@@ -44,10 +54,64 @@ function isHoneypotFilled(body: unknown): boolean {
   return typeof trap === "string" && trap.length > 0
 }
 
-async function withinLimits(deps: SubscribeDeps, ip: string, email: string): Promise<boolean> {
+async function checkLimits(deps: SubscribeDeps, ip: string, email: string): Promise<boolean> {
   const byIp = await allow(deps.redis, hashKey("ip", ip), IP_LIMIT.max, IP_LIMIT.windowSeconds)
   if (!byIp) return false
   return allow(deps.redis, hashKey("email", email), EMAIL_LIMIT.max, EMAIL_LIMIT.windowSeconds)
+}
+
+// Bounded so a hung limiter fails closed instead of hanging the request.
+const withinLimits = (deps: SubscribeDeps, ip: string, email: string) =>
+  withTimeout(checkLimits(deps, ip, email), LIMITER_TIMEOUT_MS)
+
+function isKitRequest(body: unknown): boolean {
+  return typeof body === "object" && body !== null && (body as { kind?: unknown }).kind === "kit"
+}
+
+async function handleKitSubscribe(body: unknown, ip: string, deps: SubscribeDeps): Promise<SubscribeResult> {
+  const parsed = kitSchema.safeParse(body)
+  if (!parsed.success) {
+    deps.log("rejected")
+    return fail(400, "invalid_email")
+  }
+  const { email } = parsed.data
+
+  const secret = kitSecret(deps.env)
+  if (!secret) {
+    deps.log("failed:secret")
+    return fail(502, "server")
+  }
+
+  try {
+    if (!(await withinLimits(deps, ip, email))) {
+      deps.log("rate_limited")
+      return fail(429, "rate_limited")
+    }
+  } catch {
+    deps.log("failed:limiter")
+    return fail(502, "server")
+  }
+
+  try {
+    const link = `${deps.origin}/kit/${signKitToken(email, secret)}`
+    const unsubscribeLink = `${deps.origin}/api/unsubscribe/${signUnsubToken(email, secret)}`
+    const segments = [deps.env.RESEND_SEGMENT_ID, deps.env.RESEND_KIT_SEGMENT_ID].filter(
+      (id): id is string => Boolean(id)
+    )
+
+    try {
+      await deps.provider.addContact({ email, segments })
+    } catch {
+      deps.log("contact_failed")
+    }
+    await deps.provider.sendKitEmail({ email, link, unsubscribeLink })
+  } catch {
+    deps.log("failed:send")
+    return fail(502, "server")
+  }
+
+  deps.log("subscribed")
+  return OK
 }
 
 export async function handleSubscribe(
@@ -56,6 +120,7 @@ export async function handleSubscribe(
   deps: SubscribeDeps
 ): Promise<SubscribeResult> {
   if (isHoneypotFilled(body)) return OK
+  if (isKitRequest(body)) return handleKitSubscribe(body, ip, deps)
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
