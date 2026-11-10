@@ -11,11 +11,12 @@ import { SITE_URL } from "@/lib/writing/feeds"
 import { featuredSeries, groupByCategory, loadPosts } from "@/lib/writing/posts"
 import { RSS_ALTERNATE, breadcrumbJsonLd, pageMetadata } from "@/lib/writing/seo"
 import "./writing.css"
+import { WRITING_DESCRIPTION } from "@/lib/content"
 import "./index.css"
 import "./featured.css"
 import "./rows.css"
 
-const base = pageMetadata("/writing", "Writing · Angad Maniyambath", "Things I looked into, and what I found.")
+const base = pageMetadata("/writing", "Writing · Angad Maniyambath", WRITING_DESCRIPTION)
 export const metadata: Metadata = { ...base, alternates: { ...base.alternates, types: RSS_ALTERNATE } }
 
 const CRUMBS = breadcrumbJsonLd([
