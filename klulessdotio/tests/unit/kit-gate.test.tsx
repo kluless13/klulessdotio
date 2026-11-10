@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { KitGate } from "@/components/kit/KitGate"
 
 const realFetch = globalThis.fetch
@@ -45,6 +45,15 @@ describe("KitGate", () => {
     submit("reader@example.com")
     expect(await screen.findByText("Check your inbox. Your link works for good.")).toBeTruthy()
     expect(screen.queryByRole("button", { name: "Send me the kit" })).toBeNull()
+  })
+
+  it("moves focus to the status message once sent, so keyboard users keep their place", async () => {
+    globalThis.fetch = reply(200) as unknown as typeof fetch
+    render(<KitGate />)
+    submit("reader@example.com")
+    const status = await screen.findByText("Check your inbox. Your link works for good.")
+    await waitFor(() => expect(document.activeElement).toBe(status))
+    expect(status.getAttribute("tabindex")).toBe("-1")
   })
 
   it("shows the rate-limited message on a 429", async () => {

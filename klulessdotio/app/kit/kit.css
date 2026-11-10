@@ -306,6 +306,9 @@ mark.hl[data-inked] {
   line-height: 20px;
   font-weight: 500;
 }
+.kit-gate-status:focus {
+  outline: none;
+}
 .kit-gate-status:empty {
   display: none;
 }

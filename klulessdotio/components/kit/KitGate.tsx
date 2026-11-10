@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowRight } from "lucide-react"
-import { useId, useState, type FormEvent } from "react"
+import { useEffect, useId, useRef, useState, type FormEvent } from "react"
 
 type Status = "idle" | "sending" | "done" | "invalid-email" | "rate-limited" | "server"
 
@@ -36,6 +36,12 @@ export function KitGate() {
   const [status, setStatus] = useState<Status>("idle")
   const titleId = useId()
   const inputId = useId()
+  const statusRef = useRef<HTMLParagraphElement>(null)
+
+  // The form disappears once sent, so focus moves to the message instead of falling back to the page
+  useEffect(() => {
+    if (status === "done") statusRef.current?.focus()
+  }, [status])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -93,7 +99,7 @@ export function KitGate() {
           <p className="kit-gate-note">The link arrives by email, usually within a minute.</p>
         </form>
       )}
-      <p className="kit-gate-status" data-state={status} aria-live="polite">
+      <p ref={statusRef} className="kit-gate-status" data-state={status} aria-live="polite" tabIndex={-1}>
         {message}
       </p>
     </section>
