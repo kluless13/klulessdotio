@@ -1,16 +1,24 @@
 import { describe, expect, it, vi } from "vitest"
 
-const { stub } = vi.hoisted(() => ({
+const { stub, loaded } = vi.hoisted(() => ({
   stub: (name: string) => ({ style: { fontFamily: name }, variable: "" }),
+  // The options each next/font loader was called with, by catalogue slug
+  loaded: {} as Record<string, { weight: readonly string[] }>,
 }))
 
-vi.mock("next/font/google", () => ({
-  Inter: () => stub("Inter Stub"),
-  Averia_Serif_Libre: () => stub("Averia Stub"),
-  Newsreader: () => stub("Newsreader Stub"),
-  EB_Garamond: () => stub("EB Garamond Stub"),
-  Fraunces: () => stub("Fraunces Stub"),
-}))
+vi.mock("next/font/google", () => {
+  const loader = (slug: string, name: string) => (options: { weight: readonly string[] }) => {
+    loaded[slug] = options
+    return stub(name)
+  }
+  return {
+    Inter: loader("inter", "Inter Stub"),
+    Averia_Serif_Libre: loader("averia-serif-libre", "Averia Stub"),
+    Newsreader: loader("newsreader", "Newsreader Stub"),
+    EB_Garamond: loader("eb-garamond", "EB Garamond Stub"),
+    Fraunces: loader("fraunces", "Fraunces Stub"),
+  }
+})
 vi.mock("geist/font/sans", () => ({ GeistSans: stub("Geist Stub") }))
 
 import { FONTS } from "@/content/library"
@@ -37,6 +45,17 @@ describe("fontFamily", () => {
 
   it("throws for an unknown slug", () => {
     expect(() => fontFamily("comic-sans")).toThrow()
+  })
+})
+
+describe("next/font weights", () => {
+  // next/font needs literal options, so fonts.ts repeats the catalogue's weights. This keeps the two in step.
+  it("loads exactly the catalogue weights for every Google font", () => {
+    expect(Object.keys(loaded).sort()).toEqual(["averia-serif-libre", "eb-garamond", "fraunces", "inter", "newsreader"])
+    for (const [slug, options] of Object.entries(loaded)) {
+      const font = FONTS.find((f) => f.slug === slug)
+      expect(options.weight, slug).toEqual(font?.weights.map((w) => String(w.value)))
+    }
   })
 })
 

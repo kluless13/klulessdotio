@@ -64,8 +64,11 @@
   display: flex;
   gap: 8px;
 }
+/* The section you're on stays pressed: a flat face in the button's lower tone, sunk a pixel, no lift */
 .top-nav .btn[aria-current="page"] {
-  box-shadow: 0 0 0 1px var(--b-ring), inset 0 2px 4px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--b-bot) 92%, #000), var(--b-bot));
+  box-shadow: 0 0 0 1px var(--b-ring), inset 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
 }
 
 /* Tiles */
