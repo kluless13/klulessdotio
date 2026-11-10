@@ -32,7 +32,7 @@ export function KitBar() {
           <span className="kitbar-wide">A free starter kit for getting AI to do real work in your tools.</span>
           <span className="kitbar-narrow">Free starter kit: get AI doing real work in your tools.</span>
         </p>
-        <a className="btn kitbar-btn" href="/kit">
+        <a className="kitbar-cta" href="/kit">
           <span className="kitbar-wide">Get the free kit</span>
           <span className="kitbar-narrow">Get the kit</span>
           <ArrowRight className="kitbar-arrow" aria-hidden="true" />

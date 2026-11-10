@@ -28,6 +28,9 @@ describe("KitBar", () => {
     const link = screen.getByRole("link")
     expect(link.getAttribute("href")).toBe("/kit")
     expect(link.textContent).toContain("Get the free kit")
+    // The bar's own warm button, not the site's .btn
+    expect(link.classList.contains("kitbar-cta")).toBe(true)
+    expect(link.classList.contains("btn")).toBe(false)
   })
 
   it("closes, remembers the choice and hides across the page", () => {
