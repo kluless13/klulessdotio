@@ -168,6 +168,7 @@ The kit is Markdown with a small set of directives (`remark-directive`), so the 
   - the unsubscribe token is a signed `{ kind: "unsub", email }`, with no expiry;
   - the POST and GET handlers set the Resend contact to `unsubscribed: true`;
   - GET shows a simple confirmation page: "You're unsubscribed. Your kit link still works."
+  - **Changed during the build (2026-11-10):** email security scanners open links automatically, so GET now leads to a confirm page with an "Unsubscribe" button, and only POST unsubscribes. Gmail's and Apple Mail's built-in one-click unsubscribe still POSTs directly.
 
 ## List and tagging
 
