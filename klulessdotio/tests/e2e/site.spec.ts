@@ -12,8 +12,7 @@ test.describe("Noise", () => {
   test("shows sections in the agreed order and keeps things closed until found", async ({ page }) => {
     await page.goto(DAY)
     await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("Hi, I'm Angad.")
-    const labels = await page.locator("main h2").allTextContents()
-    expect(labels).toEqual(["What I believe", "What I do", "What I can build", "Things I've made", "What I've been up to"])
+    await expect(page.locator("main h2")).toHaveText(["What I believe", "What I do", "What I can build", "Things I've made", "What I've been up to"])
     await expect(page.getByText("Head of AI, Truflation")).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Telegram" })).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Published in SoftwareX, 2026" })).toHaveAttribute("href", /S2352711026001366/)

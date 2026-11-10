@@ -76,10 +76,14 @@ function measureSheet({ skies, selector }: { skies: number[][]; selector: string
 
 // Hides the sheet, screenshots the sky behind it and returns its darkest and lightest sampled pixels.
 async function sampleSky(page: Page, selector = ".sheet"): Promise<number[][]> {
-  const style = await page.addStyleTag({ content: `${selector}{visibility:hidden!important}` })
+  const style = await page.addStyleTag({ content: `${selector}, .visitor-toast{visibility:hidden!important}` })
   const box = await page.locator(selector).boundingBox()
-  if (!box) throw new Error("sheet not found")
-  const shot = (await page.screenshot({ clip: { x: box.x, y: Math.max(0, box.y), width: box.width, height: Math.min(box.height, 700) } })).toString("base64")
+  const view = page.viewportSize()
+  if (!box || !view) throw new Error("sheet not found")
+  // Tall regions (the whole Library) are sampled over the part that is on screen.
+  const y = Math.max(0, box.y)
+  const clip = { x: Math.max(0, box.x), y, width: Math.min(box.width, view.width), height: Math.min(box.height, 700, view.height - y) }
+  const shot = (await page.screenshot({ clip })).toString("base64")
   return page.evaluate(async (data) => {
     const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob())
     const canvas = document.createElement("canvas")
@@ -129,6 +133,15 @@ test.describe("Library contrast", () => {
       const head = await page.evaluate(measureSheet, { skies: await sampleSky(page, ".lib-head"), selector: ".lib-head" })
       expect(head.length).toBeGreaterThan(2)
       expect(head.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`), `${tone} head`).toEqual([])
+
+      for (const view of ["Grid", "List"]) {
+        await page.getByRole("button", { name: view, exact: true }).click()
+        await page.waitForTimeout(300)
+        const body = await page.evaluate(measureSheet, { skies: await sampleSky(page, ".lib-sections"), selector: ".lib-sections" })
+        // Tile names and kinds, section headings and counts, for every tile in the page.
+        expect(body.length, `${tone} ${view} text count`).toBeGreaterThan(40)
+        expect(body.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`), `${tone} ${view} sections`).toEqual([])
+      }
 
       for (const slug of ["geist", "aqua"]) {
         await page.goto(`/library/${slug}?hour=${hour}&weather=clear`)
