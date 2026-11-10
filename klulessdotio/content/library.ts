@@ -199,9 +199,10 @@ export const BUTTONS: readonly ButtonItem[] = [
   border: 1px solid #003c74;
   background: linear-gradient(180deg, #fff 0%, #f4f3ee 40%, #e3e0d6 85%, #d6d0c5 100%);
   color: #000;
+  box-shadow: inset 0 0 0 1px #ffe7a2, inset 0 0 0 2px #f8b330;
 }
 .luna:hover {
-  box-shadow: inset 0 0 0 1px #ffe7a2, inset 0 0 0 2px #f8b330;
+  box-shadow: inset 0 0 0 1px #ffe7a2, inset 0 0 0 2px #f8b330, 0 0 4px rgba(248, 179, 48, 0.6);
 }`),
   button("Retro desktops", "Luna start", "Windows XP", "The most clicked green button there was.", [
     "A green gradient with a lighter band across the top.",
@@ -531,11 +532,11 @@ export const BUTTONS: readonly ButtonItem[] = [
     "A soft glow inside the top and a deep shadow below.",
   ], `
 .liquid-glass {
+  position: relative;
+  isolation: isolate;
   padding: 11px 24px 11px 20px;
   border-radius: 999px;
   color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(1px) brightness(1.1) saturate(110%);
   box-shadow:
     inset 1px 1.5px 0 -0.5px rgba(255, 255, 255, 0.7),
     inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.25),
@@ -543,6 +544,22 @@ export const BUTTONS: readonly ButtonItem[] = [
     inset 0 12px 16px -12px rgba(255, 255, 255, 0.4),
     0 1px 1px rgba(0, 0, 0, 0.3),
     0 12px 32px rgba(0, 0, 0, 0.4);
+}
+.liquid-glass::before,
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.liquid-glass::before {
+  backdrop-filter: blur(0.5px) brightness(1.06) saturate(110%);
+}
+.liquid-glass::after {
+  backdrop-filter: blur(1.5px) brightness(1.45) saturate(108%) hue-rotate(-8deg);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, transparent 66%, rgba(0, 0, 0, 0.7) 90%, #000 100%);
 }`),
 
   button("Mine", "Mine", "1tx.dev", "Where all of the above ended up. The border shimmers on hover.", [

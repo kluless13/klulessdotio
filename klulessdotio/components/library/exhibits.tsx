@@ -23,60 +23,74 @@ function Surface({ kind, children }: { kind: "neu" | "clay" | "glass" | "liquid"
   return <div className={`lx-surface lx-surface-${kind}`}>{children}</div>
 }
 
-const Btn = ({ className, children }: { className?: string; children?: ReactNode }) => (
-  <button type="button" className={className}>
-    {children}
-  </button>
-)
+interface PartProps {
+  live: boolean
+  className?: string
+  label?: string
+  switchOn?: boolean
+  children?: ReactNode
+}
+
+// Only the live exhibit is a real button. Tiles and list rows are buttons themselves, and the
+// state row sits beside the live one, so every other state is a span: a button in a button is invalid HTML.
+function Part({ live, className, label, switchOn, children }: PartProps) {
+  const classes = className === "btn lx-mine" ? className : `lx-b${className ? ` ${className}` : ""}`
+  if (!live) return <span className={classes}>{children}</span>
+  return (
+    <button type="button" className={classes} aria-label={label} role={switchOn ? "switch" : undefined} aria-checked={switchOn ? true : undefined}>
+      {children}
+    </button>
+  )
+}
 
 const framed =
-  (render: () => ReactNode): Maker =>
-  (props) => <Frame {...props}>{render()}</Frame>
+  (render: (live: boolean) => ReactNode): Maker =>
+  (props) => <Frame {...props}>{render((props.state ?? "live") === "live")}</Frame>
 
 export const EXHIBITS: Record<string, Maker> = {
-  weighted: framed(() => (
-    <Btn className="lx-weighted">
+  weighted: framed((live) => (
+    <Part live={live} className="lx-weighted">
       Search <CornerDownLeft size={17} aria-hidden="true" />
-    </Btn>
+    </Part>
   )),
-  "weighted-light": framed(() => (
-    <Btn className="lx-weighted-light">
+  "weighted-light": framed((live) => (
+    <Part live={live} className="lx-weighted-light">
       Cancel <kbd>esc</kbd>
-    </Btn>
+    </Part>
   )),
-  "weighted-dark": framed(() => (
-    <Btn className="lx-weighted-dark">
+  "weighted-dark": framed((live) => (
+    <Part live={live} className="lx-weighted-dark">
       Continue <CornerDownLeft size={16} aria-hidden="true" />
-    </Btn>
+    </Part>
   )),
-  "weighted-icon": framed(() => (
-    <button type="button" className="lx-weighted-icon" aria-label="Send">
+  "weighted-icon": framed((live) => (
+    <Part live={live} className="lx-weighted-icon" label="Send">
       <ArrowUp size={20} aria-hidden="true" />
-    </button>
+    </Part>
   )),
-  keycaps: framed(() => (
+  keycaps: framed((live) => (
     <div className="lx-keys">
-      <Btn className="lx-keycap">⌘</Btn>
-      <Btn className="lx-keycap">K</Btn>
+      <Part live={live} className="lx-keycap">⌘</Part>
+      <Part live={live} className="lx-keycap">K</Part>
     </div>
   )),
-  segmented: framed(() => (
-    <div className="lx-segmented" role="group" aria-label="Range">
-      <Btn>Day</Btn>
-      <Btn className="lx-on">Week</Btn>
-      <Btn>Month</Btn>
+  segmented: framed((live) => (
+    <div className="lx-segmented" role={live ? "group" : undefined} aria-label={live ? "Range" : undefined}>
+      <Part live={live}>Day</Part>
+      <Part live={live} className="lx-on">Week</Part>
+      <Part live={live}>Month</Part>
     </div>
   )),
 
-  platinum: framed(() => (
+  platinum: framed((live) => (
     <span className="lx-platinum-ring">
-      <Btn className="lx-platinum">OK</Btn>
+      <Part live={live} className="lx-platinum">OK</Part>
     </span>
   )),
-  bevel: framed(() => <Btn className="lx-bevel">Apply</Btn>),
-  luna: framed(() => <Btn className="lx-luna">OK</Btn>),
-  "luna-start": framed(() => (
-    <Btn className="lx-luna-start">
+  bevel: framed((live) => <Part live={live} className="lx-bevel">Apply</Part>),
+  luna: framed((live) => <Part live={live} className="lx-luna">OK</Part>),
+  "luna-start": framed((live) => (
+    <Part live={live} className="lx-luna-start">
       <span className="lx-flag" aria-hidden="true">
         <i />
         <i />
@@ -84,97 +98,97 @@ export const EXHIBITS: Record<string, Maker> = {
         <i />
       </span>
       start
-    </Btn>
+    </Part>
   )),
-  aero: framed(() => <Btn className="lx-aero">Next</Btn>),
-  aqua: framed(() => <Btn className="lx-aqua">Continue</Btn>),
-  "aqua-graphite": framed(() => <Btn className="lx-aqua-graphite">Cancel</Btn>),
-  "aqua-help": framed(() => (
-    <button type="button" className="lx-aqua-help" aria-label="Help">
+  aero: framed((live) => <Part live={live} className="lx-aero">Next</Part>),
+  aqua: framed((live) => <Part live={live} className="lx-aqua">Continue</Part>),
+  "aqua-graphite": framed((live) => <Part live={live} className="lx-aqua-graphite">Cancel</Part>),
+  "aqua-help": framed((live) => (
+    <Part live={live} className="lx-aqua-help" label="Help">
       ?
-    </button>
+    </Part>
   )),
-  "traffic-lights": framed(() => (
+  "traffic-lights": framed((live) => (
     <div className="lx-lights">
-      <button type="button" className="lx-light" aria-label="Close" />
-      <button type="button" className="lx-light lx-yellow" aria-label="Minimise" />
-      <button type="button" className="lx-light lx-green" aria-label="Zoom" />
+      <Part live={live} className="lx-light" label="Close" />
+      <Part live={live} className="lx-light lx-yellow" label="Minimise" />
+      <Part live={live} className="lx-light lx-green" label="Zoom" />
     </div>
   )),
 
-  "glossy-download": framed(() => (
-    <Btn className="lx-download">
+  "glossy-download": framed((live) => (
+    <Part live={live} className="lx-download">
       <Download size={22} aria-hidden="true" />
       <span>
         <b>Download</b>
         <small>Free, for Mac</small>
       </span>
-    </Btn>
+    </Part>
   )),
-  "bootstrap-2": framed(() => <Btn className="lx-bootstrap2">Sign up</Btn>),
-  "gel-switch": framed(() => (
-    <button type="button" role="switch" aria-checked="true" aria-label="Switch" className="lx-gel">
+  "bootstrap-2": framed((live) => <Part live={live} className="lx-bootstrap2">Sign up</Part>),
+  "gel-switch": framed((live) => (
+    <Part live={live} className="lx-gel" label="Switch" switchOn>
       <span>ON</span>
       <span className="lx-gel-knob" />
-    </button>
+    </Part>
   )),
-  "glossy-bar-button": framed(() => <Btn className="lx-bar">Edit</Btn>),
+  "glossy-bar-button": framed((live) => <Part live={live} className="lx-bar">Edit</Part>),
 
-  "text-button": framed(() => <Btn className="lx-text">Done</Btn>),
-  raised: framed(() => <Btn className="lx-raised">Button</Btn>),
-  "floating-action": framed(() => (
-    <button type="button" className="lx-fab" aria-label="Add">
+  "text-button": framed((live) => <Part live={live} className="lx-text">Done</Part>),
+  raised: framed((live) => <Part live={live} className="lx-raised">Button</Part>),
+  "floating-action": framed((live) => (
+    <Part live={live} className="lx-fab" label="Add">
       <Plus size={24} aria-hidden="true" />
-    </button>
+    </Part>
   )),
 
-  "shadcn-ui": framed(() => (
+  "shadcn-ui": framed((live) => (
     <div className="lx-shadcn">
-      <Btn className="lx-shadcn-default">Default</Btn>
-      <Btn className="lx-shadcn-secondary">Secondary</Btn>
-      <Btn className="lx-shadcn-outline">Outline</Btn>
-      <Btn className="lx-shadcn-ghost">Ghost</Btn>
+      <Part live={live} className="lx-shadcn-default">Default</Part>
+      <Part live={live} className="lx-shadcn-secondary">Secondary</Part>
+      <Part live={live} className="lx-shadcn-outline">Outline</Part>
+      <Part live={live} className="lx-shadcn-ghost">Ghost</Part>
     </div>
   )),
-  "primer-green": framed(() => <Btn className="lx-primer">Create repository</Btn>),
-  "blue-pill": framed(() => <Btn className="lx-blue-pill">Buy</Btn>),
-  "purple-pill": framed(() => (
-    <Btn className="lx-purple-pill">
+  "primer-green": framed((live) => <Part live={live} className="lx-primer">Create repository</Part>),
+  "blue-pill": framed((live) => <Part live={live} className="lx-blue-pill">Buy</Part>),
+  "purple-pill": framed((live) => (
+    <Part live={live} className="lx-purple-pill">
       Start now <ChevronRight size={14} aria-hidden="true" />
-    </Btn>
+    </Part>
   )),
-  "neo-brutalist": framed(() => <Btn className="lx-brutalist">Buy now</Btn>),
+  "neo-brutalist": framed((live) => <Part live={live} className="lx-brutalist">Buy now</Part>),
 
-  neumorphic: framed(() => (
+  neumorphic: framed((live) => (
     <Surface kind="neu">
-      <Btn className="lx-neu">
+      <Part live={live} className="lx-neu">
         <Play size={16} aria-hidden="true" /> Play
-      </Btn>
+      </Part>
     </Surface>
   )),
-  clay: framed(() => (
+  clay: framed((live) => (
     <Surface kind="clay">
-      <Btn className="lx-clay">Let’s go</Btn>
+      <Part live={live} className="lx-clay">Let’s go</Part>
     </Surface>
   )),
-  "frosted-glass": framed(() => (
+  "frosted-glass": framed((live) => (
     <Surface kind="glass">
-      <Btn className="lx-glass">Join the list</Btn>
+      <Part live={live} className="lx-glass">Join the list</Part>
     </Surface>
   )),
-  "liquid-glass": framed(() => (
+  "liquid-glass": framed((live) => (
     <Surface kind="liquid">
-      <Btn className="lx-liquid">
+      <Part live={live} className="lx-liquid">
         <Play size={15} aria-hidden="true" /> Listen
-      </Btn>
+      </Part>
     </Surface>
   )),
 
-  // The site's real button: same markup and classes as everywhere else, so it follows the tone.
-  mine: framed(() => (
-    <button type="button" className="btn lx-mine">
+  // The site's real button: same classes as everywhere else, so it follows the tone.
+  mine: framed((live) => (
+    <Part live={live} className="btn lx-mine">
       Say hello
-    </button>
+    </Part>
   )),
 }
 

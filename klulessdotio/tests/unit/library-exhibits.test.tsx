@@ -34,9 +34,9 @@ describe("library exhibits", () => {
     expect((container.querySelector(".lx") as HTMLElement).style.transform).toBe("scale(1.5)")
   })
 
-  it("every exhibit renders a non-submitting button", () => {
+  it("live exhibits render real buttons, all type=button", () => {
     for (const { slug } of BUTTONS) {
-      const { container } = render(<Exhibit slug={slug} />)
+      const { container } = render(<Exhibit slug={slug} state="live" />)
       const buttons = container.querySelectorAll("button")
       expect(buttons.length, slug).toBeGreaterThan(0)
       buttons.forEach((b) => expect(b.getAttribute("type")).toBe("button"))
@@ -44,10 +44,30 @@ describe("library exhibits", () => {
     }
   })
 
+  it("mirror, rest, hover and pressed render no interactive elements", () => {
+    for (const state of ["mirror", "rest", "hover", "pressed"] as const) {
+      for (const { slug } of BUTTONS) {
+        const { container } = render(<Exhibit slug={slug} state={state} />)
+        expect(container.querySelector("button, [role], [tabindex], [type]"), `${slug} ${state}`).toBeNull()
+        cleanup()
+      }
+    }
+  })
+
+  it("forced states keep the exhibit's classes on their spans", () => {
+    const { container } = render(<Exhibit slug="weighted" state="pressed" />)
+    expect(container.querySelector("span.lx-weighted")).not.toBeNull()
+  })
+
   it("Mine is the site's real .btn with its label", () => {
     const { getByRole } = render(<Exhibit slug="mine" />)
     const button = getByRole("button", { name: "Say hello" })
     expect(button.classList.contains("btn")).toBe(true)
+  })
+
+  it("Mine keeps the .btn class in a forced state too", () => {
+    const { getByText } = render(<Exhibit slug="mine" state="hover" />)
+    expect(getByText("Say hello").classList.contains("btn")).toBe(true)
   })
 
   it("unknown slug throws", () => {
