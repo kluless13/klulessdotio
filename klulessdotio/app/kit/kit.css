@@ -1,0 +1,549 @@
+/* The starter kit: tone, the reading sheet, the highlighter and the signup form, matched to the Paper boards */
+.kit {
+  /* Night */
+  --w-soft: rgba(255, 255, 255, 0.6);
+  --s-bg: rgba(16, 22, 40, 0.9);
+  --s-border: rgba(255, 255, 255, 0.08);
+  --s-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  --s-ink: #fff;
+  --s-soft: rgba(255, 255, 255, 0.6);
+  --s-tint: rgba(255, 255, 255, 0.05);
+  --s-tint2: rgba(255, 255, 255, 0.08);
+  --s-chip: rgba(255, 255, 255, 0.08);
+  /* Sky blue by night: yellow turns olive on the navy sheet */
+  --hl-color: #6aaeff;
+  --hl-alpha: 0.34;
+  --hl-fallback: rgba(106, 174, 255, 0.34);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+}
+:root.day .kit:not([data-tone]),
+.kit[data-tone="day"] {
+  /* The footer sits on the sky; the boards' 0.6 falls short of AA on the deeper noon blues */
+  --w-soft: rgba(16, 26, 46, 0.88);
+  --s-bg: rgba(255, 255, 255, 0.92);
+  --s-border: rgba(255, 255, 255, 0.9);
+  --s-shadow: 0 1px 2px rgba(20, 30, 60, 0.06), 0 30px 80px rgba(20, 30, 60, 0.14);
+  --s-ink: #101a2e;
+  /* Darker than the boards' 0.6 so soft text passes AA on the tinted tiles */
+  --s-soft: rgba(16, 26, 46, 0.66);
+  --s-tint: rgba(16, 26, 46, 0.045);
+  --s-tint2: rgba(16, 26, 46, 0.07);
+  --s-chip: rgba(16, 26, 46, 0.06);
+  /* Warm yellow by day */
+  --hl-color: #ffd449;
+  --hl-alpha: 0.58;
+  --hl-fallback: rgba(255, 212, 73, 0.58);
+}
+.kit a {
+  color: inherit;
+  text-decoration: none;
+}
+.kit .btn {
+  color: var(--b-ink);
+}
+
+/* The page and its sheet */
+.kit-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 24px 0 140px;
+}
+.kit-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  width: min(760px, calc(100% - 24px));
+  padding: 64px 64px 56px;
+  border-radius: 28px;
+  color: var(--s-ink);
+  background: var(--s-bg);
+  border: 1px solid var(--s-border);
+  box-shadow: var(--s-shadow);
+  transition: background-color 0.8s ease, border-color 0.8s ease, color 0.8s ease;
+}
+
+/* Head: title, one-line subtitle, byline */
+.kit-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kit-title {
+  font-size: 56px;
+  line-height: 62px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+.kit-dek {
+  font-size: 18px;
+  line-height: 27px;
+  color: var(--s-soft);
+}
+.kit-byline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* The board's 6px spacer between two 12px gaps */
+  margin-top: 18px;
+}
+.kit-byline-photo {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.kit-byline-name {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.kit-byline-role {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+
+/* Reading text */
+.kit-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 32px;
+}
+
+/* Highlighter: per-line strokes drawn behind the words once they can be measured.
+   Until then, and without JS, a plain translucent background. Nothing here changes the text's box. */
+mark.hl {
+  position: relative;
+  z-index: 0;
+  color: inherit;
+  background: var(--hl-fallback);
+}
+mark.hl[data-inked] {
+  background: transparent;
+}
+.hl-ink {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.hl-line {
+  position: absolute;
+  overflow: visible;
+}
+.hl-body {
+  fill: var(--hl-color);
+  fill-opacity: calc(var(--hl-alpha) + var(--hl-jitter, 0));
+}
+.hl-streak {
+  fill: none;
+  stroke: var(--hl-color);
+  stroke-opacity: calc(var(--hl-alpha) * 0.5);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+@media (forced-colors: active) {
+  mark.hl {
+    background: Mark;
+    color: MarkText;
+  }
+  .hl-ink {
+    display: none;
+  }
+}
+
+/* What's inside */
+.kit-inside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kit-inside-title {
+  font-size: 21px;
+  line-height: 28px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.kit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: var(--s-tint);
+}
+.kit-box-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.kit-box-text {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--s-soft);
+}
+.kit-steps {
+  gap: 10px;
+}
+.kit-steps-list {
+  display: grid;
+  grid-template-columns: repeat(2, 280px);
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+  gap: 6px 24px;
+  align-content: start;
+}
+.kit-step {
+  display: flex;
+  gap: 6px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.kit-step-number {
+  flex-shrink: 0;
+  width: 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--s-soft);
+}
+.kit-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* The signup form. The honeypot's wrapper sits out of flow, so it never takes a grid cell */
+.kit-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--s-tint);
+  font-size: 16px;
+  line-height: 26px;
+}
+.kit-gate-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kit-gate-title {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.kit-gate-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.kit-gate-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.kit-gate-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.kit-gate-input {
+  min-width: 0;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--s-chip);
+  color: var(--s-ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
+}
+.kit-gate-input::placeholder {
+  color: var(--s-soft);
+}
+.kit-gate-input:focus-visible {
+  outline: 2px solid var(--s-ink);
+  outline-offset: 2px;
+}
+.kit-gate-button {
+  justify-content: center;
+  cursor: pointer;
+}
+.kit-gate-button[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: default;
+}
+.kit-gate-note {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--s-soft);
+}
+.kit-gate-status {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.kit-gate-status:focus {
+  outline: none;
+}
+.kit-gate-status:empty {
+  display: none;
+}
+
+/* The sent moment. The end state is the default; the motion is layered on below */
+.kit-sent {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.kit-sent-badge {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--hl-fallback);
+  color: var(--s-ink);
+}
+.kit-sent-envelope,
+.kit-sent-check {
+  grid-area: 1 / 1;
+}
+.kit-sent-envelope {
+  opacity: 0;
+}
+.kit-sent-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.kit-sent-title {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.kit-sent-title:focus {
+  outline: none;
+}
+.kit-sent-line {
+  overflow-wrap: anywhere;
+}
+.kit-sent-hint,
+.kit-sent-retry {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+.kit-sent-retry-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--s-ink);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.kit-sent-retry-button:focus-visible {
+  outline: 2px solid var(--s-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kit-gate-spinner {
+    animation: kit-spin 0.8s linear infinite;
+  }
+  .kit-gate[data-state="done"] {
+    animation: kit-sent-glow 1.6s ease-out 0.6s both;
+  }
+  /* The envelope pops in, then lifts off up and to the right */
+  .kit-sent-envelope {
+    animation: kit-envelope 0.9s cubic-bezier(0.45, 0, 0.75, 0.2) both;
+  }
+  .kit-sent-check {
+    animation: kit-check 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) 0.72s both;
+  }
+  .kit-sent-badge {
+    animation: kit-badge 0.9s ease-out both;
+  }
+  /* One ripple out from the badge as the tick lands */
+  .kit-sent-badge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--hl-fallback);
+    animation: kit-ripple 0.9s ease-out 0.72s both;
+  }
+  .kit-sent-text > * {
+    animation: kit-rise 0.5s ease-out both;
+  }
+  .kit-sent-text > :nth-child(1) {
+    animation-delay: 0.3s;
+  }
+  .kit-sent-text > :nth-child(2) {
+    animation-delay: 0.42s;
+  }
+  .kit-sent-text > :nth-child(3) {
+    animation-delay: 0.54s;
+  }
+  .kit-sent-text > :nth-child(4) {
+    animation-delay: 0.66s;
+  }
+}
+@keyframes kit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes kit-envelope {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(28px, -32px) rotate(-14deg) scale(0.7);
+  }
+}
+@keyframes kit-check {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes kit-badge {
+  from {
+    background: var(--s-chip);
+  }
+  to {
+    background: var(--hl-fallback);
+  }
+}
+@keyframes kit-ripple {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+@keyframes kit-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes kit-sent-glow {
+  from {
+    box-shadow: 0 0 0 0 var(--hl-fallback);
+  }
+  to {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+@media (min-width: 900px) {
+  .kit-dek {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 760px) {
+  .kit-steps-list {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+  }
+  .kit-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kit-page {
+    padding: 4px 0 48px;
+  }
+  .kit-sheet {
+    gap: 28px;
+    padding: 28px 22px 24px;
+    border-radius: 24px;
+  }
+  .kit-head {
+    gap: 10px;
+  }
+  .kit-byline {
+    margin-top: 16px;
+  }
+  .kit-title {
+    font-size: 34px;
+    line-height: 40px;
+  }
+  .kit-dek {
+    font-size: 17px;
+    line-height: 25px;
+  }
+  .kit-prose {
+    gap: 18px;
+    font-size: 18px;
+    line-height: 29px;
+  }
+  .kit-inside-title {
+    font-size: 19px;
+    line-height: 26px;
+  }
+  .kit-gate {
+    padding: 18px 20px;
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .kit-gate-form {
+    grid-template-columns: 1fr;
+  }
+}

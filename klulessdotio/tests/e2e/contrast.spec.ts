@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test"
+import { signKitToken } from "../../lib/downloads/token"
 import { WEATHER_KEYS, contrast, inkVars, skyView } from "../../lib/sky/model"
 
 const hex = (value: string) => [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
@@ -74,9 +75,9 @@ function measureSheet({ skies, selector }: { skies: number[][]; selector: string
   return results
 }
 
-// Hides the sheet, screenshots the sky behind it and returns its darkest and lightest sampled pixels.
-async function sampleSky(page: Page, selector = ".sheet"): Promise<number[][]> {
-  const style = await page.addStyleTag({ content: `${selector}, .visitor-toast{visibility:hidden!important}` })
+// Hides the sheet (or just what sits on it), screenshots what's behind and returns its darkest and lightest sampled pixels.
+async function sampleSky(page: Page, selector = ".sheet", hide = selector): Promise<number[][]> {
+  const style = await page.addStyleTag({ content: `${hide}, .visitor-toast{visibility:hidden!important}` })
   const box = await page.locator(selector).boundingBox()
   const view = page.viewportSize()
   if (!box || !view) throw new Error("sheet not found")
@@ -199,3 +200,68 @@ test.describe("Visitor toast contrast", () => {
     })
   }
 })
+
+test.describe("Kit contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`the signup page and the kit pass 4.5:1 in ${tone}`, async ({ page }) => {
+      const token = signKitToken("e2e@example.com", "e2e-kit-secret")
+      for (const [name, path] of [["kit signup", "/kit"], ["kit page", `/kit/${token}`]] as const) {
+        await page.goto(`${path}?hour=${hour}&weather=clear`)
+        await expect(page.locator(".kit").first()).toHaveAttribute("data-tone", tone)
+        await expect(page.locator("mark.hl:not([data-inked])")).toHaveCount(0)
+        // Poll until the sheet colour transition has settled and the measured text passes
+        await expect(async () => {
+          const skies = await sampleSky(page, ".kit-sheet")
+          const results = await page.evaluate(measureSheet, { skies, selector: ".kit-sheet" })
+          expect(results.length).toBeGreaterThan(10)
+          const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
+          expect(failing, `${tone} ${name}`).toEqual([])
+        }).toPass({ timeout: 10000 })
+      }
+    })
+  }
+})
+
+// The bar is the same sky strip by day and night, so its words are measured over the strip itself, wide and narrow.
+test.describe("Kit bar contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`the kit bar text passes 4.5:1 in ${tone}`, async ({ page }) => {
+      for (const width of [1280, 390]) {
+        await page.setViewportSize({ width, height: 800 })
+        await page.goto(`/writing?hour=${hour}&weather=clear`)
+        await expect(page.locator(".writing")).toHaveAttribute("data-tone", tone)
+        const skies = await sampleSky(page, ".kitbar", ".kitbar-content, .kitbar-close")
+        const results = await page.evaluate(measureSheet, { skies, selector: ".kitbar-line" })
+        expect(results.length, `${tone} ${width}`).toBeGreaterThan(0)
+        const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
+        expect(failing, `${tone} ${width}`).toEqual([])
+
+        // The button's label over every stop of its yellow face, at rest and on hover
+        const cta = page.locator(".kitbar-cta")
+        await page.mouse.move(0, 400)
+        expect(await cta.evaluate(measureFace), `${tone} ${width} button`).toBeGreaterThanOrEqual(4.5)
+        await cta.hover()
+        await expect(cta).toHaveCSS("background-image", /255, 229, 130/)
+        expect(await cta.evaluate(measureFace), `${tone} ${width} button hover`).toBeGreaterThanOrEqual(4.5)
+      }
+    })
+  }
+})
+
+// Runs in the page: the worst ratio of an element's text over each colour stop of its background gradient.
+function measureFace(el: Element) {
+  const rgb = (css: string) => (css.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number)
+  const lum = (c: number[]) => {
+    const [r, g, b] = c.map((v) => {
+      const x = v / 255
+      return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const ratio = (a: number[], b: number[]) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)
+  const style = getComputedStyle(el)
+  const stops = (style.backgroundImage.match(/rgba?\([^)]+\)/g) ?? []).map(rgb)
+  if (stops.length < 2) throw new Error(`no gradient on ${el.className}`)
+  const text = rgb(style.color)
+  return Math.min(...stops.map((stop) => ratio(text, stop)))
+}

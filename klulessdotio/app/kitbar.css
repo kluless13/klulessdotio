@@ -1,0 +1,174 @@
+/* The starter kit bar: a sky strip above the top bar, the same by day and night */
+.kitbar {
+  --kb-x: 22%;
+  --kb-ink: #101a2e;
+  /* An ink focus ring, whatever the page's tone */
+  --ink: var(--kb-ink);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  overflow: hidden;
+  color: var(--kb-ink);
+  background: linear-gradient(90deg, #4a92e8 0%, #86c2f6 50%, #4a92e8 100%);
+  transition: visibility 0s;
+}
+/* Soft rings every 17px, fading out by half the strip's width */
+.kitbar::before,
+.kitbar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.kitbar::before {
+  background: repeating-radial-gradient(circle at var(--kb-x) 50%, transparent 0 7px, rgba(255, 255, 255, 0.35) 8.5px, transparent 10px 17px);
+  -webkit-mask: radial-gradient(circle 50vw at var(--kb-x) 50%, #000, transparent);
+  mask: radial-gradient(circle 50vw at var(--kb-x) 50%, #000, transparent);
+}
+/* A warm light centred on the rings, falling off like the boards' gaussian */
+.kitbar::after {
+  background: radial-gradient(
+    27% 180% at var(--kb-x) 50%,
+    rgba(255, 233, 160, 0.35) 0%,
+    rgba(255, 233, 160, 0.31) 16.7%,
+    rgba(255, 233, 160, 0.21) 33.3%,
+    rgba(255, 233, 160, 0.11) 50%,
+    rgba(255, 233, 160, 0.05) 66.7%,
+    rgba(255, 233, 160, 0.015) 83.3%,
+    rgba(255, 233, 160, 0) 100%
+  );
+}
+.kitbar-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.kitbar-line {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* A warm weighted button: yellow face, darker lip, light top line. It sinks a pixel when pressed. */
+.kitbar .kitbar-cta {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #d9a400;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--kb-ink);
+  background: linear-gradient(180deg, #ffde6b 0%, #ffcc33 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -3px 0 rgba(150, 95, 0, 0.32), 0 2px 4px rgba(120, 80, 0, 0.28), 0 6px 16px rgba(255, 190, 40, 0.35);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.kitbar .kitbar-cta:hover {
+  background: linear-gradient(180deg, #ffe582 0%, #ffd447 100%);
+}
+.kitbar .kitbar-cta:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(150, 95, 0, 0.32), 0 1px 2px rgba(120, 80, 0, 0.24), 0 3px 8px rgba(255, 190, 40, 0.3);
+}
+.kitbar .kitbar-cta:focus-visible {
+  outline: 2px solid var(--kb-ink);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kitbar .kitbar-cta {
+    transition: none;
+  }
+}
+.kitbar-arrow {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.kitbar-narrow {
+  display: none;
+}
+.kitbar-close {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--kb-ink);
+}
+.kitbar-close:focus-visible {
+  outline-offset: 0;
+  border-radius: 8px;
+}
+
+/* Closed before, or hidden with the home page's Noise layer in Quiet and behind the posters.
+   start-quiet is set on every page but only means something on the home page, so it's scoped to the layer. */
+:root.kitbar-off .kitbar {
+  display: none;
+}
+:root.start-quiet .layer .kitbar,
+.layer-hidden .kitbar {
+  visibility: hidden;
+}
+.layer-hidden .kitbar {
+  transition: visibility 0s 0.45s;
+}
+
+@media (max-width: 760px) {
+  .kitbar {
+    --kb-x: 15%;
+    justify-content: flex-start;
+    gap: 4px;
+    height: 64px;
+    padding: 0 6px 0 14px;
+  }
+  .kitbar-content {
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+  }
+  .kitbar-line {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 18px;
+    white-space: normal;
+  }
+  .kitbar .kitbar-cta {
+    gap: 7px;
+    padding: 9px 14px;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .kitbar-arrow {
+    width: 14px;
+    height: 14px;
+  }
+  .kitbar-wide {
+    display: none;
+  }
+  .kitbar-narrow {
+    display: inline;
+  }
+  .kitbar-close {
+    position: relative;
+    top: auto;
+    right: auto;
+    flex-shrink: 0;
+  }
+}

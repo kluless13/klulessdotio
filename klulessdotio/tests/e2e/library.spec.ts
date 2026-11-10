@@ -88,7 +88,7 @@ test.describe("Library sheet", () => {
     await tile(page, "geist").click()
     await page.keyboard.press("ArrowRight")
     await expect(dialog(page)).toHaveAccessibleName("Inter")
-    await page.getByRole("button", { name: "Close", exact: true }).click()
+    await dialog(page).getByRole("button", { name: "Close", exact: true }).click()
     await expect(dialog(page)).toHaveCount(0)
     await expect(tile(page, "inter")).toBeFocused()
     await expect(page).toHaveURL(LIB_URL)

@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next"
 import { SITE_DESCRIPTION } from "@/lib/content"
-import { Analytics } from "@vercel/analytics/next"
 import { Archivo_Black, Instrument_Sans, Newsreader, Oswald } from "next/font/google"
 import type { ReactNode } from "react"
+import { SiteAnalytics } from "@/components/SiteAnalytics"
+import { KITBAR_SCRIPT } from "@/lib/kitbar"
 import "./globals.css"
 import "./visitor.css"
+import "./kitbar.css"
 
 const instrument = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-instrument", display: "swap" })
 // Book spines use 500 and 600, posts read in 400 and 400 italic. None of it is loaded up front
@@ -33,8 +35,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#10162a" }
 
-// Picks the tone and mode before the first paint, so nobody gets a flash of the wrong colours or the wrong view
-const TONE_SCRIPT = `try{var h=+new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",hour12:false}).format(new Date());if(h>=6&&h<18)document.documentElement.classList.add("day")}catch(e){}try{if(localStorage.getItem("1tx-mode")==="quiet")document.documentElement.classList.add("start-quiet")}catch(e){}`
+// Picks the tone, the mode and whether the kit bar shows before the first paint, so nobody gets a flash of the wrong colours or the wrong view
+const TONE_SCRIPT = `try{var h=+new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",hour12:false}).format(new Date());if(h>=6&&h<18)document.documentElement.classList.add("day")}catch(e){}try{if(localStorage.getItem("1tx-mode")==="quiet")document.documentElement.classList.add("start-quiet")}catch(e){}${KITBAR_SCRIPT}`
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -44,7 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body>
         {children}
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   )

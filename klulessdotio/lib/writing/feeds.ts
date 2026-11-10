@@ -22,6 +22,8 @@ const INTRO =
   "Angad Maniyambath is Head of AI at Truflation. He writes research and essays on prediction markets, AI and building."
 
 export const LIBRARY_URL = `${SITE_URL}/library`
+export const KIT_URL = `${SITE_URL}/kit`
+const KIT_UPDATED = "2026-11-10"
 const postUrl = (slug: string) => `${SITE_URL}/writing/${slug}`
 
 export function sitemapEntries(posts: readonly Post[]): { url: string; lastModified: string }[] {
@@ -33,6 +35,7 @@ export function sitemapEntries(posts: readonly Post[]): { url: string; lastModif
     ...posts.map((p) => ({ url: postUrl(p.slug), lastModified: p.updated ?? p.date })),
     { url: LIBRARY_URL, lastModified: LIBRARY_UPDATED },
     ...allItems().map((item) => ({ url: `${LIBRARY_URL}/${item.slug}`, lastModified: LIBRARY_UPDATED })),
+    { url: KIT_URL, lastModified: KIT_UPDATED },
   ]
 }
 
@@ -92,7 +95,7 @@ export function llmsTxt(posts: readonly Post[]): string {
     `- [Library](${LIBRARY_URL}): Fonts and buttons I keep coming back to.`,
     ...allItems().map((item) => `- [${item.name}](${LIBRARY_URL}/${item.slug}): ${item.note}`),
   ]
-  return `${header()}\n## Writing\n\n${lines.join("\n")}\n\n## Library\n\n${library.join("\n")}\n\n## About\n\n- [About](${SITE_URL}/about)\n`
+  return `${header()}\n## Writing\n\n${lines.join("\n")}\n\n## Library\n\n${library.join("\n")}\n\n## Starter kit\n\n- [Starter kit](${KIT_URL}): A free starter kit for getting AI agents to do real work in your tools. No code.\n\n## About\n\n- [About](${SITE_URL}/about)\n`
 }
 
 /** Plain-markdown consumers have no base URL, so relative image and site links become absolute. */

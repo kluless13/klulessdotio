@@ -23,7 +23,7 @@ describe("sitemap", () => {
       "https://1tx.dev/writing",
       "https://1tx.dev/about",
     ])
-    expect(entries).toHaveLength(3 + posts.length + 1 + allItems().length)
+    expect(entries).toHaveLength(3 + posts.length + 1 + allItems().length + 1)
     const first = posts[0]
     const entry = entries.find((e) => e.url === `https://1tx.dev/writing/${first.slug}`)
     expect(entry?.lastModified).toBe(first.updated ?? first.date)
@@ -47,6 +47,11 @@ describe("sitemap", () => {
     const library = sitemapEntries([newer]).filter((e) => e.url.startsWith("https://1tx.dev/library"))
     expect(library.length).toBe(43)
     expect(library.every((e) => e.lastModified === LIBRARY_UPDATED)).toBe(true)
+  })
+  it("lists the starter kit signup page, dated by its own launch", () => {
+    const kit = sitemapEntries(posts).find((e) => e.url === "https://1tx.dev/kit")
+    expect(kit?.lastModified).toBe("2026-11-10")
+    expect(sitemapEntries(posts).some((e) => e.url.startsWith("https://1tx.dev/kit/"))).toBe(false)
   })
   it("uses updated over date", () => {
     const p = { ...posts[0], updated: "2027-01-01" }
@@ -110,6 +115,12 @@ describe("llms", () => {
     expect(t.indexOf("## Writing")).toBeLessThan(t.indexOf("## Library"))
     expect(t.indexOf("## Library")).toBeLessThan(t.indexOf("## About"))
   })
+  it("llms.txt links the starter kit, between Library and About", () => {
+    const t = llmsTxt(posts)
+    expect(t).toContain("https://1tx.dev/kit")
+    expect(t.indexOf("## Library")).toBeLessThan(t.indexOf("https://1tx.dev/kit"))
+    expect(t.indexOf("https://1tx.dev/kit")).toBeLessThan(t.indexOf("## About"))
+  })
   it("llms-full contains every post body newest first", () => {
     const t = llmsFullTxt(posts)
     let last = -1
@@ -155,7 +166,7 @@ describe("absolute links in markdown", () => {
 
 describe("empty", () => {
   it("outputs are valid with zero posts", () => {
-    expect(sitemapEntries([])).toHaveLength(3 + 1 + allItems().length)
+    expect(sitemapEntries([])).toHaveLength(3 + 1 + allItems().length + 1)
     expect(rssXml([])).toContain("<channel>")
     expect(rssXml([])).not.toContain("<item>")
     expect(llmsTxt([])).toContain("## About")
