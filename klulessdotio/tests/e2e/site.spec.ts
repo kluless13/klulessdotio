@@ -8,6 +8,17 @@ test("home head has the canonical and keeps the layout open graph", async ({ pag
   await expect(page.locator('head meta[property="og:site_name"]')).toHaveAttribute("content", "1tx.dev")
 })
 
+test("a missing page is a 404 that says Lost at sea and leads home", async ({ page }) => {
+  const response = await page.goto("/this-page-is-not-here")
+  expect(response?.status()).toBe(404)
+  await expect(page.getByRole("heading", { level: 1, name: "Lost at sea." })).toBeVisible()
+  await expect(page).toHaveTitle("Lost at sea · Angad Maniyambath")
+  const nav = page.getByRole("navigation", { name: "Main" })
+  await expect(nav.getByRole("link")).toHaveText(["Writing", "Library", "Quiet"])
+  await page.getByRole("link", { name: "Take me home" }).click()
+  await expect(page).toHaveURL(/\/$/)
+})
+
 test.describe("Noise", () => {
   test("shows sections in the agreed order and keeps things closed until found", async ({ page }) => {
     await page.goto(DAY)
