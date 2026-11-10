@@ -63,6 +63,7 @@ describe("/kit/[token]", () => {
     const kit = rules.find((r) => r.source.startsWith("/kit/"))
     expect(kit?.headers).toEqual(private_)
     // The kit rule matches a token but not the share image
+    // @ts-expect-error Next ships its path matcher without type declarations
     const { pathToRegexp } = await import("next/dist/compiled/path-to-regexp")
     const matches = pathToRegexp(kit!.source)
     expect(matches.test("/kit/abc.def")).toBe(true)
