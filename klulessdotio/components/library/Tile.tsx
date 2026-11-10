@@ -1,5 +1,6 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { useId, type CSSProperties } from "react"
 import { Exhibit } from "@/components/library/exhibits"
 import { kindLabel } from "@/lib/library/catalogue"
@@ -52,9 +53,11 @@ export function specimenWeight(font: FontItem): number {
 export function Tile({ item, onOpen }: { item: LibraryItem; onOpen: (slug: string) => void }) {
   const kindId = useId()
   return (
-    <button
+    <motion.button
       type="button"
       className="lib-tile"
+      layoutId={item.slug}
+      data-slug={item.slug}
       data-exhibit-host
       aria-label={item.name}
       aria-describedby={kindId}
@@ -75,6 +78,6 @@ export function Tile({ item, onOpen }: { item: LibraryItem; onOpen: (slug: strin
           {kindLabel(item)}
         </span>
       </span>
-    </button>
+    </motion.button>
   )
 }

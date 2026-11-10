@@ -1,11 +1,12 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { useId } from "react"
 import { FittedExhibit, INERT, specimenWeight } from "@/components/library/Tile"
 import { fontFamily } from "@/lib/library/fonts"
 import type { ButtonItem, FontItem, LibraryItem } from "@/lib/library/types"
 
-const PANGRAM = "Sphinx of black quartz, judge my vow."
+export const PANGRAM = "Sphinx of black quartz, judge my vow."
 
 // Buttons sit a little larger on the list's wider stage (1.1 on the boards).
 const ROW_FIT = 1.1
@@ -50,15 +51,17 @@ function ButtonRow({ item, aboutId }: { item: ButtonItem; aboutId: string }) {
 export function ListRow({ item, onOpen }: { item: LibraryItem; onOpen: (slug: string) => void }) {
   const aboutId = useId()
   return (
-    <button
+    <motion.button
       type="button"
       className={`lib-row lib-row-${item.kind}`}
+      layoutId={item.slug}
+      data-slug={item.slug}
       data-exhibit-host
       aria-label={item.name}
       aria-describedby={aboutId}
       onClick={() => onOpen(item.slug)}
     >
       {item.kind === "font" ? <FontRow item={item} aboutId={aboutId} /> : <ButtonRow item={item} aboutId={aboutId} />}
-    </button>
+    </motion.button>
   )
 }
