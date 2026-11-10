@@ -9,7 +9,8 @@
     "start": "next start",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "kit:upload": "vite-node scripts/kit-upload.ts"
   },
   "dependencies": {
     "@upstash/redis": "^1.34.0",
