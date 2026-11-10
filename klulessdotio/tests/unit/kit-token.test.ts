@@ -47,7 +47,10 @@ describe("kit token", () => {
       JSON.stringify({ kind: "kit", kit: "starter-kit", subject: "0000000000000000" }),
     ).toString("base64url")
     expect(verifyKitToken(`${other}.${s}`, S)).toEqual({ ok: false })
-    expect(verifyKitToken(`${p}.${s.slice(0, -2)}AA`, S)).toEqual({ ok: false })
+    const mid = Math.floor(s.length / 2)
+    const flipped = `${s.slice(0, mid)}${s[mid] === "A" ? "B" : "A"}${s.slice(mid + 1)}`
+    expect(flipped).not.toBe(s)
+    expect(verifyKitToken(`${p}.${flipped}`, S)).toEqual({ ok: false })
   })
 
   it("rejects the wrong secret", () => {
@@ -68,6 +71,7 @@ describe("kit token", () => {
     expect(verifyToken(kit, S, 0)).toEqual({ ok: false, reason: "invalid" })
     expect(verifyToken(unsub, S, 0)).toEqual({ ok: false, reason: "invalid" })
     expect(verifyUnsubToken(kit, S)).toEqual({ ok: false })
+    expect(verifyUnsubToken(download, S)).toEqual({ ok: false })
   })
 
   it("rejects a download-shaped payload that also carries a kind", () => {

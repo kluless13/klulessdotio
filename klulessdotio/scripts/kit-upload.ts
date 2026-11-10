@@ -3,10 +3,12 @@ import { KIT_CONTENT_KEY } from "../lib/kit/content"
 import { parseKit } from "../lib/kit/parse"
 import { makeKitRedis } from "../lib/kit/redis"
 import { validateKit } from "../lib/kit/validate"
+import { withTimeout } from "../lib/timeout"
 
 // Usage: npm run kit:upload -- [path] [--dry-run]
 // vite-node does not load .env.local. Export the KV_REST_API_URL/TOKEN for production
 // (for example via `vercel env pull` into your shell) before running kit:upload.
+const UPLOAD_TIMEOUT_MS = 10_000
 const DEFAULT_PATH = "docs/writing/kit/kit.md"
 
 async function main(): Promise<number> {
@@ -33,7 +35,8 @@ async function main(): Promise<number> {
     console.error("Redis env vars not configured (KV_REST_API_URL/TOKEN or UPSTASH_REDIS_REST_URL/TOKEN).")
     return 1
   }
-  await redis.set(KIT_CONTENT_KEY, markdown)
+  // A hung Upstash must not hang the CLI
+  await withTimeout(redis.set(KIT_CONTENT_KEY, markdown), UPLOAD_TIMEOUT_MS)
   console.log(`Uploaded ${summary}`)
   return 0
 }
