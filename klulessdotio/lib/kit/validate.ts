@@ -1,6 +1,7 @@
 import type { Paragraph, Root, RootContent } from "mdast"
 import type { ContainerDirective, TextDirective } from "mdast-util-directive"
 import { applyNotes, highlightTexts, NoteError, safeHref, toText, type KitInline } from "./inline"
+import { droppedBlockIssues, inlineIssue } from "./dropped"
 import { hasLabel, parseTree } from "./parse"
 
 export interface KitIssue {
@@ -132,6 +133,8 @@ const OWNERS: Record<string, string> = { card: "ending", path: "paths" }
 
 function nodeIssues(node: AnyNode, out: KitIssue[], ctx: Ctx): void {
   const line = node.position?.start.line ?? ctx.line
+  const inline = inlineIssue(node as { type: string; url?: string })
+  if (inline) out.push({ line, message: inline })
   if (node.type === "html") {
     out.push({ line, message: "Raw HTML is not allowed." })
   } else if (node.type === "containerDirective" || node.type === "leafDirective" || node.type === "textDirective") {
@@ -161,5 +164,6 @@ export function validateKit(markdown: string): readonly KitIssue[] {
     issues.push({ line: 1, message: "The kit needs a # title." })
   }
   nodeIssues(tree, issues, { line: 1, parent: "" })
+  droppedBlockIssues(tree.children, issues)
   return issues.sort((a, b) => a.line - b.line)
 }

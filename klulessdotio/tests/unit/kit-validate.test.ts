@@ -207,7 +207,67 @@ describe("validateKit", () => {
   })
 
   it("only closes a fence with the marker that opened it", () => {
-    const md = doc("~~~\n```\n[inside]\n~~~\n\n[outside]")
-    expect(validateKit(md)).toEqual([{ line: 8, message: expect.stringMatching(/bracket/i) }])
+    const md = doc(":::prompt\n~~~\n```\n[inside]\n~~~\n:::\n\n[outside]")
+    expect(validateKit(md)).toEqual([{ line: 10, message: expect.stringMatching(/bracket/i) }])
+  })
+
+  describe("silent drops", () => {
+    const dropped = (body: string) => validateKit(doc(body)).map((e) => ({ line: e.line, message: e.message }))
+    const isDropped = (line: number) => [{ line, message: expect.stringMatching(/dropped/) }]
+
+    it.each([
+      ["a top-level quote", "> quoted"],
+      ["a table", "| a | b |\n| - | - |\n| 1 | 2 |"],
+      ["a divider", "---"],
+      ["a level 4 heading", "#### Deep"],
+      ["a top-level code block", "```\ncode\n```"],
+      ["a second title", "# Another title"],
+    ])("reports %s at its own line", (_name, body) => {
+      expect(dropped(`ok\n\n${body}`)).toEqual(isDropped(5))
+    })
+
+    it("reports an image, a reference link, inline code and an unsafe link", () => {
+      expect(dropped("See ![alt](/x.png) here")).toEqual([{ line: 3, message: expect.stringMatching(/image/) }])
+      expect(dropped("See [ref][1] here\n\n[1]: https://example.com").map((e) => e.message)).toEqual([
+        expect.stringMatching(/reference link/),
+        expect.stringMatching(/bracket/),
+        expect.stringMatching(/definition/),
+      ])
+      expect(dropped("Run `npm test` now")).toEqual([{ line: 3, message: expect.stringMatching(/Inline code/) }])
+      expect(dropped("Go [here](javascript:alert) now")).toEqual([{ line: 3, message: expect.stringMatching(/Link must start/) }])
+    })
+
+    it("accepts safe links", () => {
+      expect(dropped("Go [here](/writing/x) or [there](https://example.com) now")).toEqual([])
+    })
+
+    it("reports a nested list or code in a list item", () => {
+      expect(dropped("- one\n  - nested\n- two")).toEqual(isDropped(4))
+    })
+
+    it("reports blocks the container drops, each at its line", () => {
+      expect(dropped(":::steps\n- a\n\ntext\n:::")).toEqual(isDropped(6))
+      expect(dropped(":::steps\ntext\n:::")).toEqual([{ line: 3, message: expect.stringMatching(/needs a list/) }])
+      expect(dropped(":::timeline{find=1 decide=1 fix=1}\ntext\n\n```\nx\n```\n:::")).toEqual(isDropped(6))
+      expect(dropped(":::before-after\nWords.\n\n- **A** one\n\n- **B** two\n\nextra\n\n> q\n:::")).toEqual([])
+      expect(dropped(":::before-after\nWords.\n\n- **A** one\n\n---\n\n- again\n:::")).toEqual([
+        { line: 8, message: expect.stringMatching(/divider/) },
+        { line: 10, message: expect.stringMatching(/list/) },
+      ])
+      expect(dropped(":::prompt\n```\nx\n```\n\nstray\n:::")).toEqual(isDropped(8))
+      expect(dropped(":::phrases\n- **A.** one\n\nstray\n:::")).toEqual(isDropped(6))
+      expect(dropped("::::ending\nintro\n\n- a\n\n- b\n\n> q\n\n```\nx\n```\n::::")).toEqual([
+        { line: 10, message: expect.stringMatching(/quote/) },
+        { line: 12, message: expect.stringMatching(/code block/) },
+      ])
+      expect(dropped(":::paths\n::path[A]\ntext\n\n---\n:::")).toEqual(isDropped(7))
+      expect(dropped(":::job{title=a who=b}\nBefore: x\n\n> - nested\n\nConnect: y\n:::")).toEqual(isDropped(6))
+    })
+
+    it("reports a second list in an ending and a note or fill used as a block", () => {
+      expect(dropped("::::ending\n- a\n\ntext\n\n- b\n::::")).toEqual(isDropped(8))
+      expect(dropped(":::note\nx\n:::")).toEqual(isDropped(3))
+      expect(dropped("::note[x]")).toEqual(isDropped(3))
+    })
   })
 })
