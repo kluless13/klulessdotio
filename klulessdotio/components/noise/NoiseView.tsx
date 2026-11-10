@@ -8,6 +8,7 @@ import { Projects } from "@/components/noise/Projects"
 import { Row } from "@/components/noise/Row"
 import { SayHello } from "@/components/noise/SayHello"
 import { Timeline } from "@/components/noise/Timeline"
+import { VisitorToast } from "@/components/VisitorToast"
 import { BELIEFS, BUILD, COPYRIGHT, MY_DAYS, ORIGIN } from "@/lib/content"
 import { ArrowRight } from "lucide-react"
 
@@ -19,6 +20,9 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
         <nav className="site-nav" aria-label="Main">
           <a className="btn" href="/writing">
             Writing
+          </a>
+          <a className="btn" href="/library">
+            Library
           </a>
           <button type="button" className="btn" onClick={onQuiet}>
             Quiet
@@ -64,6 +68,7 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
         </footer>
       </main>
       <PageBottom />
+      <VisitorToast />
     </div>
   )
 }

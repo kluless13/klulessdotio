@@ -1,0 +1,557 @@
+/* The open sheet: an item grown out of its tile over the dimmed page, matched to the Paper boards */
+.library {
+  /* Night */
+  --s-ink: #fff;
+  --s-soft: rgba(255, 255, 255, 0.6);
+  --s-line: rgba(255, 255, 255, 0.1);
+  --s-bg: #151b2c;
+  --s-panel: rgba(255, 255, 255, 0.04);
+  --s-chip: rgba(255, 255, 255, 0.08);
+  --s-code: rgba(255, 255, 255, 0.05);
+  --s-edge: rgba(255, 255, 255, 0.08);
+  --s-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  --s-dim: rgba(0, 0, 0, 0.45);
+  --s-arrow: rgba(255, 255, 255, 0.14);
+  --s-arrow-edge: rgba(255, 255, 255, 0.12);
+  --s-menu: #1d2436;
+  --s-menu-edge: rgba(255, 255, 255, 0.1);
+  --s-menu-hover: rgba(255, 255, 255, 0.08);
+  --s-check: #16a34a;
+}
+:root.day .library:not([data-tone]),
+.library[data-tone="day"] {
+  --s-ink: #14161f;
+  --s-soft: #5c6070;
+  --s-line: #e6e7ec;
+  --s-bg: #fff;
+  --s-panel: #f5f6f8;
+  --s-chip: #f1f2f5;
+  --s-code: #f5f6f8;
+  --s-edge: transparent;
+  --s-shadow: 0 30px 80px rgba(10, 20, 50, 0.28);
+  --s-dim: rgba(20, 30, 60, 0.28);
+  --s-arrow: rgba(255, 255, 255, 0.85);
+  --s-arrow-edge: transparent;
+  --s-menu: #fff;
+  --s-menu-edge: #e6e7ec;
+  --s-menu-hover: #f1f2f5;
+  --s-check: #3ddc84;
+}
+/* By day the secondary actions take the night button, as on the share board */
+:root.day .library:not([data-tone]) .lib-btn-alt,
+.library[data-tone="day"] .lib-btn-alt {
+  --b-top: #fff;
+  --b-bot: #dfe5ee;
+  --b-ink: #141b2c;
+  --b-ring: rgba(5, 8, 18, 0.45);
+  --b-shine: #fff;
+  --g-dark: #566788;
+}
+
+/* Layer, dim and frame */
+.lib-sheet-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  outline: none;
+}
+.lib-sheet-layer[data-closing] {
+  pointer-events: none;
+}
+.lib-sheet-dim {
+  position: absolute;
+  inset: 0;
+  background: var(--s-dim);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.lib-sheet {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: min(1040px, calc(100vw - 168px));
+  height: min(720px, calc(100dvh - 48px));
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 32px;
+  color: var(--s-ink);
+  background: var(--s-bg);
+  box-shadow: 0 0 0 1px var(--s-edge), var(--s-shadow);
+}
+.lib-sheet-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 40px;
+}
+
+/* Close and position */
+.lib-sheet-top {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lib-sheet-position {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--s-soft);
+  font-variant-numeric: tabular-nums;
+}
+.lib-sheet-close,
+.lib-sheet-arrow {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+}
+.lib-sheet-close {
+  width: 36px;
+  height: 36px;
+  color: var(--s-ink);
+  background: var(--s-chip);
+}
+.lib-sheet-close:focus-visible,
+.lib-sheet-arrow:focus-visible {
+  outline-color: var(--s-ink);
+  border-radius: 999px;
+}
+
+/* Arrows either side of the sheet */
+.lib-sheet-arrow {
+  position: absolute;
+  top: calc(50% - 22px);
+  width: 44px;
+  height: 44px;
+  color: var(--s-ink);
+  background: var(--s-arrow);
+  box-shadow: 0 0 0 1px var(--s-arrow-edge), 0 4px 14px rgba(10, 20, 50, 0.18);
+}
+.lib-sheet-prev {
+  left: max(24px, calc(50% - 604px));
+}
+.lib-sheet-next {
+  right: max(24px, calc(50% - 604px));
+}
+
+/* Left: the specimen panel */
+.lib-sheet-specimen {
+  flex: 0 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--s-panel);
+}
+.lib-sheet-specimen-font {
+  padding: 24px;
+  text-align: center;
+}
+.lib-sheet-aa {
+  font-size: min(220px, 18vw);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.lib-sheet-pangram {
+  max-width: 380px;
+  font-size: 22px;
+  line-height: 30px;
+  color: var(--s-soft);
+}
+.lib-sheet-alphabet {
+  max-width: 400px;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 0.04em;
+  word-spacing: 0.3em;
+  color: var(--s-soft);
+}
+.lib-sheet-specimen-button {
+  justify-content: stretch;
+  gap: 0;
+}
+.lib-sheet-hero {
+  --fit-pad-x: 24px;
+  --fit-pad-y: 24px;
+  flex: 1;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  container-type: size;
+}
+/* Soft and glass buttons bring their surface, which fills the hero (--s is the button's scale) */
+.lib-sheet-hero .lx-surface {
+  width: calc(100cqw / var(--s));
+  height: calc(100cqh / var(--s));
+  border-radius: 0;
+}
+.lib-sheet-states {
+  align-self: stretch;
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px 16px 36px;
+  border-top: 1px solid var(--s-line);
+}
+.lib-sheet-state {
+  flex: 0 1 132px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.lib-sheet-state-stage {
+  --fit-pad-x: 4px;
+  --fit-pad-y: 4px;
+  align-self: stretch;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lib-sheet-state-label {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--s-soft);
+}
+
+/* Right: about */
+.lib-sheet-about {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* The top clears the close button, where the boards had their label */
+  padding: 50px 24px 28px 8px;
+  overflow-y: auto;
+}
+.lib-sheet-name {
+  font-size: 48px;
+  line-height: 54px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.lib-sheet-soft {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--s-soft);
+}
+.lib-sheet-note {
+  padding: 12px 0 20px;
+  font-size: 17px;
+  line-height: 26px;
+}
+.lib-sheet[data-kind="button"] .lib-sheet-note {
+  padding-bottom: 16px;
+}
+.lib-sheet-weights,
+.lib-sheet-how {
+  display: flex;
+  flex-direction: column;
+  padding-top: 12px;
+  border-top: 1px solid var(--s-line);
+  list-style: none;
+}
+.lib-sheet-weights {
+  gap: 2px;
+}
+.lib-sheet-weight {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.lib-sheet-weight-face {
+  min-width: 0;
+  font-size: 28px;
+  line-height: 34px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lib-sheet-weight-name {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 34px;
+  color: var(--s-soft);
+}
+.lib-sheet-system {
+  padding-top: 12px;
+}
+.lib-sheet-how {
+  gap: 4px;
+  font-size: 15px;
+  line-height: 24px;
+}
+.lib-sheet-code {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  overflow-x: auto;
+  font: 12px/19px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--s-soft);
+  background: var(--s-code);
+  white-space: pre;
+  tab-size: 2;
+}
+.lib-sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 24px;
+}
+.lib-sheet[data-kind="font"] .lib-sheet-actions {
+  padding-top: 28px;
+}
+
+/* Share menu */
+.lib-share {
+  position: relative;
+}
+.lib-share-menu {
+  position: absolute;
+  top: calc(100% + 13px);
+  left: 0;
+  z-index: 2;
+  width: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--s-menu);
+  box-shadow: 0 0 0 1px var(--s-menu-edge), 0 18px 40px rgba(10, 20, 50, 0.18), 0 2px 6px rgba(10, 20, 50, 0.08);
+}
+.lib-share-menu[data-above] {
+  top: auto;
+  bottom: calc(100% + 13px);
+}
+.lib-share-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-align: left;
+  color: var(--s-ink);
+}
+.lib-share-item:hover,
+.lib-share-item:focus-visible {
+  background: var(--s-menu-hover);
+}
+.lib-share-item:focus-visible {
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+.lib-share-words {
+  display: flex;
+  flex-direction: column;
+}
+.lib-share-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.lib-share-detail {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--s-soft);
+}
+
+/*
+  "Link copied", bottom left. Another bottom-left toast (the visitor counter) sets
+  --toast-offset-bottom-left on :root while it shows, and this one sits above it.
+*/
+.lib-toasts {
+  position: fixed;
+  left: 24px;
+  bottom: calc(24px + var(--toast-offset-bottom-left, 0px));
+  z-index: 2;
+  pointer-events: none;
+}
+.lib-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--b-ink);
+  background: linear-gradient(180deg, var(--b-top), var(--b-bot));
+  box-shadow: 0 0 0 1px var(--b-ring), inset 0 1px 0 var(--b-shine), 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+.lib-toast svg {
+  color: var(--s-check);
+}
+
+/* Narrower windows: the panels share the width */
+@media (max-width: 1099px) {
+  .lib-sheet-body {
+    gap: 28px;
+  }
+  .lib-sheet-specimen {
+    flex: 1 1 0;
+  }
+  .lib-sheet-name {
+    font-size: 40px;
+    line-height: 46px;
+  }
+}
+
+/* Phone and small tablet: one column from just below the top bar, arrows along the bottom edge */
+@media (max-width: 899px) {
+  .lib-sheet {
+    inset: 60px 0 0;
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    margin: 0 auto;
+    /* The close row gets its own strip, so scrolled content never runs under the position label */
+    padding: 58px 16px calc(88px + env(safe-area-inset-bottom, 0px));
+    border-radius: 28px 28px 0 0;
+    box-shadow: 0 0 0 1px var(--s-edge), 0 -20px 60px rgba(10, 20, 50, 0.25);
+  }
+  .lib-sheet-body {
+    flex-direction: column;
+    gap: 16px;
+    margin: 0 -16px;
+    padding: 0 16px 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .lib-sheet-top {
+    top: 14px;
+    right: 16px;
+  }
+  .lib-sheet-close {
+    width: 32px;
+    height: 32px;
+  }
+  .lib-sheet-specimen {
+    flex: none;
+    border-radius: 20px;
+  }
+  .lib-sheet-specimen-font {
+    gap: 12px;
+    padding: 56px 16px 32px;
+  }
+  .lib-sheet-aa {
+    font-size: 120px;
+  }
+  .lib-sheet-pangram {
+    font-size: 18px;
+    line-height: 26px;
+  }
+  .lib-sheet-alphabet {
+    font-size: 13px;
+    line-height: 20px;
+    letter-spacing: 0.02em;
+    word-spacing: normal;
+  }
+  .lib-sheet-specimen-button {
+    height: 250px;
+  }
+  .lib-sheet-hero {
+    --fit-pad-x: 16px;
+    --fit-pad-y: 20px;
+  }
+  .lib-sheet-states {
+    gap: 14px;
+    padding: 14px 8px 18px;
+  }
+  .lib-sheet-state {
+    gap: 8px;
+  }
+  .lib-sheet-state-stage {
+    height: 44px;
+  }
+  .lib-sheet-state-label {
+    font-size: 11px;
+    line-height: 14px;
+  }
+  .lib-sheet-about {
+    gap: 2px;
+    padding: 0;
+    overflow: visible;
+  }
+  .lib-sheet-name {
+    font-size: 34px;
+    line-height: 40px;
+  }
+  .lib-sheet-soft {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .lib-sheet-note,
+  .lib-sheet[data-kind="button"] .lib-sheet-note {
+    padding: 8px 0 10px;
+    font-size: 15px;
+    line-height: 22px;
+  }
+  .lib-sheet-weights,
+  .lib-sheet-how {
+    padding-top: 10px;
+  }
+  .lib-sheet-how {
+    gap: 2px;
+    font-size: 14px;
+    line-height: 21px;
+  }
+  .lib-sheet-weight-face {
+    font-size: 24px;
+    line-height: 30px;
+  }
+  .lib-sheet-weight-name {
+    line-height: 30px;
+  }
+  .lib-sheet-actions,
+  .lib-sheet[data-kind="font"] .lib-sheet-actions {
+    padding-top: 20px;
+  }
+  .lib-sheet-arrow {
+    top: auto;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    background: var(--s-chip);
+    box-shadow: none;
+  }
+  .lib-sheet-prev {
+    left: max(16px, calc(50% - 304px));
+  }
+  .lib-sheet-next {
+    right: max(16px, calc(50% - 304px));
+  }
+  /* The menu rises from the bottom of the sheet, clear of the arrows */
+  .lib-share {
+    position: static;
+  }
+  .lib-share-menu,
+  .lib-share-menu[data-above] {
+    position: fixed;
+    top: auto;
+    left: 16px;
+    right: 16px;
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .lib-toasts {
+    left: 16px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px) + var(--toast-offset-bottom-left, 0px));
+  }
+}

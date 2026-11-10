@@ -1,0 +1,35 @@
+/*
+  Library exhibits: faithful recreations of famous buttons.
+  Every class is prefixed lx-, so nothing leaks into the site's own .btn.
+  Each button has a rest look, a hover look and a pressed look. The same declarations serve:
+    state="live"    the real :hover and :active
+    state="hover"   forced hover, ignores the pointer
+    state="pressed" forced pressed, ignores the pointer
+    state="mirror"  follows the nearest ancestor with data-exhibit-host (tiles and list rows)
+  Exhibits look the same by day and night. Only the Mine exhibit, the site's real .btn, follows the tone.
+*/
+
+.lx {
+  --lx-geist: var(--font-geist-sans, "Geist"), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --lx-inter: var(--font-inter, "Inter"), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --lx-helvetica: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --lx-lucida: "Lucida Grande", "Lucida Sans Unicode", "Helvetica Neue", Helvetica, sans-serif;
+  --lx-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.35) 46%, rgba(255, 255, 255, 0) 50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transform-origin: center;
+  -webkit-font-smoothing: auto;
+}
+.lx .lx-b {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0;
+  white-space: nowrap;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease, background-color 0.1s ease, opacity 0.1s ease;
+}
+

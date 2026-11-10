@@ -1,0 +1,502 @@
+/* /library: frosted tiles and catalogue rows over the sky, matched to the Paper boards */
+.library {
+  /* Night: dark glass */
+  --l-ink: #fff;
+  --w-soft: rgba(255, 255, 255, 0.6);
+  --w-tile: rgba(255, 255, 255, 0.06);
+  --w-tile-border: rgba(255, 255, 255, 0.1);
+  --w-tile-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  --w-track: rgba(255, 255, 255, 0.07);
+  --w-thumb: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.1));
+  --l-stage: rgba(255, 255, 255, 0.04);
+  --l-tile-hover: rgba(255, 255, 255, 0.09);
+  --l-lift: 0 2px 4px rgba(0, 0, 0, 0.2), 0 22px 44px rgba(0, 0, 0, 0.4);
+  --l-press: 0 1px 1px rgba(0, 0, 0, 0.2), inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  --l-sweep: linear-gradient(105deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.14) 30%, #fff 45%, rgba(86, 103, 136, 0.6) 60%, rgba(255, 255, 255, 0.14) 75%, rgba(255, 255, 255, 0.14) 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--l-ink);
+}
+:root.day .library:not([data-tone]),
+.library[data-tone="day"] {
+  /* Day: frosted */
+  --l-ink: #101a2e;
+  /* Darker than the boards' 0.6, which fell short of AA on the deeper noon blues */
+  --w-soft: rgba(16, 26, 46, 0.88);
+  --w-tile: rgba(255, 255, 255, 0.55);
+  --w-tile-border: rgba(255, 255, 255, 0.8);
+  --w-tile-shadow: 0 1px 2px rgba(20, 30, 60, 0.06), 0 12px 30px rgba(20, 30, 60, 0.08);
+  --w-track: rgba(255, 255, 255, 0.35);
+  --w-thumb: linear-gradient(180deg, #fff, #f3f5f8);
+  --l-stage: rgba(255, 255, 255, 0.35);
+  --l-tile-hover: #d6e3f2;
+  --l-lift: 0 2px 4px rgba(20, 30, 60, 0.08), 0 22px 44px rgba(20, 30, 60, 0.16);
+  --l-press: 0 1px 1px rgba(20, 30, 60, 0.08), inset 0 2px 6px rgba(20, 30, 60, 0.1);
+  --l-sweep: linear-gradient(105deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.4) 30%, #fff 45%, rgba(60, 76, 120, 0.5) 60%, rgba(255, 255, 255, 0.4) 75%, rgba(255, 255, 255, 0.4) 100%);
+}
+.library a {
+  color: inherit;
+  text-decoration: none;
+}
+.library .btn {
+  color: var(--b-ink);
+}
+
+/* Header */
+.lib {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.lib-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 40px 70px 36px;
+}
+.lib-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lib-title h1 {
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.lib-title p {
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--w-soft);
+}
+
+/* Filter and view switch: the soft segmented control */
+.lib-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lib-seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 11px;
+  background: var(--w-track);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.lib-seg-option {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--w-soft);
+}
+.lib-seg-icon {
+  padding: 8px 9px;
+}
+.lib-seg-option[aria-pressed="true"] {
+  color: var(--l-ink);
+  background: var(--w-thumb);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.lib-seg-option:focus-visible {
+  border-radius: 8px;
+}
+
+/* Sections */
+.lib-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  padding: 0 70px 120px;
+}
+.lib[data-view="list"] .lib-sections {
+  gap: 40px;
+}
+.lib-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lib[data-view="list"] .lib-section {
+  gap: 12px;
+}
+.lib-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.lib-count {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--w-soft);
+}
+
+/* Tiles and rows share the frosted surface and its three states */
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 20px;
+}
+.lib-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lib-tile,
+.lib-row {
+  position: relative;
+  text-align: left;
+  background: var(--w-tile);
+  border: 1px solid var(--w-tile-border);
+  box-shadow: var(--w-tile-shadow);
+  /* translate and scale, not transform: framer-motion owns transform for the grow into the sheet */
+  transition: translate 0.18s ease, scale 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.8s ease;
+}
+/* The border shimmer, cut out of a band like the site's own button */
+.lib-tile::before,
+.lib-row::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  background: var(--l-sweep) 120% 0 / 300% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.lib-tile:focus-visible,
+.lib-row:focus-visible {
+  translate: 0 -4px;
+  background-color: var(--l-tile-hover);
+  box-shadow: var(--l-lift);
+}
+.lib-tile:focus-visible::before,
+.lib-row:focus-visible::before {
+  opacity: 1;
+  animation: sweep 2.6s ease-in-out infinite;
+}
+@media (hover: hover) {
+  .lib-tile:hover,
+  .lib-row:hover {
+    translate: 0 -4px;
+    background-color: var(--l-tile-hover);
+    box-shadow: var(--l-lift);
+  }
+  .lib-tile:hover::before,
+  .lib-row:hover::before {
+    opacity: 1;
+    animation: sweep 2.6s ease-in-out infinite;
+  }
+}
+.lib-row:hover,
+.lib-row:focus-visible {
+  translate: 0 -2px;
+}
+.lib-tile:active {
+  translate: none;
+  scale: 0.97;
+  box-shadow: var(--l-press);
+}
+.lib-row:active {
+  translate: none;
+  scale: 0.99;
+  box-shadow: var(--l-press);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lib-tile,
+  .lib-row {
+    transition: none;
+  }
+  .lib-tile::before,
+  .lib-row::before {
+    animation: none !important;
+    background-position: 50% 0;
+  }
+}
+
+/* Tile */
+.lib-tile {
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 18px;
+  border-radius: 28px;
+}
+.lib-tile:focus-visible {
+  border-radius: 28px;
+}
+.lib-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  container-type: size;
+}
+.lib-glyph {
+  font-size: min(96px, 46cqw);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.lib-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.lib-name {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lib-kind {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--w-soft);
+}
+
+/*
+  Exhibits in a stage. --fit is the button's size in a full 244px tile; --k shrinks it with the stage,
+  in steps, because a scale transform doesn't shrink the layout box. Every step keeps the widest
+  exhibit (about 180px across at its --fit) inside the narrowest stage of that step.
+*/
+.lib-fit {
+  --k: 1;
+  display: inline-flex;
+  flex-shrink: 0;
+  transform: scale(calc(var(--fit) * var(--k)));
+}
+@container (max-width: 195px) {
+  .lib-fit { --k: 0.9; }
+}
+@container (max-width: 175px) {
+  .lib-fit { --k: 0.8; }
+}
+@container (max-width: 155px) {
+  .lib-fit { --k: 0.72; }
+}
+@container (max-width: 135px) {
+  .lib-fit { --k: 0.62; }
+}
+@container (max-width: 115px) {
+  .lib-fit { --k: 0.52; }
+}
+/* Soft and glass buttons bring their own surface, which fills the stage across */
+.lib-stage .lx-surface {
+  width: calc(100cqw / (var(--fit) * var(--k)));
+  height: calc(min(100cqh, 72cqw) / (var(--fit) * var(--k)));
+  border-radius: calc(16px / (var(--fit) * var(--k)));
+}
+
+/* List rows */
+.lib-row {
+  display: flex;
+  width: 100%;
+  border-radius: 22px;
+}
+.lib-row:focus-visible {
+  border-radius: 22px;
+}
+.lib-row-font {
+  gap: 48px;
+  padding: 24px 28px;
+}
+.lib-row-specimen {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lib-row-face {
+  font-size: 56px;
+  line-height: 64px;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.lib-row-pangram {
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--w-soft);
+}
+.lib-row-about {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lib-row-meta {
+  flex-shrink: 0;
+  width: 300px;
+  padding-top: 10px;
+  font-size: 14px;
+  line-height: 22px;
+}
+.lib-row-soft {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--w-soft);
+}
+.lib-row-button {
+  align-items: center;
+  gap: 36px;
+  padding: 14px;
+}
+.lib-row-button .lib-row-about {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.lib-row-stage {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 380px;
+  height: 120px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--l-stage);
+  container-type: size;
+}
+.lib-row-stage .lx-surface {
+  width: calc(100cqw / (var(--fit) * var(--k)));
+  height: calc(100cqh / (var(--fit) * var(--k)));
+  border-radius: 0;
+}
+.lib-row-name {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 500;
+}
+.lib-row-note {
+  padding-top: 6px;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+/* Narrower windows: fewer tiles across */
+@media (max-width: 1299px) {
+  .lib-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1039px) {
+  .lib-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .lib-row-stage {
+    width: 300px;
+  }
+}
+@media (max-width: 799px) {
+  .lib-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lib-row-font {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .lib-row-meta {
+    width: auto;
+    padding-top: 0;
+  }
+  .lib-row-button {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .lib-row-stage {
+    width: 100%;
+  }
+  .lib-row-button .lib-row-about {
+    padding: 0 6px 6px;
+  }
+}
+
+/* Phone */
+@media (max-width: 640px) {
+  .lib-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    padding: 16px 16px 24px;
+  }
+  .lib-title {
+    gap: 4px;
+  }
+  .lib-title h1 {
+    font-size: 32px;
+    line-height: 38px;
+  }
+  .lib-title p {
+    font-size: 15px;
+    line-height: 22px;
+  }
+  .lib-controls {
+    justify-content: space-between;
+  }
+  .lib-sections,
+  .lib[data-view="list"] .lib-sections {
+    gap: 28px;
+    padding: 0 16px 40px;
+  }
+  .lib-section {
+    gap: 12px;
+  }
+  .lib-grid {
+    gap: 12px;
+  }
+  .lib-tile {
+    padding: 14px;
+    border-radius: 22px;
+  }
+  .lib-tile:focus-visible {
+    border-radius: 22px;
+  }
+  .lib-caption {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .lib-name {
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .lib-kind {
+    font-size: 11px;
+    line-height: 16px;
+  }
+  .lib-row-font {
+    padding: 20px;
+  }
+  .lib-row-face {
+    font-size: 40px;
+    line-height: 46px;
+  }
+  .lib-row-pangram {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}

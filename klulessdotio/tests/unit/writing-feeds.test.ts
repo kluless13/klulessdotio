@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import path from "node:path"
+import { allItems } from "@/lib/library/catalogue"
 import { loadPosts } from "@/lib/writing/posts"
 import {
   AI_CRAWLERS,
@@ -21,10 +22,18 @@ describe("sitemap", () => {
       "https://1tx.dev/writing",
       "https://1tx.dev/about",
     ])
-    expect(entries).toHaveLength(3 + posts.length)
+    expect(entries).toHaveLength(3 + posts.length + 1 + allItems().length)
     const first = posts[0]
     const entry = entries.find((e) => e.url === `https://1tx.dev/writing/${first.slug}`)
     expect(entry?.lastModified).toBe(first.updated ?? first.date)
+  })
+  it("lists the Library and every item", () => {
+    const urls = sitemapEntries(posts).map((e) => e.url)
+    expect(allItems()).toHaveLength(42)
+    expect(urls).toContain("https://1tx.dev/library")
+    expect(urls).toContain("https://1tx.dev/library/weighted")
+    for (const item of allItems()) expect(urls).toContain(`https://1tx.dev/library/${item.slug}`)
+    expect(new Set(urls).size).toBe(urls.length)
   })
   it("uses the latest updated-or-date across all posts for site pages", () => {
     const older = { ...posts[posts.length - 1], updated: "2030-05-05" }
@@ -84,6 +93,14 @@ describe("llms", () => {
     expect(t).toContain("## About\n\n- [About](https://1tx.dev/about)")
     expect(t).not.toContain("—")
   })
+  it("llms.txt has a Library section between Writing and About", () => {
+    const t = llmsTxt(posts)
+    expect(t).toContain("## Library\n\n- [Library](https://1tx.dev/library): Fonts and buttons I keep coming back to.\n")
+    expect(t).toContain("- [Geist](https://1tx.dev/library/geist): Simple and elegant.")
+    for (const item of allItems()) expect(t).toContain(`- [${item.name}](https://1tx.dev/library/${item.slug}): ${item.note}`)
+    expect(t.indexOf("## Writing")).toBeLessThan(t.indexOf("## Library"))
+    expect(t.indexOf("## Library")).toBeLessThan(t.indexOf("## About"))
+  })
   it("llms-full contains every post body newest first", () => {
     const t = llmsFullTxt(posts)
     let last = -1
@@ -129,7 +146,7 @@ describe("absolute links in markdown", () => {
 
 describe("empty", () => {
   it("outputs are valid with zero posts", () => {
-    expect(sitemapEntries([])).toHaveLength(3)
+    expect(sitemapEntries([])).toHaveLength(3 + 1 + allItems().length)
     expect(rssXml([])).toContain("<channel>")
     expect(rssXml([])).not.toContain("<item>")
     expect(llmsTxt([])).toContain("## About")

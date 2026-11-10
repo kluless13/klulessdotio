@@ -1,0 +1,26 @@
+/* Mine: the site's real .btn. Forced states borrow the same looks .btn has on hover and press. */
+.lx[data-state="hover"] .lx-mine::before, .lx[data-state="live"] .lx-mine:hover::before, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-mine::before {
+  opacity: 1;
+  animation: sweep 2.6s ease-in-out infinite;
+}
+.lx[data-state="pressed"] .lx-mine, .lx[data-state="live"] .lx-mine:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-mine {
+  box-shadow: 0 0 0 1px var(--b-ring), inset 0 2px 4px rgba(0, 0, 0, 0.28);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx .lx-mine::before {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx .lx-aqua,
+  .lx .lx-bounce {
+    animation: none !important;
+  }
+  .lx .lx-seg-thumb,
+  .lx .lx-gel-knob,
+  .lx .lx-gel-label,
+  .lx .lx-fab svg {
+    transition: none !important;
+  }
+}

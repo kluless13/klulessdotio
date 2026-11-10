@@ -1,0 +1,224 @@
+/* Retro desktops */
+.lx-platinum-ring {
+  display: inline-flex;
+  padding: 3px;
+  border: 2px solid #000;
+  border-radius: 8px;
+}
+.lx-platinum {
+  min-width: 68px;
+  padding: 4px 22px;
+  border-radius: 5px;
+  border: 1px solid #000;
+  background: linear-gradient(180deg, #f2f2f2 0%, #d4d4d4 100%);
+  color: #000;
+  font: 500 13px/16px var(--lx-lucida);
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #8a8a8a;
+}
+.lx[data-state="pressed"] .lx-platinum, .lx[data-state="live"] .lx-platinum:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-platinum {
+  background: linear-gradient(180deg, #b4b4b4 0%, #c9c9c9 100%);
+  box-shadow: inset 1px 1px 0 #8a8a8a, inset -1px -1px 0 #fff;
+}
+
+.lx-bevel {
+  padding: 5px 20px;
+  background: #c3c3c3;
+  color: #000;
+  font: 400 13px/16px var(--lx-helvetica);
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #000, inset 2px 2px 0 #dfdfdf, inset -2px -2px 0 #808080;
+}
+.lx[data-state="pressed"] .lx-bevel, .lx[data-state="live"] .lx-bevel:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-bevel {
+  padding: 6px 19px 4px 21px;
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #fff, inset 2px 2px 0 #808080, inset -2px -2px 0 #dfdfdf;
+}
+
+.lx-luna {
+  min-width: 76px;
+  padding: 5px 22px;
+  border-radius: 3px;
+  border: 1px solid #003c74;
+  background: linear-gradient(180deg, #fff 0%, #f4f3ee 40%, #e3e0d6 85%, #d6d0c5 100%);
+  color: #000;
+  font: 400 12px/15px Tahoma, Verdana, "Segoe UI", sans-serif;
+  box-shadow: inset 0 0 0 1px #ffe7a2, inset 0 0 0 2px #f8b330;
+}
+.lx[data-state="hover"] .lx-luna, .lx[data-state="live"] .lx-luna:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-luna {
+  box-shadow: inset 0 0 0 1px #ffe7a2, inset 0 0 0 2px #f8b330, 0 0 4px rgba(248, 179, 48, 0.6);
+}
+.lx[data-state="pressed"] .lx-luna, .lx[data-state="live"] .lx-luna:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-luna {
+  background: linear-gradient(180deg, #cdcac3 0%, #e3e0d6 15%, #f0eee8 100%);
+  box-shadow: none;
+}
+
+.lx-luna-start {
+  gap: 8px;
+  padding: 4px 22px 4px 12px;
+  border-radius: 0 14px 14px 0;
+  background: linear-gradient(180deg, #6cc46c 0%, #3c9a3c 12%, #318f31 50%, #2a812a 88%, #1f621f 100%);
+  color: #fff;
+  font: italic 700 18px/22px "Trebuchet MS", "Lucida Grande", sans-serif;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.lx-flag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5px;
+  width: 15.5px;
+  transform: skewY(-6deg);
+}
+.lx-flag i {
+  width: 7px;
+  height: 7px;
+  border-radius: 1.5px;
+}
+.lx-flag i:nth-child(1) { background: #f25022; }
+.lx-flag i:nth-child(2) { background: #7fba00; }
+.lx-flag i:nth-child(3) { background: #00a4ef; }
+.lx-flag i:nth-child(4) { background: #ffb900; }
+.lx[data-state="hover"] .lx-luna-start, .lx[data-state="live"] .lx-luna-start:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-luna-start {
+  filter: brightness(1.1);
+}
+.lx[data-state="pressed"] .lx-luna-start, .lx[data-state="live"] .lx-luna-start:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-luna-start {
+  filter: brightness(0.88);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.lx-aero {
+  min-width: 76px;
+  padding: 5px 24px;
+  border-radius: 3px;
+  border: 1px solid #3c7fb1;
+  background: linear-gradient(180deg, #eaf6fd 0%, #d9f0fc 50%, #bee6fd 51%, #a7d9f5 100%);
+  color: #000;
+  font: 400 12px/15px Verdana, Tahoma, sans-serif;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+.lx[data-state="hover"] .lx-aero, .lx[data-state="live"] .lx-aero:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-aero {
+  border-color: #2c628c;
+  background: linear-gradient(180deg, #f1fafe 0%, #e3f5fd 50%, #a8e4fd 51%, #7fd3f6 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), 0 0 6px rgba(80, 190, 250, 0.7);
+}
+.lx[data-state="pressed"] .lx-aero, .lx[data-state="live"] .lx-aero:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-aero {
+  border-color: #2c628c;
+  background: linear-gradient(180deg, #c4e5f6 0%, #98d1ef 50%, #68b3db 51%, #3c9fcb 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 40, 80, 0.4);
+}
+
+.lx-aqua,
+.lx-aqua-graphite,
+.lx-aqua-help {
+  border-radius: 999px;
+  font-family: var(--lx-lucida);
+}
+.lx-aqua {
+  padding: 7px 28px;
+  border: 1px solid #1b4e9e;
+  background: var(--lx-gloss), linear-gradient(180deg, #8ec5ff 0%, #3d8cf0 50%, #2a78e6 52%, #7cc0ff 100%);
+  color: #0b1a33;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  box-shadow: 0 2px 4px rgba(0, 30, 80, 0.35), inset 0 -2px 4px rgba(160, 220, 255, 0.6);
+}
+/* The default-button pulse of Mac OS X: the fill breathes slowly while nothing is happening. */
+.lx:is([data-state="live"], [data-state="mirror"]) .lx-aqua:not(:hover):not(:active) {
+  animation: lx-aqua-pulse 1.6s ease-in-out infinite;
+}
+@keyframes lx-aqua-pulse {
+  0%,
+  100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.12) saturate(1.2); }
+}
+.lx[data-state="hover"] .lx-aqua, .lx[data-state="live"] .lx-aqua:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-aqua {
+  animation: none;
+  filter: brightness(1.06) saturate(1.1);
+}
+.lx[data-state="pressed"] .lx-aqua, .lx[data-state="live"] .lx-aqua:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-aqua {
+  animation: none;
+  background: var(--lx-gloss), linear-gradient(180deg, #5ea7f2 0%, #2563c4 50%, #1a57b4 52%, #4f9cee 100%);
+  box-shadow: 0 1px 2px rgba(0, 30, 80, 0.35), inset 0 2px 4px rgba(0, 20, 80, 0.4);
+}
+
+.lx-aqua-graphite {
+  padding: 7px 28px;
+  border: 1px solid #5b6573;
+  background: var(--lx-gloss), linear-gradient(180deg, #dce2e8 0%, #a3acb7 50%, #8f99a6 52%, #cdd5de 100%);
+  color: #111;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+.lx[data-state="hover"] .lx-aqua-graphite, .lx[data-state="live"] .lx-aqua-graphite:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-aqua-graphite {
+  filter: brightness(1.05);
+}
+.lx[data-state="pressed"] .lx-aqua-graphite, .lx[data-state="live"] .lx-aqua-graphite:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-aqua-graphite {
+  background: var(--lx-gloss), linear-gradient(180deg, #b6bdc7 0%, #7d8693 50%, #6f7986 52%, #a9b2bd 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lx-aqua-help {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #1b4e9e;
+  background: var(--lx-gloss), linear-gradient(180deg, #8ec5ff 0%, #3d8cf0 50%, #2a78e6 52%, #7cc0ff 100%);
+  color: #0b1a33;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 18px;
+  box-shadow: 0 2px 4px rgba(0, 30, 80, 0.35);
+}
+.lx[data-state="hover"] .lx-aqua-help, .lx[data-state="live"] .lx-aqua-help:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-aqua-help {
+  filter: brightness(1.06) saturate(1.1);
+}
+.lx[data-state="pressed"] .lx-aqua-help, .lx[data-state="live"] .lx-aqua-help:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-aqua-help {
+  background: var(--lx-gloss), linear-gradient(180deg, #5ea7f2 0%, #2563c4 50%, #1a57b4 52%, #4f9cee 100%);
+  box-shadow: 0 1px 2px rgba(0, 30, 80, 0.35), inset 0 2px 4px rgba(0, 20, 80, 0.4);
+}
+
+.lx-lights {
+  display: inline-flex;
+  gap: 8px;
+}
+.lx-light {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: radial-gradient(circle at 50% 30%, #ffb3ae 0%, #ff5f57 45%, #c83a31 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+.lx-light.lx-yellow {
+  background: radial-gradient(circle at 50% 30%, #ffe3a3 0%, #febc2e 45%, #c98e12 100%);
+}
+.lx-light.lx-green {
+  background: radial-gradient(circle at 50% 30%, #b8f0ae 0%, #28c840 45%, #1a8f2b 100%);
+}
+/* The × − + are drawn as bars, not text, so they sit dead centre whatever the font metrics. */
+.lx-light::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  translate: -50% -50%;
+  /* Solid colour, faded as a whole, so the crossing of × and + doesn't darken */
+  color: #000;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.lx-light:nth-child(1)::after { rotate: 45deg; }
+.lx-light:nth-child(2)::after { background-size: 100% 2px, 0 0; }
+.lx[data-state="hover"] .lx-lights .lx-light::after, .lx[data-state="live"] .lx-lights:hover .lx-light::after, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-lights .lx-light::after {
+  opacity: 0.55;
+}
+.lx[data-state="pressed"] .lx-light, .lx[data-state="live"] .lx-light:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-light {
+  filter: brightness(0.8);
+}
+
