@@ -326,7 +326,7 @@
   box-shadow: 0 2px 4px rgba(0, 30, 80, 0.35), inset 0 -2px 4px rgba(160, 220, 255, 0.6);
 }
 /* The default-button pulse of Mac OS X: the fill breathes slowly while nothing is happening. */
-.lx[data-state="live"] .lx-aqua:not(:hover):not(:active) {
+.lx:is([data-state="live"], [data-state="mirror"]) .lx-aqua:not(:hover):not(:active) {
   animation: lx-aqua-pulse 1.6s ease-in-out infinite;
 }
 @keyframes lx-aqua-pulse {
@@ -335,9 +335,11 @@
   50% { filter: brightness(1.12) saturate(1.2); }
 }
 .lx[data-state="hover"] .lx-aqua, .lx[data-state="live"] .lx-aqua:hover, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-aqua {
+  animation: none;
   filter: brightness(1.06) saturate(1.1);
 }
 .lx[data-state="pressed"] .lx-aqua, .lx[data-state="live"] .lx-aqua:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-aqua {
+  animation: none;
   background: var(--lx-gloss), linear-gradient(180deg, #5ea7f2 0%, #2563c4 50%, #1a57b4 52%, #4f9cee 100%);
   box-shadow: 0 1px 2px rgba(0, 30, 80, 0.35), inset 0 2px 4px rgba(0, 20, 80, 0.4);
 }

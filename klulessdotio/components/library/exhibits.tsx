@@ -151,7 +151,7 @@ function Keycaps({ live }: { live: boolean }) {
 function FloatingAction({ live }: { live: boolean }) {
   const [open, setOpen] = useState(false)
   return (
-    <Part live={live} className={`lx-fab${open ? " lx-fab-open" : ""}`} label="Add" toggled={live ? open : undefined} onClick={() => setOpen((v) => !v)}>
+    <Part live={live} className={`lx-fab${open ? " lx-fab-open" : ""}`} label={open ? "Close" : "Add"} toggled={live ? open : undefined} onClick={() => setOpen((v) => !v)}>
       <Plus size={24} aria-hidden="true" />
     </Part>
   )

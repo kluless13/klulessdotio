@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import path from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { BUTTONS } from "@/content/library"
@@ -187,4 +189,43 @@ describe("playable live exhibits", () => {
       expect(container.querySelector('button, [role="switch"]')).toBeNull()
     },
   )
+})
+
+describe("click-free effects on tiles", () => {
+  const css = readFileSync(path.resolve(process.cwd(), "app/library/exhibits.css"), "utf8")
+
+  it("mirror aqua carries the hooks the pulse selector targets", () => {
+    const { container } = render(<Exhibit slug="aqua" state="mirror" />)
+    expect(container.querySelector('.lx[data-state="mirror"] .lx-aqua')).not.toBeNull()
+    expect(css).toMatch(/\.lx:is\(\[data-state="live"\], \[data-state="mirror"\]\) \.lx-aqua[^{]*\{\s*animation: lx-aqua-pulse/)
+  })
+
+  it("forced aqua states stay static", () => {
+    for (const state of ["rest", "hover", "pressed"] as const) {
+      const { container } = render(<Exhibit slug="aqua" state={state} />)
+      expect(container.querySelector(".lx")?.getAttribute("data-state")).toBe(state)
+      cleanup()
+    }
+    expect(css).not.toMatch(/data-state="(rest|hover|pressed)"\][^{]*\.lx-aqua[^{]*\{[^}]*lx-aqua-pulse/)
+  })
+
+  it("mirror traffic lights carry the glyph hooks under a host", () => {
+    const { container } = render(
+      <div data-exhibit-host>
+        <Exhibit slug="traffic-lights" state="mirror" />
+      </div>,
+    )
+    expect(container.querySelectorAll('[data-exhibit-host] .lx[data-state="mirror"] .lx-lights .lx-light')).toHaveLength(3)
+    expect(css).toMatch(/\[data-exhibit-host\]:is\(:hover, :focus-visible\) \.lx\[data-state="mirror"\] \.lx-lights \.lx-light::after/)
+  })
+
+  it("floating action label follows its state", () => {
+    render(<Exhibit slug="floating-action" />)
+    const button = screen.getByRole("button")
+    expect(button.getAttribute("aria-label")).toBe("Add")
+    fireEvent.click(button)
+    expect(button.getAttribute("aria-label")).toBe("Close")
+    fireEvent.click(button)
+    expect(button.getAttribute("aria-label")).toBe("Add")
+  })
 })
