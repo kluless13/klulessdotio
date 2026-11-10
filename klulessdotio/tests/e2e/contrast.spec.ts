@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test"
+import { signKitToken } from "../../lib/downloads/token"
 import { WEATHER_KEYS, contrast, inkVars, skyView } from "../../lib/sky/model"
 
 const hex = (value: string) => [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
@@ -196,6 +197,24 @@ test.describe("Visitor toast contrast", () => {
         )
       })
       expect(worst).toBeGreaterThanOrEqual(4.5)
+    })
+  }
+})
+
+test.describe("Kit contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`the signup page and the kit pass 4.5:1 in ${tone}`, async ({ page }) => {
+      const token = signKitToken("e2e@example.com", "e2e-kit-secret")
+      for (const path of ["/kit", `/kit/${token}`]) {
+        await page.goto(`${path}?hour=${hour}&weather=clear`)
+        await expect(page.locator(".kit").first()).toHaveAttribute("data-tone", tone)
+        await page.waitForTimeout(1000)
+        const skies = await sampleSky(page, ".kit-sheet")
+        const results = await page.evaluate(measureSheet, { skies, selector: ".kit-sheet" })
+        expect(results.length).toBeGreaterThan(10)
+        const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
+        expect(failing, `${tone} ${path.slice(0, 8)}`).toEqual([])
+      }
     })
   }
 })
