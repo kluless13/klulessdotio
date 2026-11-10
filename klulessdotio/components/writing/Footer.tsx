@@ -4,6 +4,7 @@ const LINKS = [
   { name: "About", href: "/about" },
   { name: "Writing", href: "/writing" },
   { name: "Library", href: "/library" },
+  { name: "Starter kit", href: "/kit" },
   { name: "RSS", href: "/writing/rss.xml" },
 ] as const
 
