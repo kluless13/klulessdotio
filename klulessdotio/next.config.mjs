@@ -17,6 +17,18 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  async headers() {
+    return [
+      {
+        // Kit links are personal: never leak the token to other sites, never index the page
+        source: "/kit/:token",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+    ]
+  },
   async rewrites() {
     return [{ source: "/writing/:slug.md", destination: "/writing/md/:slug" }]
   },

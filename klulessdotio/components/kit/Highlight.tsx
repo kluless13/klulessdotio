@@ -5,9 +5,10 @@ import { hashSeed } from "@/lib/kit/inline"
 import { highlightStroke } from "@/lib/kit/ink"
 
 /** Room around each stroke so the ragged ends and wobble never clip. */
-const PAD = 8
+export const PAD = 8
+const SVG = "http://www.w3.org/2000/svg"
 
-interface LineBox {
+export interface LineBox {
   left: number
   top: number
   width: number
@@ -27,7 +28,7 @@ function textOf(node: ReactNode): string {
  * One stroke box per line the mark wraps onto, relative to the ink layer's own origin, so it holds
  * however the browser places an absolute box inside a wrapped inline.
  */
-function measure(mark: HTMLElement, layer: HTMLElement): LineBox[] {
+export function measure(mark: HTMLElement, layer: HTMLElement): LineBox[] {
   const origin = layer.getBoundingClientRect()
   const size = parseFloat(getComputedStyle(mark).fontSize) || 16
   const height = size * 1.12
@@ -75,21 +76,75 @@ function useLineBoxes() {
   return { markRef, layerRef, boxes }
 }
 
-function Stroke({ seed, box, line }: { seed: string; box: LineBox; line: number }) {
+/** Where one line's stroke sits and what it looks like, shared by the React mark and the HTML-string painter. */
+function strokeShape(seed: string, box: LineBox, line: number) {
   const { body, streak, jitter } = highlightStroke(seed, box.width, box.height, line)
   const width = box.width + PAD * 2
   const height = box.height + PAD * 2
+  return { left: box.left - PAD, top: box.top - PAD, width, height, viewBox: `${-PAD} ${-PAD} ${width} ${height}`, body, streak, jitter: jitter.toFixed(3) }
+}
+
+function Stroke({ seed, box, line }: { seed: string; box: LineBox; line: number }) {
+  const shape = strokeShape(seed, box, line)
   return (
     <svg
       className="hl-line"
-      style={{ left: box.left - PAD, top: box.top - PAD, width, height, ["--hl-jitter" as string]: jitter.toFixed(3) }}
-      viewBox={`${-PAD} ${-PAD} ${width} ${height}`}
+      style={{ left: shape.left, top: shape.top, width: shape.width, height: shape.height, ["--hl-jitter" as string]: shape.jitter }}
+      viewBox={shape.viewBox}
       focusable="false"
     >
-      <path className="hl-body" d={body} />
-      <path className="hl-streak" d={streak} />
+      <path className="hl-body" d={shape.body} />
+      <path className="hl-streak" d={shape.streak} />
     </svg>
   )
+}
+
+/** The element's own aria-hidden ink layer (its first child), made on first use. */
+export function inkLayer(host: HTMLElement, className: string): HTMLElement {
+  const first = host.firstElementChild
+  if (first instanceof HTMLElement && first.classList.contains(className)) return first
+  const layer = document.createElement("span")
+  layer.className = className
+  layer.setAttribute("aria-hidden", "true")
+  host.prepend(layer)
+  return layer
+}
+
+/** An absolutely placed SVG with the given paths, for drawing into server-rendered HTML. */
+export function svgElement(className: string, box: { left: number; top: number; width: number; height: number }, viewBox: string, paths: readonly [string, string][]): SVGSVGElement {
+  const svg = document.createElementNS(SVG, "svg")
+  svg.setAttribute("class", className)
+  svg.setAttribute("viewBox", viewBox)
+  svg.setAttribute("focusable", "false")
+  Object.assign(svg.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` })
+  for (const [pathClass, d] of paths) {
+    const path = document.createElementNS(SVG, "path")
+    path.setAttribute("class", pathClass)
+    path.setAttribute("d", d)
+    svg.append(path)
+  }
+  return svg
+}
+
+/**
+ * Draw (or redraw) the strokes behind a server-rendered `mark.hl`, with the same geometry as `<Highlight>`.
+ * Until a line can be measured the mark keeps its plain translucent background.
+ */
+export function paintMark(mark: HTMLElement): void {
+  const layer = inkLayer(mark, "hl-ink")
+  const seed = mark.dataset.seed || hashSeed(mark.textContent ?? "")
+  const boxes = measure(mark, layer)
+  const strokes = boxes.map((box, line) => {
+    const shape = strokeShape(seed, box, line)
+    const svg = svgElement("hl-line", shape, shape.viewBox, [
+      ["hl-body", shape.body],
+      ["hl-streak", shape.streak],
+    ])
+    svg.style.setProperty("--hl-jitter", shape.jitter)
+    return svg
+  })
+  layer.replaceChildren(...strokes)
+  mark.toggleAttribute("data-inked", strokes.length > 0)
 }
 
 /**

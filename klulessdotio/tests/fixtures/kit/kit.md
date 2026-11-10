@@ -88,7 +88,7 @@ Here is the short version of the sample year.
 - **Spring:** Sowed seeds on the sill.
 - **Autumn:** Harvested the last of the basil.
 
-:::card{title="Visit the garden" cta="Open the map" href="https://example.com/map"}
+:::card{title="Visit the garden" cta="Book a visit" href="https://cal.com/angad888/show-me"}
 Come and see the pots in person on a sunny afternoon.
 :::
 

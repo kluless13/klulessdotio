@@ -1,0 +1,695 @@
+/* The kit itself (/kit/[token]): the wide reading sheet, its blocks and the handwritten notes, matched to the guide boards.
+   Tone tokens, the sheet's base look and the highlighter live in kit.css. */
+.kit {
+  /* Pen ink for notes and their underlines: a pale blue by night */
+  --pen: #9db8f5;
+  --request-bg: rgba(255, 255, 255, 0.05);
+  --prompt-bg: rgba(0, 0, 0, 0.22);
+}
+:root.day .kit:not([data-tone]),
+.kit[data-tone="day"] {
+  /* A blue ballpoint by day */
+  --pen: #2f4fa8;
+  --request-bg: rgba(255, 255, 255, 0.7);
+  --prompt-bg: rgba(255, 255, 255, 0.75);
+}
+
+/* The sheet: 1040 wide, a 632 text column and a margin for notes */
+.kit-guide {
+  width: min(1040px, calc(100% - 24px));
+  padding: 72px;
+  gap: 56px;
+}
+.kit-guide .kit-dek {
+  font-size: 20px;
+  line-height: 30px;
+}
+.kit-notice .kit-dek {
+  white-space: normal;
+}
+
+.kit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.kit-body > * {
+  width: 100%;
+  max-width: 632px;
+}
+.kit-body > .kit-wide {
+  max-width: none;
+}
+.kit-body > :first-child {
+  margin-top: 0;
+}
+.kit-body strong {
+  font-weight: 600;
+}
+.kit-body a:not(.btn) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+/* Fill-ins the reader swaps for their own words, like [Xero/QuickBooks] */
+.kit-body .fill,
+.kit-fill-in {
+  color: var(--s-soft);
+}
+.kit-body .fill::before {
+  content: "[";
+}
+.kit-body .fill::after {
+  content: "]";
+}
+
+/* Reading text */
+.kit-p,
+.kit-list {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 32px;
+}
+.kit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  counter-reset: kit-item;
+}
+.kit-list > li {
+  position: relative;
+  padding-left: 18px;
+}
+.kit-list > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 13px;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--s-ink);
+}
+.kit-list-numbered > li {
+  padding-left: 26px;
+  counter-increment: kit-item;
+}
+.kit-list-numbered > li::before {
+  content: counter(kit-item) ".";
+  top: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--s-soft);
+}
+
+/* Headings: each starts a new section, 56px below the last */
+.kit-h2 {
+  margin-top: 36px;
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.kit-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.kit-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--s-tint2);
+  font-size: 17px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.kit-h3 {
+  margin-top: 36px;
+  padding-top: 8px;
+  font-size: 21px;
+  line-height: 28px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* The five steps */
+.kit-contents {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 26px;
+  border-radius: 16px;
+  background: var(--s-tint);
+}
+.kit-contents-title {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.kit-contents-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  gap: 8px 24px;
+  list-style: none;
+}
+.kit-contents-item {
+  display: flex;
+  gap: 8px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+.kit-contents-number {
+  flex-shrink: 0;
+  width: 20px;
+  color: var(--s-soft);
+}
+
+/* Setup paths, stacked in the column */
+.kit-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kit-path {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 24px;
+  border-radius: 18px;
+  background: var(--s-tint);
+}
+.kit-path-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.kit-pick {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.14);
+  color: var(--s-soft);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+.kit-path-body {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 28px;
+}
+
+/* The minutes bar */
+.kit-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  border-radius: 18px;
+  background: var(--s-tint);
+}
+.kit-timeline-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+.kit-timeline-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.kit-timeline-aside {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+.kit-timeline-parts {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+}
+.kit-timeline-part {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.kit-timeline-bar {
+  height: 14px;
+  margin-bottom: 10px;
+  border-radius: 7px;
+  background: var(--s-ink);
+  opacity: 0.85;
+}
+.kit-timeline-part[data-part="decide"] .kit-timeline-bar {
+  background: var(--hl-color);
+  opacity: 1;
+}
+.kit-timeline-part[data-part="fix"] .kit-timeline-bar {
+  opacity: 0.6;
+}
+.kit-timeline-minutes {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.kit-timeline-words {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--s-soft);
+}
+
+/* Before and after */
+.kit-ba {
+  display: flex;
+  gap: 12px;
+}
+.kit-ba-before,
+.kit-ba-after {
+  display: flex;
+  flex-direction: column;
+  padding: 22px 24px;
+  border-radius: 16px;
+}
+.kit-ba-before {
+  flex-shrink: 0;
+  width: 196px;
+  gap: 8px;
+  background: var(--s-tint);
+}
+.kit-ba-after {
+  flex: 1 1 0;
+  gap: 12px;
+  background: var(--s-tint2);
+}
+.kit-ba-label,
+.kit-ba-part-label {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.kit-ba-quote,
+.kit-ba-part-quote {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-style: italic;
+}
+.kit-ba-quote {
+  font-size: 22px;
+  line-height: 32px;
+}
+.kit-ba-comment {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+.kit-ba-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  list-style: none;
+}
+.kit-ba-part {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kit-ba-part-quote {
+  font-size: 17px;
+  line-height: 27px;
+}
+
+/* The starting prompt, full sheet width. Geist Mono comes from its class; nothing else on the page is mono */
+.kit-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px 24px;
+  border-radius: 18px;
+  background: var(--s-tint2);
+}
+.kit-prompt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.kit-prompt-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.kit-prompt-copy {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.kit-prompt-code {
+  margin: 0;
+  padding: 22px 24px;
+  border-radius: 12px;
+  background: var(--prompt-bg);
+  color: var(--s-ink);
+  font-size: 14px;
+  line-height: 23px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.kit-prompt-line,
+.kit-prompt-gap {
+  display: block;
+}
+.kit-prompt-gap {
+  line-height: 10px;
+}
+
+/* Job cards, full sheet width */
+.kit-job {
+  display: flex;
+  gap: 32px;
+  margin-top: 36px;
+  padding: 26px 28px;
+  border-radius: 20px;
+  background: var(--s-tint);
+}
+.kit-job + .kit-job {
+  margin-top: -8px;
+}
+.kit-job-about {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 10px;
+  width: 250px;
+}
+.kit-job-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kit-job-name {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.kit-job-what {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--s-soft);
+}
+.kit-job-who {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-style: italic;
+  color: var(--s-soft);
+}
+.kit-job-recipe {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.kit-job-before {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 27px;
+  color: var(--s-soft);
+}
+.kit-job-before strong {
+  color: var(--s-ink);
+}
+.kit-job-request {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--request-bg);
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  line-height: 30px;
+  white-space: pre-line;
+}
+.kit-job-connect {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s-soft);
+}
+.kit-job-connect svg {
+  flex-shrink: 0;
+  margin-top: 2.5px;
+}
+
+/* The ending: the years, the two cards and the business paragraph */
+.kit-ending {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.kit-ending > .kit-p,
+.kit-years {
+  max-width: 632px;
+}
+.kit-years {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  list-style: none;
+}
+.kit-year {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+.kit-year-when {
+  flex-shrink: 0;
+  width: 132px;
+  font-size: 15px;
+  line-height: 29px;
+  font-weight: 600;
+}
+.kit-year-what {
+  flex: 1 1 0;
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 29px;
+}
+.kit-cards {
+  display: flex;
+  gap: 12px;
+  margin-top: 36px;
+}
+.kit-card {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 24px;
+  border-radius: 18px;
+  background: var(--s-tint);
+}
+.kit-card-action {
+  background: var(--s-tint2);
+}
+.kit-card-title {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.kit-card-text {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 27px;
+}
+.kit-card-cta {
+  padding-top: 6px;
+}
+.kit-business {
+  margin-top: 28px;
+}
+
+/* Margin notes. Under the block by default; beside it, level with its words, once there's a margin */
+.kit-noted {
+  position: relative;
+}
+.kit-note {
+  margin-top: 10px;
+  padding: 0 4px 0 18px;
+  font-family: var(--font-caveat), "Caveat", "Bradley Hand", cursive;
+  font-size: 23px;
+  line-height: 26px;
+  font-weight: 500;
+  color: var(--pen);
+}
+.note-on {
+  position: relative;
+  /* Until the pen line is drawn, and without JS */
+  text-decoration: underline 1.5px var(--pen);
+  text-underline-offset: 5px;
+}
+.note-on[data-inked] {
+  text-decoration: none;
+}
+.note-ink {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.note-line {
+  position: absolute;
+  overflow: visible;
+}
+.note-stroke {
+  fill: none;
+  stroke: var(--pen);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (min-width: 1100px) {
+  .kit-note {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 36px);
+    width: 220px;
+    margin: 0;
+    padding: 0;
+    transform: rotate(-1.5deg);
+    transform-origin: 0 0;
+  }
+}
+@media (forced-colors: active) {
+  .note-ink {
+    display: none;
+  }
+  .note-on[data-inked] {
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 1099px) {
+  .kit-guide {
+    padding: 64px 56px;
+  }
+}
+
+@media (max-width: 760px) {
+  .kit-job {
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+  }
+  .kit-job-about {
+    width: auto;
+  }
+  .kit-job-request {
+    font-size: 18px;
+    line-height: 29px;
+  }
+  .kit-cards {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .kit-guide {
+    gap: 40px;
+    padding: 28px 22px 24px;
+  }
+  .kit-guide .kit-dek {
+    font-size: 17px;
+    line-height: 25px;
+  }
+  .kit-p,
+  .kit-list {
+    font-size: 18px;
+    line-height: 29px;
+  }
+  .kit-list > li::before {
+    top: 11.5px;
+  }
+  .kit-list-numbered > li::before {
+    top: 0;
+  }
+  .kit-h2 {
+    margin-top: 20px;
+    font-size: 24px;
+    line-height: 30px;
+  }
+  .kit-step {
+    gap: 14px;
+  }
+  .kit-badge {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+  .kit-h3 {
+    margin-top: 20px;
+    font-size: 19px;
+    line-height: 26px;
+  }
+  .kit-contents {
+    gap: 12px;
+    padding: 18px 20px;
+  }
+  .kit-contents-list {
+    grid-template-columns: 1fr;
+    grid-template-rows: none !important;
+    grid-auto-flow: row;
+  }
+  .kit-ba {
+    flex-direction: column;
+  }
+  .kit-ba-before {
+    width: auto;
+  }
+  .kit-prompt {
+    padding: 18px;
+  }
+  .kit-prompt-head {
+    flex-wrap: wrap;
+  }
+  .kit-prompt-code {
+    padding: 18px;
+    font-size: 13px;
+    line-height: 21px;
+  }
+  .kit-job {
+    margin-top: 20px;
+  }
+  .kit-year {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .kit-year-when {
+    width: auto;
+    line-height: 22px;
+  }
+  .kit-cards {
+    margin-top: 20px;
+  }
+  .kit-business {
+    margin-top: 8px;
+  }
+}
