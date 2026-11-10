@@ -4,9 +4,7 @@ import { Averia_Serif_Libre, EB_Garamond, Fraunces, Inter, Newsreader } from "ne
 // next/font needs literal options, so the weights below are written out.
 // They mirror the weights declared in content/library.ts.
 // Browsers fetch a face only when it is used: the tile loads one weight, the sheet the rest.
-const ALL_WEIGHTS = ["100", "200", "300", "400", "500", "600", "700", "800", "900"] as const
-
-const inter = Inter({ subsets: ["latin"], weight: [...ALL_WEIGHTS], display: "swap", preload: false })
+const inter = Inter({ subsets: ["latin"], weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"], display: "swap", preload: false })
 const averia = Averia_Serif_Libre({ subsets: ["latin"], weight: ["300", "400", "700"], display: "swap", preload: false })
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -15,7 +13,7 @@ const newsreader = Newsreader({
   preload: false,
 })
 const garamond = EB_Garamond({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap", preload: false })
-const fraunces = Fraunces({ subsets: ["latin"], weight: [...ALL_WEIGHTS], display: "swap", preload: false })
+const fraunces = Fraunces({ subsets: ["latin"], weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"], display: "swap", preload: false })
 
 // Fontshare's ITF Free Font License does not allow the files in a public repository,
 // so these three load from Fontshare's own stylesheet. The Library layout renders it.
