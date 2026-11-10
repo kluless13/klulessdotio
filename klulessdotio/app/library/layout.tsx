@@ -1,7 +1,14 @@
 import type { ReactNode } from "react"
-import { FONTSHARE_STYLESHEET } from "@/lib/library/fonts"
+import { FontshareLink } from "@/components/library/FontshareLink"
 import "../writing/writing.css"
-import "./exhibits.css"
+import "./exhibits/base.css"
+import "./exhibits/weighted.css"
+import "./exhibits/retro.css"
+import "./exhibits/web2.css"
+import "./exhibits/flat.css"
+import "./exhibits/modern.css"
+import "./exhibits/soft.css"
+import "./exhibits/mine.css"
 import "./library.css"
 import "./sheet.css"
 
@@ -9,7 +16,7 @@ import "./sheet.css"
 export default function LibraryLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <link rel="stylesheet" href={FONTSHARE_STYLESHEET} precedence="default" />
+      <FontshareLink />
       {children}
     </>
   )

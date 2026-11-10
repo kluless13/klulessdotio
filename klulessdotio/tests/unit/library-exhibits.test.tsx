@@ -192,7 +192,11 @@ describe("playable live exhibits", () => {
 })
 
 describe("click-free effects on tiles", () => {
-  const css = readFileSync(path.resolve(process.cwd(), "app/library/exhibits.css"), "utf8")
+  const dir = path.resolve(process.cwd(), "app/library/exhibits")
+  // Read in the order the layout imports them, so the text keeps the cascade order.
+  const css = ["base", "weighted", "retro", "web2", "flat", "modern", "soft", "mine"]
+    .map((name) => readFileSync(path.join(dir, `${name}.css`), "utf8"))
+    .join("\n")
 
   it("mirror aqua carries the hooks the pulse selector targets", () => {
     const { container } = render(<Exhibit slug="aqua" state="mirror" />)
