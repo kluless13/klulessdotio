@@ -217,6 +217,10 @@
 - **floating-action:** click toggles a 45° rotation, so + becomes ×, with `aria-pressed`.
 - **glossy-download:** click plays one small bounce of the arrow, about 400ms.
 - **neumorphic** and **liquid-glass:** click toggles the play icon to pause and back, with `aria-pressed`. The label stays the same.
+- **Mirror state** (tiles and list rows), added on 2026-11-10:
+  - aqua pulses in `state="mirror"` as well;
+  - traffic-light glyphs appear when the nearest `[data-exhibit-host]` is hovered or focused.
+  - Both are CSS only. Forced `rest`, `hover` and `pressed` stay static.
 - **Motion:** every animation is disabled under `prefers-reduced-motion: reduce`.
 - **Code organization:** keep each stateful exhibit a small component, and split `exhibits.tsx` into `components/library/exhibits/` files if it would pass about 400 lines.
 

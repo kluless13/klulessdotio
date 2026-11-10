@@ -105,7 +105,9 @@ The same applies to list rows.
   - **Glossy download:** the arrow does a small bounce.
   - **Neumorphic and Liquid glass:** the play icon toggles to pause and back.
   - Everything else keeps its hover and press feel, and a click does nothing.
-  - None of this runs on tiles, list rows or the state row, which stay static or mirrored.
+  - Click behaviours run only in the sheet.
+  - The two effects that need no click also run on tiles and list rows, which Angad chose on 2026-11-10: Aqua's pulse, and the traffic-light symbols when the tile or row is hovered. Clicking a tile still only opens it.
+  - The state row in the sheet stays static.
   - All motion respects `prefers-reduced-motion`.
 
 **Share** (`share-share-menu.jpg`): Share opens a small menu with "Copy link" (shows `1tx.dev/library/<slug>`) and "More options" (the device's share sheet via `navigator.share`, hidden where it isn't supported). Copying shows a "Link copied" toast bottom left. "Save as image" is out of this build.
