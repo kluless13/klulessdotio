@@ -194,6 +194,47 @@
 
 ---
 
+### Task 3b: Playable live exhibits
+
+**Files:**
+- Modify: `components/library/exhibits.tsx` and `app/library/exhibits.css`
+- Test: `tests/unit/library-exhibits.test.tsx`
+
+**Interfaces:**
+- Consumes: `Exhibit` and `ExhibitState` from Task 3.
+- Produces: nothing new. Behaviour is internal to `state="live"`.
+
+**Behaviour (live only; every other state stays static or mirrored):**
+- **gel-switch:** a `role="switch"` element with `aria-checked`. Click or Space toggles it. The label reads "ON" or "OFF", and the knob slides.
+- **segmented:** three real buttons, with Week selected at start. Clicking one moves the raised segment there with a short slide, and sets `aria-pressed` on the selected one.
+- **keycaps:**
+  - Clicking ⌘ or K shows that key pressed for 150ms.
+  - While the exhibit is mounted, a `keydown` listener on `window` presses ⌘ when `event.metaKey` is set or the key is "Meta", and presses K when the key is "k" or "K".
+  - It does nothing when the event target is an input, textarea or contenteditable.
+  - It never calls `preventDefault`, and it removes its listeners on unmount.
+- **aqua:** a gentle pulse at rest (CSS keyframes on the glossy fill, a cycle of about 1.6s), as in the Mac OS X default button. It's off under `prefers-reduced-motion`.
+- **traffic-lights:** on hover over the group, × − + glyphs appear inside the red, yellow and green dots.
+- **floating-action:** click toggles a 45° rotation, so + becomes ×, with `aria-pressed`.
+- **glossy-download:** click plays one small bounce of the arrow, about 400ms.
+- **neumorphic** and **liquid-glass:** click toggles the play icon to pause and back, with `aria-pressed`. The label stays the same.
+- **Motion:** every animation is disabled under `prefers-reduced-motion: reduce`.
+- **Code organization:** keep each stateful exhibit a small component, and split `exhibits.tsx` into `components/library/exhibits/` files if it would pass about 400 lines.
+
+- [ ] **Step 1: Write the failing tests:**
+  - gel switch: a click flips `aria-checked` from "true" to "false" and the text from ON to OFF;
+  - segmented: clicking "Day" sets `aria-pressed="true"` on Day and false on Week;
+  - keycaps: dispatching `keydown` with key "k" on window adds the pressed marker to K. An event whose target is an `<input>` doesn't. After unmount, a keydown doesn't throw;
+  - floating action: a click toggles `aria-pressed`;
+  - neumorphic: a click toggles `aria-pressed`;
+  - `state="pressed"` versions of these render no button or switch.
+- [ ] **Step 2: Run** `npx vitest run tests/unit/library-exhibits.test.tsx`. Expected: the new tests FAIL.
+- [ ] **Step 3: Implement.**
+- [ ] **Step 4: Run** the full unit suite and `npx tsc --noEmit`. Expected: all pass.
+- [ ] **Step 5: Visual check** with a temporary page in Playwright: toggle each one and screenshot it. Delete the page afterwards.
+- [ ] **Step 6: Commit** with `feat: make the live library buttons playable`.
+
+---
+
 ### Task 4: Top bar, shell and footer
 
 **Files:**

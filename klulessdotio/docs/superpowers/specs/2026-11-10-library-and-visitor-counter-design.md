@@ -95,7 +95,18 @@ The same applies to list rows.
 - Left panel: the button large and live (it really hovers and presses), with a row underneath showing it held in Rest, Hover and Pressed.
 - Right: the name, the source in grey ("Seen on exa.ai"), the note, a divider, two or three short plain lines on how it's made, and a code block with the key CSS (mono is fine here, it's code).
 - Buttons: Copy CSS, Share, and "Visit <site>" when the source is a website.
-- The live preview buttons do nothing when clicked.
+- **Live buttons are playable** (Angad asked on 2026-11-10). In the sheet, clicking does what the original did, where that's fun:
+  - **Gel switch:** flips between ON and OFF, with the knob sliding across.
+  - **Segmented:** clicking Day, Week or Month moves the raised segment there.
+  - **Keycaps:** clicking a key presses it. Pressing ⌘ or K on the real keyboard while the sheet is open presses the matching keycap.
+  - **Aqua:** pulses gently at rest, like the default button in Mac OS X.
+  - **Traffic lights:** show their ×, − and + when hovered.
+  - **Floating action:** the + turns into a × and back.
+  - **Glossy download:** the arrow does a small bounce.
+  - **Neumorphic and Liquid glass:** the play icon toggles to pause and back.
+  - Everything else keeps its hover and press feel, and a click does nothing.
+  - None of this runs on tiles, list rows or the state row, which stay static or mirrored.
+  - All motion respects `prefers-reduced-motion`.
 
 **Share** (`share-share-menu.jpg`): Share opens a small menu with "Copy link" (shows `1tx.dev/library/<slug>`) and "More options" (the device's share sheet via `navigator.share`, hidden where it isn't supported). Copying shows a "Link copied" toast bottom left. "Save as image" is out of this build.
 
