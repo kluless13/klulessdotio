@@ -28,6 +28,8 @@ function setup(over: Partial<SubscribeDeps> = {}, counts: Record<string, number>
   const provider = {
     addContact: vi.fn(async (_i: { email: string; downloadId: string; slug: string }) => undefined),
     sendDownloadEmail: vi.fn(async (_i: { email: string; title: string; link: string }) => undefined),
+    sendKitEmail: vi.fn(async (_i: { email: string; link: string; unsubscribeLink: string }) => undefined),
+    unsubscribe: vi.fn(async (_email: string) => undefined),
   }
   const deps: SubscribeDeps = {
     redis,
