@@ -34,7 +34,8 @@ describe("kit email", () => {
     expect(html).toContain('src="https://1tx.dev/email/kit-header.gif"')
     expect(html).toContain('src="https://1tx.dev/email/signature-angad.png"')
     expect(html).toContain("Open your kit")
-    expect(html).toContain("Unsubscribe in one click")
+    expect(html).toContain(">Unsubscribe</a>")
+    expect(html).not.toContain("one click")
     expect(html).toContain(KIT_EMAIL_PREVIEW)
   })
 

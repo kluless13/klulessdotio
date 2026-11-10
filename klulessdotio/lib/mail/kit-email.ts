@@ -17,7 +17,7 @@ const AFTER = [
 ]
 const BUTTON = "Open your kit"
 const REASON = "You're getting this because you asked for the starter kit at 1tx.dev/kit."
-const UNSUBSCRIBE = "Unsubscribe in one click"
+const UNSUBSCRIBE = "Unsubscribe"
 
 const HEADER_URL = "https://1tx.dev/email/kit-header.gif"
 const SIGNATURE_URL = "https://1tx.dev/email/signature-angad.png"
