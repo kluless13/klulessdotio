@@ -27,14 +27,37 @@ function textIssues(markdown: string): KitIssue[] {
 
 const isPlain = (c: RootContent) => c.type === "paragraph" && !hasLabel(c, "Before") && !hasLabel(c, "Connect")
 
-/** A job's own text is Before:, the quoted request and Connect:, then at most one closing paragraph. */
-function jobOrderIssues(node: ContainerDirective, add: (message: string) => void): void {
+const DROPPED = "This would be dropped: a job holds Before:, one quoted request, Connect: and at most one paragraph after it."
+
+/**
+ * A job's own text is Before:, the quoted request and Connect:, then at most one closing paragraph.
+ * Anything else would vanish from the page, so it's reported at its own line.
+ */
+function jobOrderIssues(node: ContainerDirective, line: number, out: KitIssue[]): void {
   const connectAt = node.children.findIndex((c) => hasLabel(c, "Connect"))
   if (connectAt < 0) return
-  if (node.children.slice(0, connectAt).some(isPlain)) {
-    add("Move this job's extra paragraph after Connect:, or start it with Before: or Connect:.")
+  const requestAt = node.children.findIndex((c) => c.type === "blockquote")
+  let extras = 0
+  node.children.forEach((c, i) => {
+    const at = c.position?.start.line ?? line
+    if (i === requestAt || hasLabel(c, "Before") || hasLabel(c, "Connect")) return
+    if (!isPlain(c)) {
+      out.push({ line: at, message: DROPPED })
+    } else if (i < connectAt) {
+      out.push({ line: at, message: "Move this job's extra paragraph after Connect:, or start it with Before: or Connect:." })
+    } else if (++extras > 1) {
+      out.push({ line: at, message: "A job takes at most one paragraph after Connect." })
+    }
+  })
+}
+
+/** Paths start with their first ::path; anything above it would be dropped. */
+function pathsIssues(node: ContainerDirective, out: KitIssue[]): void {
+  const first = node.children.findIndex((c) => c.type === "leafDirective" && c.name === "path")
+  const before = first < 0 ? node.children : node.children.slice(0, first)
+  for (const c of before) {
+    out.push({ line: c.position?.start.line ?? 1, message: "Text before the first ::path is dropped. Start the section with ::path[Name]." })
   }
-  if (node.children.slice(connectAt + 1).filter(isPlain).length > 1) add("A job takes at most one paragraph after Connect.")
 }
 
 /** Phrases hold one list, and each item opens with the phrase in bold. */
@@ -67,7 +90,9 @@ function directiveIssues(node: ContainerDirective, line: number, out: KitIssue[]
     if (!node.children.some((c) => hasLabel(c, "Before"))) add("Job is missing a Before: paragraph.")
     if (!node.children.some((c) => c.type === "blockquote")) add("Job is missing its quoted request.")
     if (!node.children.some((c) => hasLabel(c, "Connect"))) add("Job is missing a Connect: paragraph.")
-    jobOrderIssues(node, add)
+    jobOrderIssues(node, line, out)
+  } else if (node.name === "paths") {
+    pathsIssues(node, out)
   } else if (node.name === "phrases") {
     phrasesIssues(node, line, out)
   } else if (node.name === "card") {

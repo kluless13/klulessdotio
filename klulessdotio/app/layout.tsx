@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next"
 import { SITE_DESCRIPTION } from "@/lib/content"
-import { Analytics } from "@vercel/analytics/next"
 import { Archivo_Black, Instrument_Sans, Newsreader, Oswald } from "next/font/google"
 import type { ReactNode } from "react"
+import { SiteAnalytics } from "@/components/SiteAnalytics"
 import "./globals.css"
 import "./visitor.css"
 
@@ -44,7 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body>
         {children}
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   )

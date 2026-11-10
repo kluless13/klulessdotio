@@ -178,11 +178,27 @@ describe("validateKit", () => {
     expect(validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\nConnect: y\n\nSee more.\n:::"))).toEqual([])
   })
 
-  it("reports a job paragraph before Connect, or more than one after it", () => {
+  it("reports a job paragraph before Connect, or more than one after it, at the paragraph's own line", () => {
     const before = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\nStray.\n\n> req\n\nConnect: y\n:::"))
-    expect(before).toEqual([{ line: 3, message: expect.stringMatching(/after Connect/) }])
+    expect(before).toEqual([{ line: 6, message: expect.stringMatching(/after Connect/) }])
     const twice = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\nConnect: y\n\nOne.\n\nTwo.\n:::"))
-    expect(twice).toEqual([{ line: 3, message: expect.stringMatching(/one paragraph after Connect/) }])
+    expect(twice).toEqual([{ line: 12, message: expect.stringMatching(/one paragraph after Connect/) }])
+  })
+
+  it("reports anything in a job that would be dropped: a list or quote after Connect, a second request", () => {
+    const list = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\nConnect: y\n\n- one\n:::"))
+    expect(list).toEqual([{ line: 10, message: expect.stringMatching(/dropped/) }])
+    const quote = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\nConnect: y\n\n> again\n:::"))
+    expect(quote).toEqual([{ line: 10, message: expect.stringMatching(/dropped/) }])
+    const second = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\n> req two\n\nConnect: y\n:::"))
+    expect(second).toEqual([{ line: 8, message: expect.stringMatching(/dropped/) }])
+  })
+
+  it("reports text before the first path, with or without a note", () => {
+    const plain = validateKit(doc(":::paths\nIntro.\n\n::path[A]\nx\n:::"))
+    expect(plain).toEqual([{ line: 4, message: expect.stringMatching(/before the first ::path/) }])
+    const noted = validateKit(doc(':::paths\nIntro words. :note[N]{on="Intro"}\n\n::path[A]\nx\n:::'))
+    expect(noted).toEqual([{ line: 4, message: expect.stringMatching(/before the first ::path/) }])
   })
 
   it("reports two notes that need the same single words", () => {
