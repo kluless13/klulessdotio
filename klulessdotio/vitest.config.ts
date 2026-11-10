@@ -7,6 +7,6 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["tests/unit/**/*.test.{ts,tsx}"],
-    coverage: { provider: "v8", include: ["lib/sky/**", "lib/content.ts", "lib/posters.ts", "lib/books.ts", "lib/mode.ts", "lib/contributions.ts", "lib/weather.ts", "lib/writing/**", "lib/downloads/**", "lib/mail/**", "lib/ratelimit.ts", "lib/subscribe.ts", "lib/subscribe-guard.ts", "lib/indexnow.ts", "lib/library/**", "lib/visitor*.ts"], thresholds: { lines: 80 } },
+    coverage: { provider: "v8", include: ["lib/sky/**", "lib/content.ts", "lib/posters.ts", "lib/books.ts", "lib/mode.ts", "lib/contributions.ts", "lib/weather.ts", "lib/writing/**", "lib/downloads/**", "lib/mail/**", "lib/ratelimit.ts", "lib/subscribe.ts", "lib/subscribe-guard.ts", "lib/indexnow.ts", "lib/library/**", "lib/visitor*.ts", "lib/kit/**"], thresholds: { lines: 80 } },
   },
 })
