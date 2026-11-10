@@ -3,6 +3,7 @@ import { COPYRIGHT } from "@/lib/content"
 const LINKS = [
   { name: "About", href: "/about" },
   { name: "Writing", href: "/writing" },
+  { name: "Library", href: "/library" },
   { name: "RSS", href: "/writing/rss.xml" },
 ] as const
 

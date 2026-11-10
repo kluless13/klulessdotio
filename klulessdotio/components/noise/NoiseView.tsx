@@ -20,6 +20,9 @@ export function NoiseView({ onPosters, onQuiet }: { onPosters: () => void; onQui
           <a className="btn" href="/writing">
             Writing
           </a>
+          <a className="btn" href="/library">
+            Library
+          </a>
           <button type="button" className="btn" onClick={onQuiet}>
             Quiet
           </button>

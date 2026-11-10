@@ -11,7 +11,7 @@ test.describe("Writing index", () => {
     const writing = header.getByRole("link", { name: "Writing" })
     await expect(writing).toBeVisible()
     const order = await header.locator(".btn").allInnerTexts()
-    expect(order).toEqual(["Writing", "Quiet"])
+    expect(order).toEqual(["Writing", "Library", "Quiet"])
     await writing.click()
     await expect(page).toHaveURL(/\/writing$/)
     await expect(page.getByRole("heading", { level: 1, name: "Writing" })).toBeVisible()
