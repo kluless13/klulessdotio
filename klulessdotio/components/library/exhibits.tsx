@@ -15,14 +15,14 @@ type Maker = (props: ExhibitProps) => JSX.Element
 function Frame({ state = "live", scale = 1, children }: ExhibitProps & { children: ReactNode }) {
   const style: CSSProperties | undefined = scale === 1 ? undefined : { transform: `scale(${scale})` }
   return (
-    <div className="lx" data-state={state} style={style}>
+    <span className="lx" data-state={state} style={style}>
       {children}
-    </div>
+    </span>
   )
 }
 
 function Surface({ kind, children }: { kind: "neu" | "clay" | "glass" | "liquid"; children: ReactNode }) {
-  return <div className={`lx-surface lx-surface-${kind}`}>{children}</div>
+  return <span className={`lx-surface lx-surface-${kind}`}>{children}</span>
 }
 
 interface PartProps {
@@ -78,24 +78,24 @@ function Segmented({ live }: { live: boolean }) {
   const [selected, setSelected] = useState(1)
   if (!live) {
     return (
-      <div className="lx-segmented">
+      <span className="lx-segmented">
         {SEGMENTS.map((name, i) => (
           <Part key={name} live={false} className={i === 1 ? "lx-on" : undefined}>
             {name}
           </Part>
         ))}
-      </div>
+      </span>
     )
   }
   return (
-    <div className="lx-segmented" role="group" aria-label="Range" style={{ "--lx-i": selected } as CSSProperties}>
+    <span className="lx-segmented" role="group" aria-label="Range" style={{ "--lx-i": selected } as CSSProperties}>
       <span className="lx-seg-thumb" aria-hidden="true" />
       {SEGMENTS.map((name, i) => (
         <Part key={name} live className={i === selected ? "lx-sel" : undefined} toggled={i === selected} onClick={() => setSelected(i)}>
           {name}
         </Part>
       ))}
-    </div>
+    </span>
   )
 }
 
@@ -137,14 +137,14 @@ function Keycaps({ live }: { live: boolean }) {
   }, [live])
 
   return (
-    <div className="lx-keys">
+    <span className="lx-keys">
       <Part live={live} className="lx-keycap" pressedMarker={down.has("meta")} onClick={() => press("meta")}>
         ⌘
       </Part>
       <Part live={live} className="lx-keycap" pressedMarker={down.has("k")} onClick={() => press("k")}>
         K
       </Part>
-    </div>
+    </span>
   )
 }
 
@@ -238,11 +238,11 @@ export const EXHIBITS: Record<string, Maker> = {
     </Part>
   )),
   "traffic-lights": framed((live) => (
-    <div className="lx-lights">
+    <span className="lx-lights">
       <Part live={live} className="lx-light" label="Close" />
       <Part live={live} className="lx-light lx-yellow" label="Minimise" />
       <Part live={live} className="lx-light lx-green" label="Zoom" />
-    </div>
+    </span>
   )),
 
   "glossy-download": framed((live) => <GlossyDownload live={live} />),
@@ -255,12 +255,12 @@ export const EXHIBITS: Record<string, Maker> = {
   "floating-action": framed((live) => <FloatingAction live={live} />),
 
   "shadcn-ui": framed((live) => (
-    <div className="lx-shadcn">
+    <span className="lx-shadcn">
       <Part live={live} className="lx-shadcn-default">Default</Part>
       <Part live={live} className="lx-shadcn-secondary">Secondary</Part>
       <Part live={live} className="lx-shadcn-outline">Outline</Part>
       <Part live={live} className="lx-shadcn-ghost">Ghost</Part>
-    </div>
+    </span>
   )),
   "primer-green": framed((live) => <Part live={live} className="lx-primer">Create repository</Part>),
   "blue-pill": framed((live) => <Part live={live} className="lx-blue-pill">Buy</Part>),
