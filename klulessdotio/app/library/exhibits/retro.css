@@ -196,21 +196,27 @@
 .lx-light.lx-green {
   background: radial-gradient(circle at 50% 30%, #b8f0ae 0%, #28c840 45%, #1a8f2b 100%);
 }
+/* The × − + are drawn as bars, not text, so they sit dead centre whatever the font metrics. */
 .lx-light::after {
+  content: "";
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: rgba(0, 0, 0, 0.55);
-  font: 700 12px/1 var(--lx-helvetica);
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  translate: -50% -50%;
+  /* Solid colour, faded as a whole, so the crossing of × and + doesn't darken */
+  color: #000;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat;
   opacity: 0;
   transition: opacity 0.1s ease;
 }
-.lx-light:nth-child(1)::after { content: "\00d7"; }
-.lx-light:nth-child(2)::after { content: "\2212"; }
-.lx-light:nth-child(3)::after { content: "+"; }
+.lx-light:nth-child(1)::after { rotate: 45deg; }
+.lx-light:nth-child(2)::after { background-size: 100% 2px, 0 0; }
 .lx[data-state="hover"] .lx-lights .lx-light::after, .lx[data-state="live"] .lx-lights:hover .lx-light::after, [data-exhibit-host]:is(:hover, :focus-visible) .lx[data-state="mirror"] .lx-lights .lx-light::after {
-  opacity: 1;
+  opacity: 0.55;
 }
 .lx[data-state="pressed"] .lx-light, .lx[data-state="live"] .lx-light:active, [data-exhibit-host]:active .lx[data-state="mirror"] .lx-light {
   filter: brightness(0.8);
