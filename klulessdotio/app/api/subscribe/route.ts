@@ -3,6 +3,7 @@ import { SITE_URL } from "@/lib/writing/feeds"
 import { resendProvider } from "@/lib/mail/provider"
 import { getRateLimitRedis } from "@/lib/ratelimit"
 import { guardSubscribeRequest } from "@/lib/subscribe-guard"
+import { allowedOrigins, linkOrigin } from "@/lib/subscribe-origins"
 import { handleSubscribe, type SubscribeEvent } from "@/lib/subscribe"
 
 export const dynamic = "force-dynamic"
@@ -13,11 +14,6 @@ const log = (event: SubscribeEvent) => {
   else console.warn(`subscribe:${event}`)
 }
 
-// Links in emails use the fixed site URL in production, so a forged Host
-// header cannot point a signed link at another domain.
-const originFor = (request: Request) =>
-  process.env.NODE_ENV === "production" ? SITE_URL : new URL(request.url).origin
-
 // Connects only when a limit is actually checked, so bad requests never need Redis.
 // If the env is missing the call throws and handleSubscribe fails closed.
 const lazyRedis = {
@@ -26,15 +22,9 @@ const lazyRedis = {
   ttl: (key: string) => getRateLimitRedis().ttl(key),
 }
 
-// The site's own origin, plus this deployment's, so previews can sign up.
-const allowedOrigins = (): string[] =>
-  [new URL(SITE_URL).origin, process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]
-    .filter((host): host is string => Boolean(host))
-    .map((host) => (host.startsWith("http") ? host : `https://${host}`))
-
 export async function POST(request: Request) {
   const production = process.env.NODE_ENV === "production"
-  const rejection = guardSubscribeRequest(request.headers, allowedOrigins(), production)
+  const rejection = guardSubscribeRequest(request.headers, allowedOrigins(new URL(SITE_URL).origin, process.env), production)
   if (rejection) {
     log("rejected")
     return NextResponse.json({ success: false, error: rejection.error }, { status: rejection.status })
@@ -53,7 +43,7 @@ export async function POST(request: Request) {
     provider: resendProvider(),
     env: process.env,
     now: Date.now,
-    origin: originFor(request),
+    origin: linkOrigin(SITE_URL, new URL(request.url).origin, process.env),
     log,
   })
   return NextResponse.json(result.body, { status: result.status })

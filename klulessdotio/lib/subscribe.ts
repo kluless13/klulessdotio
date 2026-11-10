@@ -74,7 +74,7 @@ async function handleKitSubscribe(body: unknown, ip: string, deps: SubscribeDeps
     deps.log("rejected")
     return fail(400, "invalid_email")
   }
-  const { email } = parsed.data
+  const email = parsed.data.email.toLowerCase()
 
   const secret = kitSecret(deps.env)
   if (!secret) {
@@ -99,12 +99,13 @@ async function handleKitSubscribe(body: unknown, ip: string, deps: SubscribeDeps
       (id): id is string => Boolean(id)
     )
 
-    try {
-      await deps.provider.addContact({ email, segments })
-    } catch {
-      deps.log("contact_failed")
-    }
+    // Both start together so a slow contact call never delays the reply.
+    const contact = deps.provider.addContact({ email, segments }).then(
+      () => true,
+      () => false
+    )
     await deps.provider.sendKitEmail({ email, link, unsubscribeLink })
+    if (!(await contact)) deps.log("contact_failed")
   } catch {
     deps.log("failed:send")
     return fail(502, "server")

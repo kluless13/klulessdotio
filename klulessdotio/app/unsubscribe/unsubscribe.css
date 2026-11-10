@@ -1,0 +1,9 @@
+.unsubscribe {
+  max-width: 32rem;
+  margin: 6rem auto;
+  padding: 0 1rem;
+}
+
+.unsubscribe form {
+  margin-top: 1.25rem;
+}

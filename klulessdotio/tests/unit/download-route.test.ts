@@ -42,6 +42,12 @@ describe("download route", () => {
     expect(res.headers.get("Content-Length")).toBe("123")
   })
 
+  it("does not forward content-length for an encoded upstream", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("x", { headers: { "content-length": "9", "content-encoding": "gzip" } })))
+    const res = await call(signToken(payload, SECRET))
+    expect(res.headers.get("Content-Length")).toBeNull()
+  })
+
   it("omits content-length when upstream has none", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(new ReadableStream({ start: (c) => c.close() }))))
     const res = await call(signToken(payload, SECRET))

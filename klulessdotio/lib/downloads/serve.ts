@@ -48,7 +48,8 @@ export async function serveDownload(token: string, env: Env = process.env): Prom
   }
   if (!upstream.ok || !upstream.body) return unavailable()
 
-  const length = upstream.headers.get("content-length")
+  // A compressed upstream body changes length in transit, so only forward it for identity.
+  const length = upstream.headers.get("content-encoding") ? null : upstream.headers.get("content-length")
   return new Response(upstream.body, {
     status: 200,
     headers: {

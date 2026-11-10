@@ -62,22 +62,45 @@ describe("unsubscribe route", () => {
   const call = (method: "GET" | "POST", token: string) =>
     (method === "GET" ? GET : POST)(new Request("https://1tx.dev/api/unsubscribe/x", { method }), { params: { token } })
 
-  it("GET with a valid token redirects to status=done", async () => {
-    const res = await call("GET", signUnsubToken("a@x.com", SECRET))
+  it("GET never unsubscribes: it redirects to the confirm page with the token", async () => {
+    const token = signUnsubToken("a@x.com", SECRET)
+    const res = await call("GET", token)
+    expect(res.status).toBe(303)
+    expect(where(res)).toBe(`/unsubscribe?token=${encodeURIComponent(token)}`)
+    expect(mockProvider.unsubscribe).not.toHaveBeenCalled()
+  })
+
+  const form = (token: string, body: string) =>
+    POST(
+      new Request("https://1tx.dev/api/unsubscribe/x", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body,
+      }),
+      { params: { token } }
+    )
+
+  it("a form POST unsubscribes and redirects to status=done", async () => {
+    const res = await form(signUnsubToken("a@x.com", SECRET), "")
     expect(res.status).toBe(303)
     expect(where(res)).toBe("/unsubscribe?status=done")
     expect(mockProvider.unsubscribe).toHaveBeenCalledWith("a@x.com")
   })
 
-  it("GET with an invalid token redirects to status=invalid", async () => {
-    const res = await call("GET", "x")
-    expect(res.status).toBe(303)
-    expect(where(res)).toBe("/unsubscribe?status=invalid")
+  it("a form POST with a bad token redirects to status=invalid", async () => {
+    expect(where(await form("x", ""))).toBe("/unsubscribe?status=invalid")
   })
 
-  it("GET with a provider failure redirects to status=error", async () => {
+  it("a one-click POST unsubscribes and returns an empty 200", async () => {
+    const res = await form(signUnsubToken("a@x.com", SECRET), "List-Unsubscribe=One-Click")
+    expect(res.status).toBe(200)
+    expect(await res.text()).toBe("")
+    expect(mockProvider.unsubscribe).toHaveBeenCalledWith("a@x.com")
+  })
+
+  it("a form POST with a provider failure redirects to status=error", async () => {
     mockProvider.unsubscribe.mockRejectedValueOnce(new Error("mail provider failed"))
-    expect(where(await call("GET", signUnsubToken("a@x.com", SECRET)))).toBe("/unsubscribe?status=error")
+    expect(where(await form(signUnsubToken("a@x.com", SECRET), ""))).toBe("/unsubscribe?status=error")
   })
 
   it("POST is an empty response with the handler status", async () => {

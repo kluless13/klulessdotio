@@ -1,3 +1,4 @@
+import { withTimeout } from "@/lib/timeout"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { handleSubscribe, type SubscribeDeps } from "@/lib/subscribe"
 import { verifyToken, verifyKitToken, verifyUnsubToken, kitSubject } from "@/lib/downloads/token"
@@ -245,6 +246,39 @@ describe("handleSubscribe kit branch", () => {
     let last = { status: 0 }
     for (let i = 0; i < 4; i++) last = await handleSubscribe(kit, `4.4.4.${i}`, deps)
     expect(last.status).toBe(429)
+  })
+})
+
+describe("kit branch timing and case", () => {
+  afterEach(() => vi.useRealTimers())
+  const kit = { kind: "kit", kit: "starter-kit", email: EMAIL, consent: true }
+  const never = () => new Promise<never>(() => undefined)
+
+  it("with every provider call hanging, the reply is 502 by about 5s and failed:send is logged", async () => {
+    vi.useFakeTimers()
+    const { deps, provider, logs } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    provider.addContact.mockImplementation(never)
+    provider.sendKitEmail.mockImplementation(() => withTimeout(never(), 5000))
+    const pending = handleSubscribe(kit, "1.1.1.1", deps)
+    await vi.advanceTimersByTimeAsync(5001)
+    expect(await pending).toEqual({ status: 502, body: { success: false, error: "server" } })
+    expect(logs).toEqual([["failed:send"]])
+  })
+
+  it("starts the contact and the send together", async () => {
+    const { deps, provider } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    provider.addContact.mockImplementation(never)
+    provider.sendKitEmail.mockImplementation(async () => undefined)
+    const res = await Promise.race([handleSubscribe(kit, "1.1.1.1", deps), new Promise((r) => setTimeout(() => r("slow"), 200))])
+    expect(provider.addContact).toHaveBeenCalled()
+    expect(res).toBe("slow")
+  })
+
+  it("lowercases the email once and uses it everywhere", async () => {
+    const { deps, provider } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    await handleSubscribe({ ...kit, email: "Reader.Person@Example.com" }, "1.1.1.1", deps)
+    expect(provider.addContact.mock.calls[0][0].email).toBe(EMAIL)
+    expect(provider.sendKitEmail.mock.calls[0][0].email).toBe(EMAIL)
   })
 })
 

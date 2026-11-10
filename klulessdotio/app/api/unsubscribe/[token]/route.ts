@@ -6,19 +6,34 @@ export const dynamic = "force-dynamic"
 
 type Context = { params: { token: string } }
 
-const run = (token: string) => handleUnsubscribe(token, { provider: resendProvider(), env: process.env })
-
 const statusFor = (code: number) => (code === 200 ? "done" : code === 400 ? "invalid" : "error")
 
-// One-click unsubscribe (RFC 8058): mail clients POST and expect an empty reply.
-export async function POST(_request: Request, { params }: Context) {
-  const { status } = await run(params.token)
+// True for the confirm page's form. Mail apps send List-Unsubscribe=One-Click
+// (RFC 8058) and expect an empty reply, so they are not treated as forms.
+async function cameFromForm(request: Request): Promise<boolean> {
+  const type = request.headers.get("content-type")?.toLowerCase() ?? ""
+  if (type.startsWith("application/x-www-form-urlencoded")) {
+    try {
+      const form = await request.formData()
+      return !form.has("List-Unsubscribe")
+    } catch {
+      return false
+    }
+  }
+  return (request.headers.get("accept") ?? "").includes("text/html")
+}
+
+export async function POST(request: Request, { params }: Context) {
+  const fromForm = await cameFromForm(request)
+  const { status } = await handleUnsubscribe(params.token, { provider: resendProvider(), env: process.env })
+  if (fromForm) {
+    return NextResponse.redirect(new URL(`/unsubscribe?status=${statusFor(status)}`, request.url), 303)
+  }
   return new Response(null, { status })
 }
 
-// The link in the email body: do it, then show a small confirmation page.
+// Mail scanners prefetch links, so GET never unsubscribes. It only leads to a
+// page where the reader confirms with a button (a POST).
 export async function GET(request: Request, { params }: Context) {
-  const { status } = await run(params.token)
-  const target = new URL(`/unsubscribe?status=${statusFor(status)}`, request.url)
-  return NextResponse.redirect(target, 303)
+  return NextResponse.redirect(new URL(`/unsubscribe?token=${encodeURIComponent(params.token)}`, request.url), 303)
 }
