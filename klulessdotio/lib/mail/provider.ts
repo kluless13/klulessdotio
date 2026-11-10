@@ -71,9 +71,11 @@ export function resendProvider(env: Env = process.env): MailProvider {
       // the contact may already be in them.
       const updated = await call(() => resend.contacts.update({ email, unsubscribed: false }))
       if (updated.error) throw new Error(FAILED)
-      for (const segmentId of segmentIds) {
-        await call(() => resend.contacts.segments.add({ email, segmentId })).catch(() => undefined)
-      }
+      await Promise.all(
+        segmentIds.map((segmentId) =>
+          call(() => resend.contacts.segments.add({ email, segmentId })).catch(() => undefined)
+        )
+      )
     },
 
     async sendDownloadEmail({ email, title, link }) {

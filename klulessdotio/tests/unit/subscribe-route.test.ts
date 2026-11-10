@@ -282,6 +282,62 @@ describe("kit branch timing and case", () => {
   })
 })
 
+describe("contact deadline", () => {
+  afterEach(() => vi.useRealTimers())
+  const kit = { kind: "kit", kit: "starter-kit", email: EMAIL, consent: true }
+  const never = () => new Promise<never>(() => undefined)
+
+  it("download: a hanging contact chain still sends, and the reply comes at the 1.5s deadline", async () => {
+    vi.useFakeTimers()
+    const { deps, provider, logs } = setup()
+    provider.addContact.mockImplementation(never)
+    const pending = handleSubscribe(good, "1.1.1.1", deps)
+    await vi.advanceTimersByTimeAsync(1499)
+    expect(provider.sendDownloadEmail).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(2)
+    expect(await pending).toEqual({ status: 200, body: { success: true } })
+    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+  })
+
+  it("download: the contact starts alongside the send, not before it", async () => {
+    const { deps, provider } = setup()
+    provider.addContact.mockImplementation(never)
+    provider.sendDownloadEmail.mockImplementation(never)
+    void handleSubscribe(good, "1.1.1.1", deps)
+    await vi.waitFor(() => expect(provider.sendDownloadEmail).toHaveBeenCalled())
+    expect(provider.addContact).toHaveBeenCalledTimes(1)
+  })
+
+  it("download: a send that fails is 502 and does not wait for the contact", async () => {
+    const { deps, provider, logs } = setup()
+    provider.addContact.mockImplementation(never)
+    provider.sendDownloadEmail.mockRejectedValue(new Error("boom"))
+    expect(await handleSubscribe(good, "1.1.1.1", deps)).toEqual({ status: 502, body: { success: false, error: "server" } })
+    expect(logs).toEqual([["failed:send"]])
+  })
+
+  it("download: a slow send and a slow contact together never exceed the 5s send cap", async () => {
+    vi.useFakeTimers()
+    const { deps, provider } = setup()
+    provider.addContact.mockImplementation(never)
+    provider.sendDownloadEmail.mockImplementation(() => withTimeout(never(), 5000))
+    const pending = handleSubscribe(good, "1.1.1.1", deps)
+    await vi.advanceTimersByTimeAsync(5001)
+    expect(await pending).toEqual({ status: 502, body: { success: false, error: "server" } })
+  })
+
+  it("kit: a hanging contact chain gives up at 1.5s and the reply is still 200", async () => {
+    vi.useFakeTimers()
+    const { deps, provider, logs } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    provider.addContact.mockImplementation(never)
+    const pending = handleSubscribe(kit, "1.1.1.1", deps)
+    await vi.advanceTimersByTimeAsync(1501)
+    expect(await pending).toEqual({ status: 200, body: { success: true } })
+    expect(provider.sendKitEmail).toHaveBeenCalledTimes(1)
+    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+  })
+})
+
 describe("limiter timeout", () => {
   afterEach(() => vi.useRealTimers())
   const hang = () => new Promise<never>(() => undefined)

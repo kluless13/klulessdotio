@@ -200,6 +200,16 @@ describe("kit mail", () => {
     expect(addSegment).toHaveBeenCalledWith({ email: EMAIL, segmentId: "b" })
   })
 
+  it("a duplicate re-adds the segments concurrently, not one after the other", async () => {
+    create.mockResolvedValue(dup)
+    const release: (() => void)[] = []
+    addSegment.mockImplementation(() => new Promise<void>((resolve) => release.push(resolve)))
+    const done = resendProvider(env).addContact({ email: EMAIL, segments: ["a", "b", "c"] })
+    await vi.waitFor(() => expect(addSegment).toHaveBeenCalledTimes(3))
+    release.forEach((r) => r())
+    await expect(done).resolves.toBeUndefined()
+  })
+
   it("a duplicate still succeeds when re-adding a segment fails", async () => {
     create.mockResolvedValue(dup)
     addSegment.mockRejectedValue(new Error("already in segment"))

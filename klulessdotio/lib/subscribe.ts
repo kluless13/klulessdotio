@@ -23,6 +23,9 @@ export interface SubscribeDeps {
 }
 
 const LIMITER_TIMEOUT_MS = 5000
+// The contact chain (create, update, segment re-adds) is best effort, so it gets
+// one short budget in total. It runs beside the email send, which has its own 5s cap.
+const CONTACT_TIMEOUT_MS = 1500
 const IP_LIMIT = { max: 5, windowSeconds: 3600 }
 const EMAIL_LIMIT = { max: 3, windowSeconds: 86400 }
 
@@ -64,6 +67,18 @@ async function checkLimits(deps: SubscribeDeps, ip: string, email: string): Prom
 const withinLimits = (deps: SubscribeDeps, ip: string, email: string) =>
   withTimeout(checkLimits(deps, ip, email), LIMITER_TIMEOUT_MS)
 
+// Starts the whole contact chain now and resolves true when it finished in time.
+// It never rejects, so a slow or failing chain cannot delay or break the reply.
+function startContact(deps: SubscribeDeps, input: Parameters<MailProvider["addContact"]>[0]): Promise<boolean> {
+  return withTimeout(
+    (async () => deps.provider.addContact(input))(),
+    CONTACT_TIMEOUT_MS
+  ).then(
+    () => true,
+    () => false
+  )
+}
+
 function isKitRequest(body: unknown): boolean {
   return typeof body === "object" && body !== null && (body as { kind?: unknown }).kind === "kit"
 }
@@ -100,10 +115,7 @@ async function handleKitSubscribe(body: unknown, ip: string, deps: SubscribeDeps
     )
 
     // Both start together so a slow contact call never delays the reply.
-    const contact = deps.provider.addContact({ email, segments }).then(
-      () => true,
-      () => false
-    )
+    const contact = startContact(deps, { email, segments })
     await deps.provider.sendKitEmail({ email, link, unsubscribeLink })
     if (!(await contact)) deps.log("contact_failed")
   } catch {
@@ -157,12 +169,9 @@ export async function handleSubscribe(
     const token = signToken({ downloadId, slug, exp: deps.now() + TOKEN_TTL_MS }, secret)
     const link = `${deps.origin}/api/download/${token}`
 
-    try {
-      await deps.provider.addContact({ email, downloadId, slug })
-    } catch {
-      deps.log("contact_failed")
-    }
+    const contact = startContact(deps, { email, downloadId, slug })
     await deps.provider.sendDownloadEmail({ email, title, link })
+    if (!(await contact)) deps.log("contact_failed")
   } catch {
     deps.log("failed:send")
     return fail(502, "server")
