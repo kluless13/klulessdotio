@@ -34,6 +34,11 @@ Note three things:
 2. How dry it felt.
 3. How much water went in.
 
+:::phrases
+- **==“Check before you pour.”==** A finger in the soil comes first.
+- **“Little and often.”** Small sips beat a flood.
+:::
+
 :::before-after
 Water everything every day.
 
@@ -68,7 +73,7 @@ Save the answers in a list called HERBS.md.
 
 :::paths
 ::path[Terracotta]{pick}
-Porous and cheap. This is the pot I would start with.
+Porous and cheap. This is the pot I would start with. :note[Glazed ones hold water longer.]{on="Porous and cheap"}
 
 ::path[Glass]
 Easy to see through, but it needs more care.
@@ -77,9 +82,11 @@ Easy to see through, but it needs more care.
 :::job{title="Repotting" who="Anyone with a crowded windowsill"}
 Before: squeezing three plants into one pot.
 
-> Choose a pot one size up. Loosen the roots gently and add fresh soil around them.
+> Choose a pot one size up from :fill[the old pot]. Loosen the roots gently and add fresh soil around them.
 
 Connect: a garden shop, or just an old pot with holes in the bottom.
+
+See [the sample post](/writing/sample-post) for photos of each step.
 :::
 
 ::::ending

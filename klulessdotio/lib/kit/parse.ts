@@ -69,25 +69,44 @@ function stripLabel(p: Paragraph, label: string): Inline {
   return renderInline([...(text ? [{ type: "text" as const, value: text }] : []), ...rest])
 }
 
+const paragraphsHtml = (nodes: readonly Node[]): Inline =>
+  nodes
+    .filter((c): c is Paragraph => c.type === "paragraph")
+    .map((p) => renderInline(phrasing(p)))
+    .filter(Boolean)
+    .join("<br>")
+
 function jobBlock(d: ContainerDirective): KitBlock {
   const before = d.children.find((c) => hasLabel(c, "Before")) as Paragraph | undefined
-  const connect = d.children.find((c) => hasLabel(c, "Connect")) as Paragraph | undefined
+  const connectAt = d.children.findIndex((c) => hasLabel(c, "Connect"))
+  const connect = d.children[connectAt] as Paragraph | undefined
   const quote = d.children.find((c) => c.type === "blockquote")
   if (!before || !connect || !quote || quote.type !== "blockquote") {
     throw new Error("A job needs a Before: paragraph, a quoted request and a Connect: paragraph")
   }
-  const request = quote.children
-    .map((c) => (c.type === "paragraph" ? toText(c.children as KitInline[]) : ""))
-    .filter(Boolean)
-    .join("\n")
+  // Anything after Connect is a closing line inside the card, such as a link to an example
+  const more = paragraphsHtml(d.children.slice(connectAt + 1))
   return {
     type: "job",
     title: String(d.attributes?.title ?? ""),
     who: String(d.attributes?.who ?? ""),
     before: stripLabel(before, "Before"),
-    request,
+    request: paragraphsHtml(quote.children),
     connect: stripLabel(connect, "Connect"),
+    ...(more ? { more } : {}),
   }
+}
+
+/** A phrases list: each item opens with the phrase in bold, then says what it does. */
+function phrasesBlock(d: ContainerDirective): KitBlock {
+  const list = d.children.find((c): c is List => c.type === "list")
+  if (!list) throw new Error("Phrases need a list")
+  const items = list.children.map((item) => {
+    const [first, ...rest] = itemParagraphs(item).flatMap(phrasing)
+    if (first?.type !== "strong") throw new Error("Each phrase must start in bold")
+    return { phrase: renderInline(first.children as KitInline[]), note: renderInline(rest).trim() }
+  })
+  return { type: "phrases", items }
 }
 
 function cardOf(d: ContainerDirective): EndingCard {
@@ -127,6 +146,18 @@ function number(d: ContainerDirective, key: string): number {
   return v
 }
 
+/** A path's text, with its own margin notes numbered from 1 (paragraphs only; lists and quotes are flattened). */
+function pathBody(body: readonly Node[]): { html: Inline; notes: Note[] } {
+  const notes: Note[] = []
+  const parts = body.map((c) => {
+    if (c.type !== "paragraph") return flatInline([c])
+    const r = applyNotes(phrasing(c), notes.length)
+    notes.push(...r.notes)
+    return renderInline(r.children)
+  })
+  return { html: parts.filter(Boolean).join("<br>"), notes }
+}
+
 function pathsBlock(d: ContainerDirective): KitBlock {
   const paths: { name: string; pick: boolean; body: Node[] }[] = []
   for (const c of d.children) {
@@ -136,7 +167,7 @@ function pathsBlock(d: ContainerDirective): KitBlock {
       paths[paths.length - 1].body.push(c)
     }
   }
-  return { type: "paths", paths: paths.map((p) => ({ name: p.name, pick: p.pick, html: flatInline(p.body) })) }
+  return { type: "paths", paths: paths.map((p) => ({ name: p.name, pick: p.pick, ...pathBody(p.body) })) }
 }
 
 function beforeAfterBlock(d: ContainerDirective): KitBlock {
@@ -170,6 +201,8 @@ function containerBlock(d: ContainerDirective): KitBlock | null {
     }
     case "job":
       return jobBlock(d)
+    case "phrases":
+      return phrasesBlock(d)
     case "ending":
       return endingBlock(d)
     default:

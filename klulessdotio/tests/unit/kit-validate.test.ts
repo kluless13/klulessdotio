@@ -141,15 +141,48 @@ describe("validateKit", () => {
     expect(validateKit(doc("::::ending\n:::card{title=a}\nx\n:::\n::::"))).toEqual([])
   })
 
-  it("reports a note inside a job, card, timeline or path", () => {
+  it("reports a note inside a job, card, timeline, phrases or a list in a path", () => {
     const inJob = ":::job{title=a who=b}\nBefore: x :note[N]{on=\"x\"}\n\n> r\n\nConnect: y\n:::"
     const inCard = '::::ending\n:::card{title=a}\nword :note[N]{on="word"}\n:::\n::::'
     const inTimeline = ':::timeline{find=1 decide=1 fix=1}\nword :note[N]{on="word"}\n:::'
-    const inPath = ':::paths\n::path[A]\nword :note[N]{on="word"}\n:::'
-    for (const body of [inJob, inCard, inTimeline, inPath]) {
+    const inPathList = ':::paths\n::path[A]\n- word :note[N]{on="word"}\n:::'
+    const inPhrases = ':::phrases\n- **Say.** word :note[N]{on="word"}\n:::'
+    for (const body of [inJob, inCard, inTimeline, inPathList, inPhrases]) {
       const r = validateKit(doc(body))
       expect(r.map((e) => e.message), body).toEqual([expect.stringMatching(/only allowed in paragraphs and list items/)])
     }
+  })
+
+  it("accepts a note in a path's paragraph", () => {
+    expect(validateKit(doc(':::paths\n::path[A]\nSay the word. :note[N]{on="the word"}\n:::'))).toEqual([])
+  })
+
+  it("reports a path note whose words are missing, at the note's line", () => {
+    const r = validateKit(doc(':::paths\n::path[A]\nSay it.\nAgain. :note[N]{on="the word"}\n:::'))
+    expect(r).toEqual([{ line: 6, message: expect.stringContaining('"the word"') }])
+  })
+
+  it("accepts phrases that each start in bold", () => {
+    expect(validateKit(doc(':::phrases\n- **"Say this."** It does that.\n- **==Wave.==** It waves.\n:::'))).toEqual([])
+  })
+
+  it("reports a phrase that doesn't start in bold, and phrases without a list", () => {
+    const r = validateKit(doc(":::phrases\n- **Fine.** Yes.\n- Plain words.\n:::\n\n:::phrases\nNo list.\n:::"))
+    expect(r).toEqual([
+      { line: 5, message: expect.stringMatching(/start with bold/) },
+      { line: 8, message: expect.stringMatching(/needs a list/) },
+    ])
+  })
+
+  it("accepts one paragraph after a job's Connect", () => {
+    expect(validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\nConnect: y\n\nSee more.\n:::"))).toEqual([])
+  })
+
+  it("reports a job paragraph before Connect, or more than one after it", () => {
+    const before = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\nStray.\n\n> req\n\nConnect: y\n:::"))
+    expect(before).toEqual([{ line: 3, message: expect.stringMatching(/after Connect/) }])
+    const twice = validateKit(doc(":::job{title=a who=b}\nBefore: x\n\n> req\n\nConnect: y\n\nOne.\n\nTwo.\n:::"))
+    expect(twice).toEqual([{ line: 3, message: expect.stringMatching(/one paragraph after Connect/) }])
   })
 
   it("reports two notes that need the same single words", () => {

@@ -7,7 +7,7 @@ import type { KitBlock } from "@/lib/kit/types"
 const fixture = fs.readFileSync(path.join(process.cwd(), "tests/fixtures/kit/kit.md"), "utf8")
 
 const ALL_TYPES: KitBlock["type"][] = [
-  "heading", "paragraph", "list", "steps", "paths", "timeline", "beforeAfter", "prompt", "job", "ending",
+  "heading", "paragraph", "list", "steps", "paths", "timeline", "beforeAfter", "prompt", "job", "ending", "phrases",
 ]
 
 async function blocks(md: string): Promise<readonly KitBlock[]> {
@@ -88,7 +88,33 @@ describe("blocks", () => {
     expect(p.paths).toHaveLength(2)
     expect(p.paths[0]).toMatchObject({ name: "Claude", pick: true })
     expect(p.paths[0].html).toBe("Use <strong>it</strong>.")
-    expect(p.paths[1]).toMatchObject({ name: "ChatGPT", pick: false, html: "Other." })
+    expect(p.paths[1]).toMatchObject({ name: "ChatGPT", pick: false, html: "Other.", notes: [] })
+  })
+
+  it("reads notes inside a path, numbered within that path", async () => {
+    const p = find(
+      await blocks(':::paths\n::path[A]\nUse the word here. :note[First]{on="the word"}\n\nThen a pot. :note[Second]{on="a pot"}\n\n::path[B]\nOne more. :note[Third]{on="One"}\n:::'),
+      "paths",
+    )
+    expect(p.paths[0].html).toBe('Use <span class="note-on" data-note="1">the word</span> here.<br>Then <span class="note-on" data-note="2">a pot</span>.')
+    expect(p.paths[0].notes).toEqual([
+      { on: "the word", text: "First" },
+      { on: "a pot", text: "Second" },
+    ])
+    expect(p.paths[1].html).toBe('<span class="note-on" data-note="1">One</span> more.')
+    expect(p.paths[1].notes).toEqual([{ on: "One", text: "Third" }])
+  })
+
+  it("reads phrases: the bold phrase and its explanation", async () => {
+    const p = find(await blocks(':::phrases\n- **"Say this."** It does that.\n- **==Wave first.==** Then it waves.\n:::'), "phrases")
+    expect(p.items).toEqual([
+      { phrase: "&quot;Say this.&quot;", note: "It does that." },
+      { phrase: expect.stringMatching(/^<mark class="hl" data-seed="[^"]+">Wave first\.<\/mark>$/), note: "Then it waves." },
+    ])
+  })
+
+  it("throws on a phrase that doesn't start in bold", async () => {
+    await expect(blocks(":::phrases\n- Plain words.\n:::")).rejects.toThrow(/phrase/i)
   })
 
   it("reads timeline numbers", async () => {
@@ -128,6 +154,15 @@ describe("blocks", () => {
       request: "Match these.\nChange nothing.",
       connect: "your software.",
     })
+  })
+
+  it("keeps fill-ins and marks in a job request, and reads the paragraph after Connect", async () => {
+    const j = find(
+      await blocks(':::job{title="Sorting" who="Gardeners"}\nBefore: x.\n\n> Use :fill[the pot] and **care**.\n\nConnect: y.\n\nSee [the map](/map).\n:::'),
+      "job",
+    )
+    expect(j.request).toBe('Use <span class="fill">the pot</span> and <strong>care</strong>.')
+    expect(j.more).toBe('See <a href="/map">the map</a>.')
   })
 
   it("throws on an incomplete job", async () => {

@@ -15,11 +15,12 @@ export type KitBlock =
   | { type: "paragraph"; html: Inline; notes: readonly Note[] }
   | { type: "list"; ordered: boolean; items: readonly Inline[]; notes: readonly Note[] }
   | { type: "steps"; items: readonly string[] }
-  | { type: "paths"; paths: readonly { name: string; pick: boolean; html: Inline }[] }
+  | { type: "paths"; paths: readonly { name: string; pick: boolean; html: Inline; notes: readonly Note[] }[] }
   | { type: "timeline"; find: number; decide: number; fix: number; html: Inline }
   | { type: "beforeAfter"; before: Inline; after: readonly { label: string; quote: string }[] }
   | { type: "prompt"; text: string }
-  | { type: "job"; title: string; who: string; before: Inline; request: string; connect: Inline }
+  | { type: "job"; title: string; who: string; before: Inline; request: Inline; connect: Inline; more?: Inline }
+  | { type: "phrases"; items: readonly { phrase: Inline; note: Inline }[] }
   | {
       type: "ending"
       intro: readonly Inline[]

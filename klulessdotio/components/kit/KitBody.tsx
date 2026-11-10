@@ -4,7 +4,7 @@ import { Byline } from "./Byline"
 import { CopyPrompt } from "./CopyPrompt"
 import { KitInk } from "./KitInk"
 import { MarginNotes } from "./MarginNotes"
-import { BeforeAfter, Ending, Job, Paths, Steps, Timeline } from "./KitParts"
+import { BeforeAfter, Ending, Job, Paths, Phrases, Steps, Timeline } from "./KitParts"
 
 // The margin notes' handwriting. Only the kit page loads it, and only when a note is drawn
 const caveat = Caveat({ subsets: ["latin"], weight: "500", variable: "--font-caveat", display: "swap", preload: false })
@@ -64,6 +64,8 @@ function Block({ block }: { block: KitBlock }) {
       return <CopyPrompt text={block.text} />
     case "job":
       return <Job block={block} />
+    case "phrases":
+      return <Phrases block={block} />
     case "ending":
       return <Ending block={block} />
   }

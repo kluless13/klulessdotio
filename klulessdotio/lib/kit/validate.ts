@@ -8,7 +8,7 @@ export interface KitIssue {
   message: string
 }
 
-const DIRECTIVES = new Set(["steps", "paths", "path", "timeline", "before-after", "prompt", "job", "ending", "card", "note", "fill"])
+const DIRECTIVES = new Set(["steps", "paths", "path", "timeline", "before-after", "prompt", "job", "ending", "card", "note", "fill", "phrases"])
 
 type AnyNode = Root | RootContent
 
@@ -23,6 +23,33 @@ function textIssues(markdown: string): KitIssue[] {
     else if (fence === null && /^\s*\[/.test(text)) issues.push({ line, message: "Line starts with a bracket. Remove the leftover bracketed note." })
   })
   return issues
+}
+
+const isPlain = (c: RootContent) => c.type === "paragraph" && !hasLabel(c, "Before") && !hasLabel(c, "Connect")
+
+/** A job's own text is Before:, the quoted request and Connect:, then at most one closing paragraph. */
+function jobOrderIssues(node: ContainerDirective, add: (message: string) => void): void {
+  const connectAt = node.children.findIndex((c) => hasLabel(c, "Connect"))
+  if (connectAt < 0) return
+  if (node.children.slice(0, connectAt).some(isPlain)) {
+    add("Move this job's extra paragraph after Connect:, or start it with Before: or Connect:.")
+  }
+  if (node.children.slice(connectAt + 1).filter(isPlain).length > 1) add("A job takes at most one paragraph after Connect.")
+}
+
+/** Phrases hold one list, and each item opens with the phrase in bold. */
+function phrasesIssues(node: ContainerDirective, line: number, out: KitIssue[]): void {
+  const list = node.children.find((c) => c.type === "list")
+  if (!list || list.type !== "list") {
+    out.push({ line, message: "Phrases needs a list of bold phrases." })
+    return
+  }
+  for (const item of list.children) {
+    const first = item.children[0]
+    if (first?.type !== "paragraph" || first.children[0]?.type !== "strong") {
+      out.push({ line: item.position?.start.line ?? line, message: "Each phrase must start with bold text." })
+    }
+  }
 }
 
 function directiveIssues(node: ContainerDirective, line: number, out: KitIssue[]): void {
@@ -40,6 +67,9 @@ function directiveIssues(node: ContainerDirective, line: number, out: KitIssue[]
     if (!node.children.some((c) => hasLabel(c, "Before"))) add("Job is missing a Before: paragraph.")
     if (!node.children.some((c) => c.type === "blockquote")) add("Job is missing its quoted request.")
     if (!node.children.some((c) => hasLabel(c, "Connect"))) add("Job is missing a Connect: paragraph.")
+    jobOrderIssues(node, add)
+  } else if (node.name === "phrases") {
+    phrasesIssues(node, line, out)
   } else if (node.name === "card") {
     if (!attrs.title) add("Ending card needs a title.")
     if (!attrs.cta !== !attrs.href) add("A card cta needs both a label (cta) and an href.")
@@ -50,6 +80,7 @@ function directiveIssues(node: ContainerDirective, line: number, out: KitIssue[]
 interface Ctx {
   line: number
   parent: string // name of the enclosing container directive, or "" at the top level
+  direct?: boolean // the node sits directly in that container, not in a list or quote inside it
 }
 
 function noteIssues(p: Paragraph, ctx: Ctx, out: KitIssue[]): void {
@@ -59,7 +90,8 @@ function noteIssues(p: Paragraph, ctx: Ctx, out: KitIssue[]): void {
   const lineOf = (on?: string) =>
     (notes.find((k) => String(k.attributes?.on ?? "") === on) ?? notes[0]).position?.start.line ??
     ctx.line
-  if (ctx.parent) {
+  // A path's own paragraphs can carry notes; anything else inside a directive can't
+  if (ctx.parent && !(ctx.parent === "paths" && ctx.direct)) {
     out.push({ line: lineOf(), message: "Notes are only allowed in paragraphs and list items." })
     return
   }
@@ -86,12 +118,13 @@ function nodeIssues(node: AnyNode, out: KitIssue[], ctx: Ctx): void {
     if (node.type === "containerDirective") directiveIssues(node, line, out)
   } else if (node.type === "paragraph") {
     if (/^:+$/.test(toPlain(node).trim())) out.push({ line, message: "Stray directive fence." })
-    noteIssues(node, { line, parent: ctx.parent }, out)
+    noteIssues(node, { line, parent: ctx.parent, direct: ctx.direct }, out)
   } else if (node.type === "heading") {
     noteIssues({ ...node, type: "paragraph" }, { line, parent: "heading" }, out)
   }
   const parent = node.type === "containerDirective" ? node.name : ctx.parent
-  if ("children" in node) for (const c of node.children as RootContent[]) nodeIssues(c, out, { line, parent })
+  const direct = node.type === "containerDirective"
+  if ("children" in node) for (const c of node.children as RootContent[]) nodeIssues(c, out, { line, parent, direct })
 }
 
 const toPlain = (p: Paragraph) => toText(p.children as KitInline[])

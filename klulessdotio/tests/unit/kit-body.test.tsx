@@ -45,7 +45,10 @@ describe("KitBody", () => {
 
   it("puts each note in an aside right after its block, tied to underlined words", () => {
     const { container } = render(<KitBody doc={doc} />)
-    const notes = [...ofType("paragraph"), ...ofType("list")].flatMap((b) => b.notes)
+    const notes = doc.blocks.flatMap((b) =>
+      b.type === "paragraph" || b.type === "list" ? b.notes : b.type === "paths" ? b.paths.flatMap((p) => p.notes) : [],
+    )
+    expect(notes.length).toBeGreaterThan(2)
     const asides = Array.from(container.querySelectorAll<HTMLElement>('aside[aria-label="Note"]'))
     expect(asides.map((a) => a.textContent)).toEqual(notes.map((n) => n.text))
     for (const aside of asides) {
@@ -107,8 +110,32 @@ describe("KitBody", () => {
     const job = container.querySelector(".kit-job")!
     expect(job.querySelector(".kit-job-name")?.textContent).toBe("Repotting")
     expect(job.querySelector(".kit-job-what")).toBeNull()
-    expect(job.querySelector(".kit-job-request")?.textContent).toMatch(/^“Choose a pot one size up\..*”$/)
+    expect(job.querySelector(".kit-job-request")?.textContent).toMatch(/^“Choose a pot one size up from the old pot\..*”$/)
+    expect(job.querySelector(".kit-job-request span.fill")?.textContent).toBe("the old pot")
     expect(job.querySelector(".kit-job-connect")?.textContent).toContain("Connect: a garden shop")
+  })
+
+  it("puts the job's extra line inside the card, between the request and Connect", () => {
+    const { container } = render(<KitBody doc={doc} />)
+    const recipe = Array.from(container.querySelector(".kit-job-recipe")!.children).map((c) => c.className)
+    expect(recipe).toEqual(["kit-job-before", "kit-job-request", "kit-job-more", "kit-job-connect"])
+    const more = container.querySelector(".kit-job-more")!
+    expect(more.querySelector("a")?.getAttribute("href")).toBe("/writing/sample-post")
+  })
+
+  it("renders phrases as bold lines with their explanation below, without bullets", () => {
+    const { container } = render(<KitBody doc={doc} />)
+    const rows = Array.from(container.querySelectorAll(".kit-phrases > li"))
+    expect(rows.map((r) => r.querySelector(".kit-phrase")?.textContent)).toEqual(["“Check before you pour.”", "“Little and often.”"])
+    expect(rows.map((r) => r.querySelector(".kit-phrase-note")?.textContent)).toEqual(["A finger in the soil comes first.", "Small sips beat a flood."])
+    expect(rows[0].querySelector(".kit-phrase mark.hl")).toBeTruthy()
+  })
+
+  it("puts a path's note beside that path box", () => {
+    const { container } = render(<KitBody doc={doc} />)
+    const path = container.querySelector(".kit-paths .kit-noted")!
+    expect(path.firstElementChild?.classList.contains("kit-path")).toBe(true)
+    expect(path.querySelector('aside[aria-label="Note"]')?.textContent).toBe("Glazed ones hold water longer.")
   })
 
   it("ends with the timeline list, the cards, then the last paragraph", () => {

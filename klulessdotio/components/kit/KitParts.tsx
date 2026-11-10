@@ -2,6 +2,7 @@ import { Plug } from "lucide-react"
 import type { EndingCard, KitBlock } from "@/lib/kit/types"
 import { isCalLink } from "@/lib/kit/cal"
 import { CalButton } from "./CalButton"
+import { MarginNotes } from "./MarginNotes"
 
 type Block<T extends KitBlock["type"]> = Extract<KitBlock, { type: T }>
 
@@ -10,28 +11,11 @@ const html = (value: string) => ({ __html: value })
 
 const COUNTS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
-/** Wrap a request in curly quotes unless the author already quoted it. */
-const quoted = (text: string) => (/^\s*[“"]/.test(text) ? text : `“${text.trim()}”`)
+/** Wrap a request in curly quotes unless the author already quoted it (plain text or escaped HTML). */
+const quoted = (text: string) => (/^\s*(“|"|&quot;)/.test(text) ? text : `“${text.trim()}”`)
 
 /** "Basil:" and "What it's looking at." read as labels without their trailing colon or full stop. */
 const label = (text: string) => text.trim().replace(/[:.]\s*$/, "")
-
-/** Requests are plain text; bracketed words like [city] are fill-ins, shown lighter as in the design. */
-function Fills({ text }: { text: string }) {
-  return (
-    <>
-      {text.split(/(\[[^\]\n]+\])/).map((part, i) =>
-        /^\[[^\]]+\]$/.test(part) ? (
-          <span key={i} className="kit-fill-in">
-            {part}
-          </span>
-        ) : (
-          part
-        ),
-      )}
-    </>
-  )
-}
 
 export function Steps({ block }: { block: Block<"steps"> }) {
   const rows = Math.ceil(block.items.length / 2)
@@ -56,13 +40,15 @@ export function Paths({ block }: { block: Block<"paths"> }) {
   return (
     <div className="kit-paths">
       {block.paths.map((path, i) => (
-        <section key={i} className="kit-path">
-          <h3 className="kit-path-name">
-            {path.name}
-            {path.pick ? <span className="kit-pick">My pick</span> : null}
-          </h3>
-          <p className="kit-path-body" dangerouslySetInnerHTML={html(path.html)} />
-        </section>
+        <MarginNotes key={i} notes={path.notes}>
+          <section className="kit-path">
+            <h3 className="kit-path-name">
+              {path.name}
+              {path.pick ? <span className="kit-pick">My pick</span> : null}
+            </h3>
+            <p className="kit-path-body" dangerouslySetInnerHTML={html(path.html)} />
+          </section>
+        </MarginNotes>
       ))}
     </div>
   )
@@ -123,6 +109,20 @@ export function BeforeAfter({ block }: { block: Block<"beforeAfter"> }) {
   )
 }
 
+/** Phrases to say to the agent: each in bold on its own line, with what it does in grey underneath. */
+export function Phrases({ block }: { block: Block<"phrases"> }) {
+  return (
+    <ul className="kit-phrases">
+      {block.items.map((item, i) => (
+        <li key={i}>
+          <strong className="kit-phrase" dangerouslySetInnerHTML={html(item.phrase)} />
+          {item.note ? <span className="kit-phrase-note" dangerouslySetInnerHTML={html(item.note)} /> : null}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 /** "Reconciling: making two things agree" is the job's name and, under it, what it does. */
 function jobTitle(title: string): { name: string; what: string } {
   const at = title.indexOf(":")
@@ -147,10 +147,10 @@ export function Job({ block }: { block: Block<"job"> }) {
           <strong>Before:</strong> <span dangerouslySetInnerHTML={html(block.before)} />
         </p>
         <blockquote className="kit-job-request">
-          <p>
-            <Fills text={quoted(block.request)} />
-          </p>
+          <p dangerouslySetInnerHTML={html(quoted(block.request))} />
         </blockquote>
+        {/* The board puts the closing line between the request and Connect */}
+        {block.more ? <p className="kit-job-more" dangerouslySetInnerHTML={html(block.more)} /> : null}
         <p className="kit-job-connect">
           <Plug size={15} aria-hidden="true" />
           <span>

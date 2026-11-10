@@ -52,8 +52,7 @@
   text-underline-offset: 3px;
 }
 /* Fill-ins the reader swaps for their own words, like [Xero/QuickBooks] */
-.kit-body .fill,
-.kit-fill-in {
+.kit-body .fill {
   color: var(--s-soft);
 }
 .kit-body .fill::before {
@@ -102,6 +101,31 @@
   height: auto;
   border-radius: 0;
   background: none;
+  color: var(--s-soft);
+}
+
+/* Phrases: bold lines with what each does underneath, no bullets */
+.kit-phrases {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+  list-style: none;
+}
+.kit-phrases > li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kit-phrase {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.kit-phrase-note {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 28px;
   color: var(--s-soft);
 }
 
@@ -443,6 +467,11 @@
   font-size: 19px;
   line-height: 30px;
   white-space: pre-line;
+}
+.kit-job-more {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 27px;
 }
 .kit-job-connect {
   display: flex;
