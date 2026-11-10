@@ -66,7 +66,11 @@ Slugs are the item name in lowercase with words joined by hyphens: `geist`, `eb-
 
 **View choice:** remembered in `localStorage` per visitor. Wrap every storage access in try/catch; the page must work without storage.
 
-**Tile states** (`extra-states.jpg`): rest is frosted and flat. Hover lifts 4px, deepens the shadow and gives the border the same shimmer as Angad's button. Pressed sinks to 97% and tucks the shadow in. Previews inside tiles are not interactive: the whole tile is one button, and the specimen inside is `aria-hidden` and can't take focus.
+**Tile states** (`extra-states.jpg`): rest is frosted and flat. Hover lifts 4px, deepens the shadow and gives the border the same shimmer as Angad's button. Pressed sinks to 97% and tucks the shadow in. Previews inside tiles are not interactive: the whole tile is one button, and the specimen inside is `aria-hidden` and can't take focus. The button inside a tile mirrors the tile, which Angad asked for on 2026-11-10:
+- hovering or keyboard-focusing the tile shows the exhibit's hover look;
+- pressing the tile shows its pressed look.
+
+The same applies to list rows.
 
 **Day and night:** the page sits on the real sky (`SkyProvider` and `SkyCanvas`) and takes its tone from the sky model the same way the writing pages do. Frosted tiles by day, dark glass tiles at night (`libpage-night.jpg`). Text must pass WCAG AA contrast on both.
 

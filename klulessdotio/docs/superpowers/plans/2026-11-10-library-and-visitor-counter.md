@@ -161,7 +161,11 @@
 **Interfaces:**
 - Consumes: `BUTTONS` from Task 1.
 - Produces, in `components/library/exhibits.tsx`:
-  - `type ExhibitState = "live" | "rest" | "hover" | "pressed"`
+  - `type ExhibitState = "live" | "mirror" | "rest" | "hover" | "pressed"`
+    - `"mirror"` is for tiles and list rows. The exhibit ignores its own pointer state and follows its nearest ancestor with the `data-exhibit-host` attribute:
+      - the host's `:hover` or `:focus-visible` gives the hover look;
+      - the host's `:active` gives the pressed look.
+    - Do this in CSS, for example `[data-exhibit-host]:hover [data-state="mirror"] .lx-weighted { ... }`, and reuse the same declarations as the forced states, with no JavaScript.
   - `interface ExhibitProps { state?: ExhibitState; scale?: number }`
   - `EXHIBITS: Record<string, (props: ExhibitProps) => JSX.Element>`, keyed by button slug.
   - `Exhibit({ slug, state, scale }: { slug: string } & ExhibitProps): JSX.Element`, which throws for an unknown slug.
@@ -179,6 +183,7 @@
 - [ ] **Step 1: Write the failing test** `tests/unit/library-exhibits.test.tsx`:
   - `every button slug has an exhibit`: `BUTTONS.every(b => b.slug in EXHIBITS)`.
   - `no extra exhibits`: `Object.keys(EXHIBITS).length === 32`.
+  - `mirror sets data-state="mirror"`: render `<Exhibit slug="weighted" state="mirror" />` and assert an element with `data-state="mirror"` exists.
   - `forced states set data-state`: render `<Exhibit slug="weighted" state="pressed" />` with `react-dom/client` (or `@testing-library/react` if it is already a dependency), and assert an element with `data-state="pressed"` exists.
   - `unknown slug throws`.
 - [ ] **Step 2: Run** `npx vitest run tests/unit/library-exhibits.test.tsx`. Expected: FAIL.
@@ -260,6 +265,7 @@
 - Five tiles per row at 1440px, two at 390px.
 - **Tile states** follow `shots/extra-states.jpg`: hover lifts 4px with a deeper shadow and a shimmer border; pressed scales to 0.97.
 - **Each tile is one `<button>`.** Its accessible name is the item name, and it opens the sheet; until Task 6 that only sets `openSlug`. The specimen inside is `aria-hidden` and `inert`.
+- **Tiles and list rows mirror their button.** They carry `data-exhibit-host` and render button exhibits with `state="mirror"`, so hovering or focusing the tile shows the button's hover look and pressing the tile shows its pressed look.
 - **Font tiles** show "Aa" in `fontFamily(slug)`. **Button tiles** show the exhibit, scaled to fit.
 - **List rows** follow `extra-list-day.jpg`. Font rows show the name in the font, then the pangram "Sphinx of black quartz, judge my vow."; the right column holds the category, `by` and the note. Button rows show the exhibit on a stage, then the name, source and note.
 
