@@ -13,6 +13,9 @@ function font(f: Omit<FontItem, "kind" | "slug">): FontItem {
   return { kind: "font", slug: slugify(f.name), ...f }
 }
 
+/** When the Library last changed. Update it when items are added or edited, so search engines hear about it. */
+export const LIBRARY_UPDATED = "2026-11-10"
+
 export const FONTS: readonly FontItem[] = [
   font({ name: "Geist", category: "Sans serif", by: "Vercel", note: "Simple and elegant.", weights: THIN_TO_BLACK, link: "https://vercel.com/font" }),
   font({ name: "Inter", category: "Sans serif", by: "Rasmus Andersson", note: "The quiet workhorse.", weights: THIN_TO_BLACK, link: "https://rsms.me/inter/" }),

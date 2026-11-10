@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { SITE_DESCRIPTION } from "@/lib/content"
+import { LIBRARY_UPDATED } from "@/content/library"
 import { allItems } from "@/lib/library/catalogue"
 import type { Post } from "@/lib/writing/types"
 
@@ -30,8 +31,8 @@ export function sitemapEntries(posts: readonly Post[]): { url: string; lastModif
     { url: `${SITE_URL}/writing`, lastModified: latest },
     { url: `${SITE_URL}/about`, lastModified: latest },
     ...posts.map((p) => ({ url: postUrl(p.slug), lastModified: p.updated ?? p.date })),
-    { url: LIBRARY_URL, lastModified: latest },
-    ...allItems().map((item) => ({ url: `${LIBRARY_URL}/${item.slug}`, lastModified: latest })),
+    { url: LIBRARY_URL, lastModified: LIBRARY_UPDATED },
+    ...allItems().map((item) => ({ url: `${LIBRARY_URL}/${item.slug}`, lastModified: LIBRARY_UPDATED })),
   ]
 }
 
