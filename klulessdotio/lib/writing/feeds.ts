@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { SITE_DESCRIPTION } from "@/lib/content"
+import { allItems } from "@/lib/library/catalogue"
 import type { Post } from "@/lib/writing/types"
 
 export const SITE_URL = "https://1tx.dev"
@@ -19,6 +20,7 @@ const SUMMARY = SITE_DESCRIPTION
 const INTRO =
   "Angad Maniyambath is Head of AI at Truflation. He writes research and essays on prediction markets, AI and building."
 
+export const LIBRARY_URL = `${SITE_URL}/library`
 const postUrl = (slug: string) => `${SITE_URL}/writing/${slug}`
 
 export function sitemapEntries(posts: readonly Post[]): { url: string; lastModified: string }[] {
@@ -28,6 +30,8 @@ export function sitemapEntries(posts: readonly Post[]): { url: string; lastModif
     { url: `${SITE_URL}/writing`, lastModified: latest },
     { url: `${SITE_URL}/about`, lastModified: latest },
     ...posts.map((p) => ({ url: postUrl(p.slug), lastModified: p.updated ?? p.date })),
+    { url: LIBRARY_URL, lastModified: latest },
+    ...allItems().map((item) => ({ url: `${LIBRARY_URL}/${item.slug}`, lastModified: latest })),
   ]
 }
 
@@ -83,7 +87,11 @@ const header = () => `# Angad Maniyambath\n\n> ${SUMMARY}\n\n${INTRO}\n`
 
 export function llmsTxt(posts: readonly Post[]): string {
   const lines = posts.map((p) => `- [${p.title}](${postUrl(p.slug)}.md): ${p.description}`)
-  return `${header()}\n## Writing\n\n${lines.join("\n")}\n\n## About\n\n- [About](${SITE_URL}/about)\n`
+  const library = [
+    `- [Library](${LIBRARY_URL}): Fonts and buttons I keep coming back to.`,
+    ...allItems().map((item) => `- [${item.name}](${LIBRARY_URL}/${item.slug}): ${item.note}`),
+  ]
+  return `${header()}\n## Writing\n\n${lines.join("\n")}\n\n## Library\n\n${library.join("\n")}\n\n## About\n\n- [About](${SITE_URL}/about)\n`
 }
 
 /** Plain-markdown consumers have no base URL, so relative image and site links become absolute. */

@@ -40,6 +40,17 @@ export function websiteJsonLd() {
   }
 }
 
+export function collectionPageJsonLd() {
+  return {
+    "@context": CONTEXT,
+    "@type": "CollectionPage",
+    name: "Library",
+    url: `${SITE_URL}/library`,
+    description: "Fonts and buttons I keep coming back to.",
+    author: { "@id": PERSON_ID },
+  }
+}
+
 export function blogPostingJsonLd(post: PostMeta, seriesTitle?: string) {
   const url = `${SITE_URL}/writing/${post.slug}`
   return {

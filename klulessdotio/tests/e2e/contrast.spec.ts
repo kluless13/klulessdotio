@@ -34,7 +34,7 @@ type Rgba = [number, number, number, number]
 
 // Runs in the page: for every text element on the sheet, composites the text and every background up to the sheet
 // over each sampled sky colour and returns the worst ratio.
-function measureSheet(skies: number[][]) {
+function measureSheet({ skies, selector }: { skies: number[][]; selector: string }) {
   const parse = (value: string): Rgba => {
     const m = value.match(/rgba?\(([^)]+)\)/)
     if (!m) return [0, 0, 0, 0]
@@ -50,7 +50,7 @@ function measureSheet(skies: number[][]) {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
   }
   const ratio = (a: number[], b: number[]) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)
-  const sheet = document.querySelector(".sheet") as HTMLElement
+  const sheet = document.querySelector(selector) as HTMLElement
   const results: { label: string; worst: number }[] = []
   const walker = document.createTreeWalker(sheet, NodeFilter.SHOW_TEXT)
   const seen = new Set<Element>()
@@ -58,7 +58,7 @@ function measureSheet(skies: number[][]) {
     const el = node.parentElement
     if (!el || seen.has(el) || !node.textContent?.trim()) continue
     seen.add(el)
-    if (getComputedStyle(el).display === "none" || el.closest(".btn")) continue // buttons draw on gradients and have their own check
+    if (getComputedStyle(el).display === "none" || el.closest(".btn, .lx")) continue // buttons and library exhibits draw on gradients and have their own check
     const layers: Rgba[] = []
     for (let cur: Element | null = el; cur; cur = cur === sheet ? null : cur.parentElement) layers.push(parse(getComputedStyle(cur).backgroundColor))
     const text = parse(getComputedStyle(el).color)
@@ -75,9 +75,9 @@ function measureSheet(skies: number[][]) {
 }
 
 // Hides the sheet, screenshots the sky behind it and returns its darkest and lightest sampled pixels.
-async function sampleSky(page: Page): Promise<number[][]> {
-  await page.addStyleTag({ content: ".sheet{visibility:hidden!important}" })
-  const box = await page.locator(".sheet").boundingBox()
+async function sampleSky(page: Page, selector = ".sheet"): Promise<number[][]> {
+  const style = await page.addStyleTag({ content: `${selector}{visibility:hidden!important}` })
+  const box = await page.locator(selector).boundingBox()
   if (!box) throw new Error("sheet not found")
   const shot = (await page.screenshot({ clip: { x: box.x, y: Math.max(0, box.y), width: box.width, height: Math.min(box.height, 700) } })).toString("base64")
   return page.evaluate(async (data) => {
@@ -97,7 +97,7 @@ async function sampleSky(page: Page): Promise<number[][]> {
       if (sum(c) > sum(light)) light = c
     }
     return [dark, light]
-  }, shot)
+  }, shot).finally(() => style.evaluate((el) => (el as Element).remove()))
 }
 
 test.describe("Reading sheet contrast", () => {
@@ -108,13 +108,81 @@ test.describe("Reading sheet contrast", () => {
         await expect(page.locator(".writing")).toHaveAttribute("data-tone", tone)
         await page.waitForTimeout(1000) // let the sheet colour transition settle
         const skies = await sampleSky(page)
-        const results = await page.evaluate(measureSheet, skies)
+        const results = await page.evaluate(measureSheet, { skies, selector: ".sheet" })
         expect(results.length).toBeGreaterThan(10)
         // The sheet has both an ink and a soft colour in use, so both are covered by the element sweep
         expect(new Set(results.map((r) => r.label.split(" ")[0])).size).toBeGreaterThan(3)
         const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
         expect(failing, `${tone} ${path}`).toEqual([])
       }
+    })
+  }
+})
+
+test.describe("Library contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`library head and sheets pass 4.5:1 in ${tone}`, async ({ page }) => {
+      await page.route("**/api/visitor", (route) => route.fulfill({ json: { success: true, data: { number: 7 } } }))
+      await page.goto(`/library?hour=${hour}&weather=clear`)
+      await expect(page.locator(".library")).toHaveAttribute("data-tone", tone)
+      await page.waitForTimeout(1000)
+      const head = await page.evaluate(measureSheet, { skies: await sampleSky(page, ".lib-head"), selector: ".lib-head" })
+      expect(head.length).toBeGreaterThan(2)
+      expect(head.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`), `${tone} head`).toEqual([])
+
+      for (const slug of ["geist", "aqua"]) {
+        await page.goto(`/library/${slug}?hour=${hour}&weather=clear`)
+        await expect(page.locator(".library")).toHaveAttribute("data-tone", tone)
+        await page.waitForTimeout(1000)
+        const results = await page.evaluate(measureSheet, { skies: await sampleSky(page, ".lib-sheet"), selector: ".lib-sheet" })
+        expect(results.length).toBeGreaterThan(5)
+        const failing = results.filter((r) => r.worst < 4.5).map((r) => `${r.label} ${r.worst.toFixed(2)}`)
+        expect(failing, `${tone} ${slug}`).toEqual([])
+      }
+    })
+  }
+})
+
+// The toast's lead text is a 66% mix of the button ink, so it is measured over both ends of the button gradient.
+test.describe("Visitor toast contrast", () => {
+  for (const [tone, hour] of [["day", 12], ["night", 22]] as const) {
+    test(`the muted lead passes 4.5:1 in ${tone}`, async ({ page }) => {
+      await page.route("**/api/visitor", (route) => route.fulfill({ json: { success: true, data: { number: 7 } } }))
+      await page.goto(`/?hour=${hour}&weather=clear`)
+      await expect(page.locator(".visitor-lead")).toHaveText("You're visitor")
+      await page.waitForTimeout(1000)
+      const worst = await page.locator(".visitor-lead").evaluate((lead) => {
+        const toast = lead.closest(".visitor-toast") as HTMLElement
+        const canvas = document.createElement("canvas")
+        canvas.width = canvas.height = 1
+        const ctx = canvas.getContext("2d", { willReadFrequently: true })!
+        const rgba = (css: string) => {
+          ctx.clearRect(0, 0, 1, 1)
+          ctx.fillStyle = "#000"
+          ctx.fillStyle = css
+          ctx.fillRect(0, 0, 1, 1)
+          const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
+          return [r, g, b, a / 255]
+        }
+        const over = (top: number[], under: number[]) => [0, 1, 2].map((i) => top[i] * top[3] + under[i] * (1 - top[3]))
+        const lum = (c: number[]) => {
+          const [r, g, b] = c.map((v) => {
+            const x = v / 255
+            return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4
+          })
+          return 0.2126 * r + 0.7152 * g + 0.0722 * b
+        }
+        const ratio = (a: number[], b: number[]) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)
+        const vars = getComputedStyle(toast)
+        const text = rgba(getComputedStyle(lead).color)
+        return Math.min(
+          ...["--b-top", "--b-bot"].map((name) => {
+            const bg = over(rgba(vars.getPropertyValue(name).trim()), [255, 255, 255])
+            return ratio(over(text, bg), bg)
+          }),
+        )
+      })
+      expect(worst).toBeGreaterThanOrEqual(4.5)
     })
   }
 })

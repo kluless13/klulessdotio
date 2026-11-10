@@ -2,7 +2,9 @@ import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { JsonLd } from "@/components/writing/JsonLd"
-import { RSS_ALTERNATE, blogPostingJsonLd, breadcrumbJsonLd, pageMetadata, personJsonLd, postMetadata, websiteJsonLd } from "@/lib/writing/seo"
+import { itemJsonLd, itemMetadata, libraryMetadata } from "@/lib/library/seo"
+import { itemBySlug } from "@/lib/library/catalogue"
+import { RSS_ALTERNATE, collectionPageJsonLd, blogPostingJsonLd, breadcrumbJsonLd, pageMetadata, personJsonLd, postMetadata, websiteJsonLd } from "@/lib/writing/seo"
 import type { PostMeta } from "@/lib/writing/types"
 
 const post: PostMeta = {
@@ -79,5 +81,42 @@ describe("writing seo", () => {
 
   it("points the feed alternate at the absolute RSS url", () => {
     expect(RSS_ALTERNATE).toEqual({ "application/rss+xml": "https://1tx.dev/writing/rss.xml" })
+  })
+})
+
+describe("library seo", () => {
+  it("collection page points at the library and the person", () => {
+    expect(collectionPageJsonLd()).toEqual({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Library",
+      url: "https://1tx.dev/library",
+      description: "Fonts and buttons I keep coming back to.",
+      author: { "@id": "https://1tx.dev/#angad" },
+    })
+  })
+
+  it("the library page has its own title, canonical and share image", () => {
+    const m = libraryMetadata()
+    expect(m.title).toBe("Library · Angad Maniyambath")
+    expect(m.alternates?.canonical).toBe("https://1tx.dev/library")
+    expect(m.openGraph?.images).toEqual([{ url: "/library/og.jpg", width: 1200, height: 630, alt: "Library" }])
+    expect(m.twitter?.images).toEqual(["/library/og.jpg"])
+  })
+
+  it("a font describes its category and maker, a button its source", () => {
+    const geist = itemBySlug("geist")!
+    expect(itemMetadata(geist).title).toBe("Geist · Library · Angad Maniyambath")
+    expect(itemMetadata(geist).description).toBe("Simple and elegant. Sans serif, by Vercel.")
+    expect(itemMetadata(geist).alternates?.canonical).toBe("https://1tx.dev/library/geist")
+    const aqua = itemBySlug("aqua")!
+    expect(itemMetadata(aqua).description).toBe("Glassy, a bit of jelly. Mac OS X, 2001.")
+    expect(itemMetadata(aqua).twitter?.images).toEqual(["/library/og.jpg"])
+  })
+
+  it("item breadcrumbs run Home, Library, item", () => {
+    const crumbs = itemJsonLd(itemBySlug("geist")!)
+    expect(crumbs.itemListElement.map((c) => c.name)).toEqual(["Home", "Library", "Geist"])
+    expect(crumbs.itemListElement[2].item).toBe("https://1tx.dev/library/geist")
   })
 })
