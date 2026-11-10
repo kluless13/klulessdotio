@@ -2,7 +2,7 @@ import { z } from "zod"
 import { DOWNLOADS } from "@/content/downloads"
 import { isDownloadAvailable } from "@/lib/downloads/registry"
 import { kitSecret, signKitToken, signToken, signUnsubToken, TOKEN_TTL_MS } from "@/lib/downloads/token"
-import type { MailProvider } from "@/lib/mail/provider"
+import { isSafeCode, type MailProvider } from "@/lib/mail/provider"
 import { allow, hashKey } from "@/lib/ratelimit"
 import { withTimeout } from "@/lib/timeout"
 
@@ -19,13 +19,17 @@ export interface SubscribeDeps {
   env: Record<string, string | undefined>
   now: () => number
   origin: string
-  log: (event: SubscribeEvent) => void
+  // detail is only ever a short reason code such as "timeout", never an address.
+  log: (event: SubscribeEvent, detail?: string) => void
+  // Keeps background work alive after the reply (Vercel's waitUntil in the route).
+  defer: (work: Promise<unknown>) => void
 }
 
 const LIMITER_TIMEOUT_MS = 5000
-// The contact chain (create, update, segment re-adds) is best effort, so it gets
-// one short budget in total. It runs beside the email send, which has its own 5s cap.
-const CONTACT_TIMEOUT_MS = 1500
+// The contact chain (create, update, segment re-adds) runs in the background after
+// the reply, so it gets a generous total budget: enough for a cold start in Mumbai
+// talking to Resend in the US, well under the function's own limit.
+const CONTACT_TIMEOUT_MS = 12_000
 const IP_LIMIT = { max: 5, windowSeconds: 3600 }
 const EMAIL_LIMIT = { max: 3, windowSeconds: 86400 }
 
@@ -67,16 +71,24 @@ async function checkLimits(deps: SubscribeDeps, ip: string, email: string): Prom
 const withinLimits = (deps: SubscribeDeps, ip: string, email: string) =>
   withTimeout(checkLimits(deps, ip, email), LIMITER_TIMEOUT_MS)
 
-// Starts the whole contact chain now and resolves true when it finished in time.
-// It never rejects, so a slow or failing chain cannot delay or break the reply.
-function startContact(deps: SubscribeDeps, input: Parameters<MailProvider["addContact"]>[0]): Promise<boolean> {
-  return withTimeout(
+// Only a plain reason code reaches the logs; anything else is just "error".
+function failureCode(error: unknown): string {
+  if (error instanceof Error && error.message === "timeout") return "timeout"
+  const code = (error as { code?: unknown } | null)?.code
+  return typeof code === "string" && isSafeCode(code) ? code : "error"
+}
+
+// Starts the whole contact chain and hands it to deps.defer, so the reply never
+// waits for it. A failure is logged with its reason code once the chain settles.
+function startContact(deps: SubscribeDeps, input: Parameters<MailProvider["addContact"]>[0]): void {
+  const chain = withTimeout(
     (async () => deps.provider.addContact(input))(),
     CONTACT_TIMEOUT_MS
   ).then(
-    () => true,
-    () => false
+    () => undefined,
+    (error: unknown) => deps.log("contact_failed", failureCode(error))
   )
+  deps.defer(chain)
 }
 
 function isKitRequest(body: unknown): boolean {
@@ -110,19 +122,19 @@ async function handleKitSubscribe(body: unknown, ip: string, deps: SubscribeDeps
   try {
     const link = `${deps.origin}/kit/${signKitToken(email, secret)}`
     const unsubscribeLink = `${deps.origin}/api/unsubscribe/${signUnsubToken(email, secret)}`
-    const segments = [deps.env.RESEND_SEGMENT_ID, deps.env.RESEND_KIT_SEGMENT_ID].filter(
-      (id): id is string => Boolean(id)
-    )
 
-    // Both start together so a slow contact call never delays the reply.
-    const contact = startContact(deps, { email, segments })
     await deps.provider.sendKitEmail({ email, link, unsubscribeLink })
-    if (!(await contact)) deps.log("contact_failed")
-  } catch {
-    deps.log("failed:send")
+  } catch (error) {
+    deps.log("failed:send", failureCode(error))
     return fail(502, "server")
   }
 
+  // Only once the email has gone out, so a failed send never joins the list.
+  // It finishes in the background; the reply does not wait for it.
+  const segments = [deps.env.RESEND_SEGMENT_ID, deps.env.RESEND_KIT_SEGMENT_ID].filter(
+    (id): id is string => Boolean(id)
+  )
+  startContact(deps, { email, segments })
   deps.log("subscribed")
   return OK
 }
@@ -169,14 +181,13 @@ export async function handleSubscribe(
     const token = signToken({ downloadId, slug, exp: deps.now() + TOKEN_TTL_MS }, secret)
     const link = `${deps.origin}/api/download/${token}`
 
-    const contact = startContact(deps, { email, downloadId, slug })
     await deps.provider.sendDownloadEmail({ email, title, link })
-    if (!(await contact)) deps.log("contact_failed")
-  } catch {
-    deps.log("failed:send")
+  } catch (error) {
+    deps.log("failed:send", failureCode(error))
     return fail(502, "server")
   }
 
+  startContact(deps, { email, downloadId, slug })
   deps.log("subscribed")
   return OK
 }

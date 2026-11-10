@@ -11,6 +11,7 @@ const NOW = 1_700_000_000_000
 function setup(over: Partial<SubscribeDeps> = {}, counts: Record<string, number> = {}) {
   const keys: string[] = []
   const logs: unknown[][] = []
+  const deferred: Promise<unknown>[] = []
   const redis = {
     incr: vi.fn(async (k: string) => {
       keys.push(k)
@@ -39,9 +40,12 @@ function setup(over: Partial<SubscribeDeps> = {}, counts: Record<string, number>
     now: () => NOW,
     origin: "https://1tx.dev",
     log: (...args: unknown[]) => void logs.push(args),
+    defer: (work: Promise<unknown>) => void deferred.push(work),
     ...over,
   }
-  return { deps, redis, provider, keys, logs }
+  // Runs what the route hands to waitUntil, as Vercel would after the reply.
+  const settle = () => Promise.all(deferred)
+  return { deps, redis, provider, keys, logs, deferred, settle }
 }
 
 const good = { email: EMAIL, downloadId: "claude-code-starter-kit", consent: true, slug: "a-post" }
@@ -116,12 +120,29 @@ describe("handleSubscribe", () => {
   })
 
   it("addContact failure is not fatal: email still sent, contact_failed logged", async () => {
-    const { deps, provider, logs } = setup()
+    const { deps, provider, logs, settle } = setup()
     provider.addContact.mockRejectedValueOnce(new Error("boom"))
     const res = await handleSubscribe(good, "1.1.1.1", deps)
     expect(res).toEqual({ status: 200, body: { success: true } })
     expect(provider.sendDownloadEmail).toHaveBeenCalled()
-    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+    await settle()
+    expect(logs).toEqual([["subscribed"], ["contact_failed", "error"]])
+  })
+
+  it("logs the provider's safe reason code when the contact fails", async () => {
+    const { deps, provider, logs, settle } = setup()
+    provider.addContact.mockRejectedValueOnce(Object.assign(new Error("x"), { code: "validation_error" }))
+    await handleSubscribe(good, "1.1.1.1", deps)
+    await settle()
+    expect(logs.at(-1)).toEqual(["contact_failed", "validation_error"])
+  })
+
+  it("never logs a reason code that is not a plain name", async () => {
+    const { deps, provider, logs, settle } = setup()
+    provider.addContact.mockRejectedValueOnce(Object.assign(new Error("x"), { code: EMAIL }))
+    await handleSubscribe(good, "1.1.1.1", deps)
+    await settle()
+    expect(logs.at(-1)).toEqual(["contact_failed", "error"])
   })
 
   it("provider failure is 502", async () => {
@@ -129,7 +150,7 @@ describe("handleSubscribe", () => {
     provider.sendDownloadEmail.mockRejectedValueOnce(new Error("boom"))
     const res = await handleSubscribe(good, "1.1.1.1", deps)
     expect(res).toEqual({ status: 502, body: { success: false, error: "server" } })
-    expect(logs.at(-1)).toEqual(["failed:send"])
+    expect(logs.at(-1)).toEqual(["failed:send", "error"])
   })
 
   it("missing signing secret is 502 server", async () => {
@@ -155,6 +176,7 @@ describe("handleSubscribe", () => {
     const b = setup()
     b.provider.addContact.mockRejectedValueOnce(new Error(EMAIL))
     await handleSubscribe(good, "1.1.1.1", b.deps)
+    await b.settle()
     const c = setup()
     c.provider.sendDownloadEmail.mockRejectedValueOnce(new Error(EMAIL))
     await handleSubscribe(good, "1.1.1.1", c.deps)
@@ -202,12 +224,13 @@ describe("handleSubscribe kit branch", () => {
   })
 
   it("addContact failure still sends and returns 200", async () => {
-    const { deps, provider, logs } = setup({ env: kitEnv })
+    const { deps, provider, logs, settle } = setup({ env: kitEnv })
     provider.addContact.mockRejectedValueOnce(new Error("boom"))
     const res = await handleSubscribe(kit, "1.1.1.1", deps)
     expect(res.status).toBe(200)
     expect(provider.sendKitEmail).toHaveBeenCalled()
-    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+    await settle()
+    expect(logs).toEqual([["subscribed"], ["contact_failed", "error"]])
   })
 
   it("sendKitEmail rejection is 502 server", async () => {
@@ -215,7 +238,7 @@ describe("handleSubscribe kit branch", () => {
     provider.sendKitEmail.mockRejectedValueOnce(new Error("boom"))
     const res = await handleSubscribe(kit, "1.1.1.1", deps)
     expect(res).toEqual({ status: 502, body: { success: false, error: "server" } })
-    expect(logs.at(-1)).toEqual(["failed:send"])
+    expect(logs.at(-1)).toEqual(["failed:send", "error"])
   })
 
   it("missing secret is 502 and sends nothing", async () => {
@@ -262,16 +285,28 @@ describe("kit branch timing and case", () => {
     const pending = handleSubscribe(kit, "1.1.1.1", deps)
     await vi.advanceTimersByTimeAsync(5001)
     expect(await pending).toEqual({ status: 502, body: { success: false, error: "server" } })
-    expect(logs).toEqual([["failed:send"]])
+    expect(logs).toEqual([["failed:send", "timeout"]])
   })
 
-  it("starts the contact and the send together", async () => {
-    const { deps, provider } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+  it("starts the contact once the send succeeds, and replies without waiting for it", async () => {
+    vi.useFakeTimers()
+    const { deps, provider, deferred, settle } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
     provider.addContact.mockImplementation(never)
-    provider.sendKitEmail.mockImplementation(async () => undefined)
-    const res = await Promise.race([handleSubscribe(kit, "1.1.1.1", deps), new Promise((r) => setTimeout(() => r("slow"), 200))])
-    expect(provider.addContact).toHaveBeenCalled()
-    expect(res).toBe("slow")
+    expect(await handleSubscribe(kit, "1.1.1.1", deps)).toEqual({ status: 200, body: { success: true } })
+    expect(provider.addContact).toHaveBeenCalledTimes(1)
+    expect(deferred).toHaveLength(1)
+    const background = settle()
+    await vi.advanceTimersByTimeAsync(12_001)
+    await background
+  })
+
+  it("adds no contact when the kit email fails to send", async () => {
+    const { deps, provider, deferred, logs } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    provider.sendKitEmail.mockRejectedValue(new Error("boom"))
+    expect((await handleSubscribe(kit, "1.1.1.1", deps)).status).toBe(502)
+    expect(provider.addContact).not.toHaveBeenCalled()
+    expect(deferred).toHaveLength(0)
+    expect(logs).toEqual([["failed:send", "error"]])
   })
 
   it("lowercases the email once and uses it everywhere", async () => {
@@ -287,25 +322,28 @@ describe("contact deadline", () => {
   const kit = { kind: "kit", kit: "starter-kit", email: EMAIL, consent: true }
   const never = () => new Promise<never>(() => undefined)
 
-  it("download: a hanging contact chain still sends, and the reply comes at the 1.5s deadline", async () => {
+  it("download: a hanging contact chain never delays the reply, and gives up after 12s in the background", async () => {
     vi.useFakeTimers()
-    const { deps, provider, logs } = setup()
+    const { deps, provider, logs, settle } = setup()
     provider.addContact.mockImplementation(never)
-    const pending = handleSubscribe(good, "1.1.1.1", deps)
-    await vi.advanceTimersByTimeAsync(1499)
+    expect(await handleSubscribe(good, "1.1.1.1", deps)).toEqual({ status: 200, body: { success: true } })
     expect(provider.sendDownloadEmail).toHaveBeenCalledTimes(1)
+    expect(logs).toEqual([["subscribed"]])
+    const background = settle()
+    await vi.advanceTimersByTimeAsync(11_999)
+    expect(logs).toEqual([["subscribed"]])
     await vi.advanceTimersByTimeAsync(2)
-    expect(await pending).toEqual({ status: 200, body: { success: true } })
-    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+    await background
+    expect(logs).toEqual([["subscribed"], ["contact_failed", "timeout"]])
   })
 
-  it("download: the contact starts alongside the send, not before it", async () => {
+  it("download: the contact waits until the send has gone out", async () => {
     const { deps, provider } = setup()
-    provider.addContact.mockImplementation(never)
     provider.sendDownloadEmail.mockImplementation(never)
     void handleSubscribe(good, "1.1.1.1", deps)
     await vi.waitFor(() => expect(provider.sendDownloadEmail).toHaveBeenCalled())
-    expect(provider.addContact).toHaveBeenCalledTimes(1)
+    await new Promise((r) => setTimeout(r, 0))
+    expect(provider.addContact).not.toHaveBeenCalled()
   })
 
   it("download: a send that fails is 502 and does not wait for the contact", async () => {
@@ -313,7 +351,8 @@ describe("contact deadline", () => {
     provider.addContact.mockImplementation(never)
     provider.sendDownloadEmail.mockRejectedValue(new Error("boom"))
     expect(await handleSubscribe(good, "1.1.1.1", deps)).toEqual({ status: 502, body: { success: false, error: "server" } })
-    expect(logs).toEqual([["failed:send"]])
+    expect(provider.addContact).not.toHaveBeenCalled()
+    expect(logs).toEqual([["failed:send", "error"]])
   })
 
   it("download: a slow send and a slow contact together never exceed the 5s send cap", async () => {
@@ -326,15 +365,27 @@ describe("contact deadline", () => {
     expect(await pending).toEqual({ status: 502, body: { success: false, error: "server" } })
   })
 
-  it("kit: a hanging contact chain gives up at 1.5s and the reply is still 200", async () => {
+  it("kit: a contact that takes 3s still completes in the background, with no failure logged", async () => {
     vi.useFakeTimers()
-    const { deps, provider, logs } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
-    provider.addContact.mockImplementation(never)
-    const pending = handleSubscribe(kit, "1.1.1.1", deps)
-    await vi.advanceTimersByTimeAsync(1501)
-    expect(await pending).toEqual({ status: 200, body: { success: true } })
+    const { deps, provider, logs, settle } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    provider.addContact.mockImplementation(() => new Promise((r) => setTimeout(r, 3000)))
+    expect(await handleSubscribe(kit, "1.1.1.1", deps)).toEqual({ status: 200, body: { success: true } })
     expect(provider.sendKitEmail).toHaveBeenCalledTimes(1)
-    expect(logs).toEqual([["contact_failed"], ["subscribed"]])
+    const background = settle()
+    await vi.advanceTimersByTimeAsync(3001)
+    await background
+    expect(logs).toEqual([["subscribed"]])
+  })
+
+  it("kit: a hanging contact chain gives up after 12s and logs timeout", async () => {
+    vi.useFakeTimers()
+    const { deps, provider, logs, settle } = setup({ env: { KIT_SIGNING_SECRET: "s" } })
+    provider.addContact.mockImplementation(never)
+    expect(await handleSubscribe(kit, "1.1.1.1", deps)).toEqual({ status: 200, body: { success: true } })
+    const background = settle()
+    await vi.advanceTimersByTimeAsync(12_001)
+    await background
+    expect(logs).toEqual([["subscribed"], ["contact_failed", "timeout"]])
   })
 })
 

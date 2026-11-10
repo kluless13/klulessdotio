@@ -106,6 +106,16 @@ describe("resendProvider", () => {
     }
   })
 
+  it("provider errors carry a safe reason code for the logs", async () => {
+    const p = resendProvider(env)
+    create.mockResolvedValue({ data: null, error: { name: "validation_error", message: "bad", statusCode: 422 } })
+    expect((await p.addContact({ email: EMAIL }).catch((e) => e)).code).toBe("validation_error")
+    create.mockResolvedValue({ data: null, error: { name: EMAIL, message: "bad", statusCode: 500 } })
+    expect((await p.addContact({ email: EMAIL }).catch((e) => e)).code).toBe("provider_error")
+    create.mockRejectedValue(new Error(`network ${EMAIL}`))
+    expect((await p.addContact({ email: EMAIL }).catch((e) => e)).code).toBe("network")
+  })
+
   it("reads the api key from Resend alone", async () => {
     create.mockResolvedValue(ok)
     await resendProvider({ Resend: "alias-key", MAIL_FROM: "a" }).addContact({ email: EMAIL, downloadId: "d", slug: "s" })
@@ -252,6 +262,8 @@ describe("kit mail", () => {
     create.mockReturnValue(new Promise(() => {}))
     const result = resendProvider(env).addContact({ email: EMAIL }).catch((e) => e)
     await vi.advanceTimersByTimeAsync(5000)
-    expect((await result).message).toBe("mail provider failed")
+    const error = await result
+    expect(error.message).toBe("mail provider failed")
+    expect(error.code).toBe("timeout")
   })
 })

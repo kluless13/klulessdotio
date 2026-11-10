@@ -36,13 +36,35 @@ function isNotFound(error: { message?: string; statusCode?: number | null }): bo
   return error.statusCode === 404 || /not found/i.test(error.message ?? "")
 }
 
-// Every Resend call is bounded; any throw, timeout included, becomes FAILED
-// so no address or provider detail leaks.
+// The message is always FAILED, so no address or provider detail leaks. The
+// code says why, for the logs: "timeout", "network", or Resend's error name.
+export class ProviderError extends Error {
+  readonly code: string
+  constructor(code: string) {
+    super(FAILED)
+    this.name = "ProviderError"
+    this.code = code
+  }
+}
+
+// A reason code safe to log: a short snake_case word, so never an address or URL.
+export function isSafeCode(code: string): boolean {
+  return /^[a-z_]{1,40}$/.test(code)
+}
+
+// Resend's error names are short snake_case words. Anything else becomes a generic code.
+function providerFailure(error: { name?: string }): ProviderError {
+  const name = error.name ?? ""
+  return new ProviderError(isSafeCode(name) ? name : "provider_error")
+}
+
+// Every Resend call is bounded; any throw, timeout included, becomes a ProviderError.
 async function call<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await withTimeout(run(), CALL_TIMEOUT_MS)
-  } catch {
-    throw new Error(FAILED)
+  } catch (error) {
+    const timedOut = error instanceof Error && error.message === "timeout"
+    throw new ProviderError(timedOut ? "timeout" : "network")
   }
 }
 
@@ -65,12 +87,12 @@ export function resendProvider(env: Env = process.env): MailProvider {
         })
       )
       if (!result.error) return
-      if (!isDuplicate(result.error)) throw new Error(FAILED)
+      if (!isDuplicate(result.error)) throw providerFailure(result.error)
 
       // A returning reader is subscribed again. Segment re-adds are best effort:
       // the contact may already be in them.
       const updated = await call(() => resend.contacts.update({ email, unsubscribed: false }))
-      if (updated.error) throw new Error(FAILED)
+      if (updated.error) throw providerFailure(updated.error)
       await Promise.all(
         segmentIds.map((segmentId) =>
           call(() => resend.contacts.segments.add({ email, segmentId })).catch(() => undefined)
@@ -90,7 +112,7 @@ export function resendProvider(env: Env = process.env): MailProvider {
           text: downloadEmailText(title, link),
         })
       )
-      if (result.error) throw new Error(FAILED)
+      if (result.error) throw providerFailure(result.error)
     },
 
     async sendKitEmail({ email, link, unsubscribeLink }) {
@@ -109,13 +131,13 @@ export function resendProvider(env: Env = process.env): MailProvider {
           },
         })
       )
-      if (result.error) throw new Error(FAILED)
+      if (result.error) throw providerFailure(result.error)
     },
 
     async unsubscribe(email) {
       const resend = client()
       const result = await call(() => resend.contacts.update({ email, unsubscribed: true }))
-      if (result.error && !isNotFound(result.error)) throw new Error(FAILED)
+      if (result.error && !isNotFound(result.error)) throw providerFailure(result.error)
     },
   }
 }
