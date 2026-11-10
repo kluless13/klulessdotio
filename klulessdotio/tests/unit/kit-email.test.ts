@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest"
-import {
-  KIT_EMAIL_SUBJECT,
-  KIT_EMAIL_PREVIEW,
-  kitEmailHtml,
-  kitEmailText,
-} from "@/lib/mail/kit-email"
+import { KIT_EMAIL_SUBJECT, kitEmailHtml, kitEmailText } from "@/lib/mail/kit-email"
 
 const LINK = "https://1tx.dev/kit/abc.def"
 const UNSUB = "https://1tx.dev/api/unsubscribe?t=xyz"
@@ -12,9 +7,8 @@ const UNSUB = "https://1tx.dev/api/unsubscribe?t=xyz"
 describe("kit email", () => {
   const html = kitEmailHtml(LINK, UNSUB)
 
-  it("exports the subject and preview", () => {
+  it("exports the subject", () => {
     expect(KIT_EMAIL_SUBJECT).toBe("Your starter kit is here")
-    expect(KIT_EMAIL_PREVIEW).toBe("Five steps to get the AI you already pay for doing real work.")
   })
 
   it("has no em dash", () => {
@@ -22,27 +16,28 @@ describe("kit email", () => {
     expect(kitEmailText(LINK, UNSUB)).not.toContain("—")
   })
 
-  it("uses absolute https for every src and href", () => {
-    const urls = [...html.matchAll(/\b(?:src|href)="([^"]*)"/g)].map((m) => m[1])
-    expect(urls.length).toBeGreaterThanOrEqual(4)
-    for (const url of urls) expect(url).toMatch(/^https:\/\//)
+  it("uses absolute https for every href", () => {
+    const urls = [...html.matchAll(/\bhref="([^"]*)"/g)].map((m) => m[1])
+    expect(urls).toEqual([LINK, "https://1tx.dev", UNSUB])
   })
 
-  it("contains both links, the images and the copy", () => {
-    expect(html).toContain(`href="${LINK}"`)
-    expect(html).toContain(`href="${UNSUB}"`)
-    expect(html).toContain('src="https://1tx.dev/email/kit-header.gif"')
-    expect(html).toContain('src="https://1tx.dev/email/signature-angad.png"')
-    expect(html).toContain("Open your kit")
+  it("contains the kit link, the sign-off and the unsubscribe link", () => {
+    expect(html).toContain(`<a href="${LINK}"`)
+    expect(html).toContain(">Open your kit</a>")
+    expect(html).toContain("Angad<br>")
     expect(html).toContain(">Unsubscribe</a>")
-    expect(html).not.toContain("one click")
-    expect(html).toContain(KIT_EMAIL_PREVIEW)
+    expect(html).toContain("Hi there,")
+    expect(html).toContain("just reply to this email")
   })
 
-  it("has the card radius and the reduced-motion-guarded pulse", () => {
-    expect(html).toContain("border-radius:18px")
-    expect(html).toContain("@keyframes kitpulse")
-    expect(html).toContain("prefers-reduced-motion: no-preference")
+  // Gmail files designed mail under Promotions, so the kit email reads like a personal letter.
+  it("reads like a letter: no images, tables, hidden preheader, headline or button", () => {
+    expect(html).not.toMatch(/<img\b/i)
+    expect(html).not.toMatch(/<table\b/i)
+    expect(html).not.toMatch(/<h[1-6]\b/i)
+    expect(html).not.toContain("display:none")
+    expect(html).not.toMatch(/background|box-shadow|border-radius|@keyframes/)
+    expect(html).not.toContain("Talk to it. It does the work.")
   })
 
   it("shows no email address outside the given links", () => {
@@ -55,10 +50,11 @@ describe("kit email", () => {
     expect(out).toContain("a=1&amp;b=&quot;2&quot;")
   })
 
-  it("text version has both links and no html tags", () => {
+  it("text version has both links, the sign-off and no html tags", () => {
     const text = kitEmailText(LINK, UNSUB)
-    expect(text).toContain(LINK)
+    expect(text).toContain(`Open your kit: ${LINK}`)
     expect(text).toContain(UNSUB)
+    expect(text).toContain("Angad\n1tx.dev")
     expect(text).not.toMatch(/<[a-z/][^>]*>/i)
   })
 })
