@@ -31,6 +31,11 @@ const nextConfig = {
         headers: PRIVATE_HEADERS,
       },
       {
+        // The KalibreTrades concept is shared by link only, never indexed
+        source: "/kalibre/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
         // The unsubscribe link carries a token too
         source: "/unsubscribe",
         headers: PRIVATE_HEADERS,

@@ -1,0 +1,698 @@
+/* KalibreTrades demo: Dr Caroline, her books, the community card, the closing form and the footer */
+
+.kt-caroline {
+  padding-top: 160px;
+}
+.kt-caroline-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+.kt-caroline-top {
+  display: flex;
+  gap: 72px;
+  padding-right: 52px;
+}
+.kt-portrait {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  width: 440px;
+  aspect-ratio: 440 / 520;
+  padding: 20px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--mist);
+}
+.kt-portrait img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kt-portrait figcaption {
+  position: relative;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--slate);
+}
+
+.kt-caroline-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  min-width: 0;
+}
+.kt-quote {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 48px;
+}
+.kt-byline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kt-byline-name {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 22px;
+}
+.kt-byline-role {
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--body);
+}
+.kt-background {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.kt-background > p {
+  max-width: 600px;
+  font-size: 18px;
+  line-height: 28px;
+}
+.kt-logos-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding-top: 8px;
+}
+
+/* Degrees: navy at rest, own colours and the degree on hover */
+.kt-logos {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.kt-logo {
+  position: relative;
+  display: flex;
+}
+.kt-logo-btn {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: default;
+  transition: opacity 0.2s ease;
+}
+.kt-logo-btn img {
+  height: auto;
+  transition: opacity 0.2s ease;
+}
+.kt-logo-colour {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.kt-logo[data-open] .kt-logo-colour,
+.kt-logos[data-touch] .kt-logo-colour {
+  opacity: 1;
+}
+.kt-logos[data-hovering]:not([data-touch]) .kt-logo:not([data-open]) .kt-logo-btn {
+  opacity: 0.45;
+}
+.kt-logo-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.kt-logo[data-open] .kt-logo-tip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.kt-books-btn {
+  height: 48px;
+  padding-inline: 20px;
+}
+.kt-books-chevron {
+  transform: rotate(0deg);
+  transition: transform 0.25s var(--ease);
+}
+.kt-books-btn[aria-expanded="true"] .kt-books-chevron {
+  transform: rotate(180deg);
+}
+
+.kt-books {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 32px;
+  border-radius: 18px;
+  background: var(--paper);
+  animation: kt-open 0.3s var(--ease) both;
+}
+@keyframes kt-open {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.kt-books-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kt-books-head h3 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+}
+.kt-books-head p {
+  font-size: 17px;
+  line-height: 27px;
+  color: var(--body);
+}
+.kt-book-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kt-book-rows li {
+  animation: kt-open 0.3s var(--ease) both;
+}
+.kt-book {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--white);
+  background: var(--white);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.kt-book-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.kt-book-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 22px;
+}
+.kt-book-desc {
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--body);
+}
+.kt-book-buy {
+  display: flex;
+  flex-shrink: 0;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s ease;
+  border-radius: 10px;
+}
+.kt-amazon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #232f3e;
+}
+.kt-amazon-a {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 17px;
+  color: var(--white);
+}
+@media (hover: hover) {
+  .kt-book:hover {
+    border-color: var(--mist-2);
+    box-shadow: 0 10px 24px rgba(42, 56, 72, 0.1);
+  }
+  .kt-book:hover .kt-book-buy {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 #11171f, 0 8px 14px rgba(35, 47, 62, 0.3);
+  }
+}
+.kt-books-foot {
+  padding-left: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--body);
+}
+
+/* Community: a quiet shimmer around the card */
+.kt-community {
+  display: flex;
+  justify-content: center;
+  padding-top: 160px;
+}
+.kt-shimmer {
+  display: flex;
+  max-width: 1043px;
+  width: 100%;
+  padding: 1.5px;
+  border-radius: 30px;
+  background: linear-gradient(115deg, var(--line) 0%, var(--line) 28%, var(--gold) 44%, #f6e7a6 50%, var(--mist-2) 58%, var(--line) 72%, var(--line) 100%);
+  background-size: 220% 100%;
+  box-shadow: 0 24px 60px rgba(42, 56, 72, 0.06);
+  animation: kt-shimmer 6s ease-in-out infinite;
+}
+@keyframes kt-shimmer {
+  0%,
+  100% {
+    background-position: 0% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+}
+.kt-community-card {
+  display: flex;
+  flex: 1;
+  gap: 52px;
+  padding: 8px 48px 8px 8px;
+  border-radius: 28.5px;
+  background: var(--white);
+}
+.kt-community-photo {
+  flex-shrink: 0;
+  width: 540px;
+  min-height: 440px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.kt-community-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kt-community-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  padding-block: 24px;
+}
+.kt-community-copy h2 {
+  margin-bottom: 12px;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 40px;
+}
+.kt-community-copy p {
+  font-size: 17px;
+  line-height: 27px;
+  color: var(--body);
+}
+.kt-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kt-checks li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  line-height: 20px;
+}
+.kt-checks svg {
+  flex-shrink: 0;
+  color: var(--navy);
+}
+.kt-discord-btn {
+  align-self: flex-start;
+  height: 52px;
+}
+
+/* Closing form */
+.kt-priority {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding-top: 180px;
+  padding-bottom: 40px;
+}
+.kt-priority h2 {
+  font-size: 64px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 68px;
+  text-align: center;
+}
+.kt-priority-points {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+}
+.kt-priority-points li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--slate);
+}
+.kt-closing-form {
+  width: 480px;
+  max-width: 100%;
+  padding: 36px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  box-shadow: 0 24px 60px rgba(42, 56, 72, 0.08);
+}
+
+/* Footer: the text sits over the pale top of the Westminster picture */
+.kt-footer {
+  position: relative;
+  margin-top: 80px;
+}
+.kt-footer-city {
+  position: relative;
+  /* The picture's pale top sits under the footer text; the extra room keeps the credit line clear of the skyline */
+  height: calc(100vw * 900 / 1440 + 56px);
+  overflow: hidden;
+  background: var(--paper);
+}
+.kt-footer-city picture {
+  position: absolute;
+  inset: auto 0 0;
+}
+.kt-footer-city img {
+  width: 100%;
+  height: auto;
+}
+.kt-footer-tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(42, 56, 72, 0.55) 0%, rgba(42, 56, 72, 0.2) 14%, rgba(42, 56, 72, 0) 34%);
+}
+.kt-watermark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.12em;
+  font-size: clamp(56px, 16vw, 232px);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.35) 55%, rgba(255, 255, 255, 0.08) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1.2px rgba(255, 255, 255, 0.7);
+}
+.kt-footer-content {
+  position: absolute;
+  z-index: 1;
+  top: 70px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  padding-inline: var(--gutter);
+}
+.kt-footer-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+}
+.kt-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 17px;
+  line-height: 22px;
+  color: var(--body);
+}
+.kt-footer-cols {
+  display: flex;
+  gap: 80px;
+}
+.kt-footer-cols div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 18px;
+  color: var(--body);
+}
+.kt-footer-cols h2 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--ink);
+}
+.kt-footer-cols a {
+  color: var(--body);
+  transition: color 0.15s ease;
+}
+@media (hover: hover) {
+  .kt-footer-cols a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+.kt-disclaimer {
+  max-width: 900px;
+  font-size: 13px;
+  line-height: 21px;
+  color: #6b6b68;
+}
+.kt-credit {
+  margin-top: -32px;
+  font-size: 13px;
+  line-height: 21px;
+  color: #6b6b68;
+}
+
+/* Privacy notice page */
+.kt-privacy {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 96px 24px;
+  font-size: 17px;
+  line-height: 27px;
+  color: var(--body);
+}
+.kt-privacy h1 {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 46px;
+  color: var(--ink);
+}
+.kt-privacy .kt-link {
+  align-self: flex-start;
+  font-size: 15px;
+}
+
+@media (max-width: 1180px) {
+  .kt-caroline-top {
+    gap: 40px;
+    padding-right: 20px;
+  }
+  .kt-portrait {
+    width: 360px;
+  }
+  .kt-quote {
+    font-size: 30px;
+    line-height: 38px;
+  }
+  .kt-logos-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .kt-community-photo {
+    width: 46%;
+  }
+  .kt-footer-cols {
+    gap: 40px;
+  }
+}
+
+@media (max-width: 760px) {
+  .kt-caroline,
+  .kt-community {
+    padding-top: 64px;
+  }
+  .kt-caroline-card {
+    gap: 16px;
+    padding: 10px;
+    border-radius: 24px;
+  }
+  .kt-caroline-top {
+    flex-direction: column;
+    gap: 24px;
+    padding-right: 0;
+  }
+  .kt-portrait {
+    width: 100%;
+    padding: 14px;
+  }
+  .kt-caroline-text {
+    gap: 20px;
+    padding: 0 8px 8px;
+  }
+  .kt-quote-mark {
+    width: 44px;
+    height: 33px;
+  }
+  .kt-quote {
+    font-size: 24px;
+    line-height: 32px;
+  }
+  .kt-background > p {
+    font-size: 16px;
+    line-height: 25px;
+  }
+  .kt-logos-row {
+    align-items: stretch;
+    gap: 20px;
+  }
+  .kt-logos {
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .kt-books-btn {
+    width: 100%;
+  }
+  .kt-books {
+    gap: 16px;
+    padding: 22px 14px;
+    border-radius: 16px;
+  }
+  .kt-books-head h3 {
+    font-size: 22px;
+    line-height: 28px;
+  }
+  .kt-books-head p {
+    font-size: 15px;
+    line-height: 23px;
+  }
+  .kt-book {
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+  .kt-book-title {
+    font-size: 16px;
+    line-height: 21px;
+  }
+  .kt-book-desc {
+    font-size: 14px;
+    line-height: 19px;
+  }
+  .kt-shimmer {
+    border-radius: 26px;
+  }
+  .kt-community-card {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 24.5px;
+  }
+  .kt-community-photo {
+    width: 100%;
+    min-height: 0;
+    height: 240px;
+    border-radius: 18px;
+  }
+  .kt-community-copy {
+    gap: 22px;
+    padding: 16px 14px 18px;
+  }
+  .kt-community-copy h2 {
+    font-size: 28px;
+    line-height: 34px;
+  }
+  .kt-discord-btn {
+    align-self: stretch;
+  }
+  .kt-priority {
+    gap: 20px;
+    padding-top: 64px;
+    padding-bottom: 24px;
+  }
+  .kt-priority h2 {
+    font-size: 34px;
+    line-height: 40px;
+  }
+  .kt-priority-points {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .kt-closing-form {
+    padding: 20px;
+  }
+  .kt-footer {
+    margin-top: 40px;
+  }
+  .kt-footer-city {
+    height: calc(100vw * 1060 / 390 + 96px);
+  }
+  .kt-watermark {
+    font-size: 58px;
+    -webkit-text-stroke-width: 1px;
+  }
+  .kt-footer-content {
+    top: 24px;
+    gap: 32px;
+  }
+  .kt-footer-top {
+    flex-direction: column;
+    gap: 28px;
+  }
+  .kt-footer-cols {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .kt-credit {
+    margin-top: -16px;
+  }
+}

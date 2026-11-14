@@ -1,0 +1,346 @@
+/* KalibreTrades demo: tokens, page shell, buttons and fields. Everything is scoped to .kt so 1tx.dev is untouched. */
+
+:root:has(.kt),
+:root.day:has(.kt) {
+  background: #f8f8f6;
+  /* No sideways jump when a window or menu locks scrolling */
+  scrollbar-gutter: stable;
+}
+
+.kt {
+  --navy: #2a3848;
+  --navy-deep: #1f2a37;
+  --navy-base: #1b2633;
+  --slate: #3a4a5c;
+  --slate-2: #4e6070;
+  --mist: #e8ebf0;
+  --mist-2: #d4dae2;
+  --paper: #f8f8f6;
+  --white: #ffffff;
+  --ink: #1a1a18;
+  --body: #555552;
+  --muted: #8e99a6;
+  --line: #e4e4e0;
+  --gold: #d4ae00;
+  --gold-top: #e3be14;
+  --gold-edge: #b8960a;
+  --gold-base: #9c7f00;
+  --green: #1e6640;
+  --red: #a02828;
+  --gutter: 96px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.kt *,
+.kt *::before,
+.kt *::after {
+  box-sizing: border-box;
+}
+
+.kt :where(h1, h2, h3, p, ul, ol, figure) {
+  margin: 0;
+}
+
+.kt :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+
+.kt :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.kt :where(button, input, select) {
+  font: inherit;
+  color: inherit;
+}
+
+.kt img {
+  display: block;
+  max-width: 100%;
+}
+
+.kt-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Keyboard focus: 2px navy with a 3px gap, white on navy. Never on a mouse click */
+.kt :focus {
+  outline: none;
+}
+.kt :focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
+/* Headings and sections that take focus for screen readers don't need a ring */
+.kt [tabindex="-1"]:focus-visible {
+  outline: none;
+}
+.kt .kt-on-navy:focus-visible,
+.kt .kt-on-navy :focus-visible {
+  outline-color: var(--white);
+}
+
+.kt-section {
+  position: relative;
+  width: 100%;
+  padding-inline: var(--gutter);
+  scroll-margin-top: 104px;
+}
+
+.kt-h2 {
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 52px;
+}
+
+.kt-lead {
+  color: var(--body);
+  font-size: 18px;
+  line-height: 29px;
+}
+
+/* Weighted buttons: a soft top highlight and a solid base underneath */
+.kt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 50px;
+  padding-inline: 24px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s ease, filter 0.15s ease;
+  user-select: none;
+}
+
+.kt-btn--gold {
+  border-color: var(--gold-edge);
+  background: linear-gradient(180deg, var(--gold-top) 0%, var(--gold) 100%);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 0 var(--gold-base), 0 8px 16px rgba(42, 56, 72, 0.16);
+}
+
+.kt-btn--navy {
+  border-color: var(--navy-deep);
+  background: linear-gradient(180deg, var(--slate) 0%, var(--navy) 100%);
+  color: var(--white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 3px 0 var(--navy-base), 0 8px 16px rgba(42, 56, 72, 0.16);
+}
+
+@media (hover: hover) {
+  .kt-btn--gold:hover:not(:disabled) {
+    background: linear-gradient(180deg, #ecca2a 0%, #dcb608 100%);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 4px 0 var(--gold-base), 0 12px 22px rgba(42, 56, 72, 0.2);
+  }
+  .kt-btn--navy:hover:not(:disabled) {
+    background: linear-gradient(180deg, var(--slate-2) 0%, var(--slate) 100%);
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 4px 0 var(--navy-base), 0 12px 22px rgba(42, 56, 72, 0.2);
+  }
+}
+
+.kt-btn--gold:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 0 var(--gold-base), 0 3px 8px rgba(42, 56, 72, 0.14);
+}
+.kt-btn--navy:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 var(--navy-base), 0 3px 8px rgba(42, 56, 72, 0.14);
+}
+
+.kt-btn:disabled {
+  cursor: default;
+}
+.kt-btn--gold[data-state="sending"] {
+  filter: saturate(0.8);
+  cursor: progress;
+}
+.kt-btn--done {
+  border-color: var(--navy-deep);
+  background: linear-gradient(180deg, var(--slate) 0%, var(--navy) 100%);
+  color: var(--white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 3px 0 var(--navy-base);
+}
+.kt-btn--done svg {
+  color: var(--gold);
+}
+
+.kt-btn--block {
+  width: 100%;
+}
+
+.kt-spin {
+  animation: kt-spin 0.8s linear infinite;
+}
+@keyframes kt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fields */
+.kt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kt-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--ink);
+}
+.kt-label small {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--body);
+}
+
+.kt-input {
+  width: 100%;
+  height: 50px;
+  padding-inline: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-size: 15px;
+  line-height: 18px;
+  color: var(--ink);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.kt-input::placeholder {
+  color: var(--muted);
+}
+.kt-input:hover {
+  border-color: var(--mist-2);
+}
+.kt-input:focus {
+  background: var(--white);
+  border-color: var(--navy);
+  box-shadow: 0 0 0 0.5px var(--navy);
+}
+.kt-input[aria-invalid="true"] {
+  background: var(--white);
+  border-color: var(--red);
+  box-shadow: 0 0 0 0.5px var(--red);
+}
+.kt-input:disabled {
+  color: var(--muted);
+}
+
+.kt-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--red);
+}
+.kt-error::before {
+  content: "!";
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 8px;
+  background: var(--red);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 12px;
+}
+
+/* Links inside text: a soft underline that darkens and thickens on hover */
+.kt-link {
+  font-weight: 500;
+  color: var(--navy);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--muted);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+@media (hover: hover) {
+  .kt-link:hover {
+    color: var(--ink);
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--ink);
+  }
+}
+
+.kt-smallprint {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--body);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kt *,
+  .kt *::before,
+  .kt *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+@media (max-width: 1020px) {
+  .kt {
+    --gutter: 40px;
+  }
+}
+
+@media (max-width: 760px) {
+  .kt {
+    --gutter: 16px;
+  }
+  .kt-h2 {
+    font-size: 34px;
+    line-height: 40px;
+  }
+  .kt-lead {
+    font-size: 16px;
+    line-height: 25px;
+  }
+  .kt-input {
+    font-size: 16px;
+  }
+  .kt-section {
+    scroll-margin-top: 84px;
+  }
+}

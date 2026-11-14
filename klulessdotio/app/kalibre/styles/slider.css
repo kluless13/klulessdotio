@@ -1,0 +1,282 @@
+/* KalibreTrades demo: the account size slider, its figures and the rolling odometer digits */
+
+/* Account sizes */
+.kt-accounts {
+  display: flex;
+  align-items: center;
+  gap: 72px;
+  padding-top: 160px;
+}
+.kt-accounts-copy {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 20px;
+  width: 380px;
+}
+
+.kt-slider-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  box-shadow: 0 24px 60px rgba(42, 56, 72, 0.08);
+}
+.kt-slider-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.kt-slider-size {
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 60px;
+  font-variant-numeric: tabular-nums;
+}
+.kt-slider-note {
+  padding-bottom: 8px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--body);
+}
+
+.kt-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.kt-track {
+  position: relative;
+  height: 28px;
+  cursor: pointer;
+  touch-action: none;
+}
+/* A 44px tall hit area around the 28px track, so it's easy to grab on a phone */
+.kt-track::before {
+  content: "";
+  position: absolute;
+  inset: -8px -10px;
+}
+.kt-track-rail,
+.kt-track-fill {
+  position: absolute;
+  top: 11px;
+  left: 0;
+  height: 6px;
+  border-radius: 999px;
+}
+.kt-track-rail {
+  width: 100%;
+  background: var(--mist);
+}
+.kt-track-fill {
+  background: var(--navy);
+  transition: width 0.25s var(--ease);
+}
+.kt-track-fill[data-dragging] {
+  transition: none;
+}
+
+.kt-grip {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 28px;
+  margin-left: -20px;
+  border-radius: 9px;
+  border: 1.5px solid var(--navy);
+  background: var(--white);
+  box-shadow: 0 2px 0 #c9d0d9, 0 6px 12px rgba(42, 56, 72, 0.15);
+  cursor: grab;
+  transition: left 0.25s var(--ease), transform 0.15s var(--ease), background 0.15s ease, box-shadow 0.2s ease;
+}
+.kt-grip-lines {
+  display: flex;
+  gap: 3px;
+}
+.kt-grip-lines i {
+  width: 2px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--navy);
+}
+@media (hover: hover) {
+  .kt-track:hover .kt-grip {
+    box-shadow: 0 2px 0 #c9d0d9, 0 6px 12px rgba(42, 56, 72, 0.15), 0 0 0 6px rgba(42, 56, 72, 0.08);
+  }
+}
+.kt-grip[data-dragging] {
+  transform: translateY(-2px) scale(1.08);
+  background: var(--navy);
+  cursor: grabbing;
+  transition: transform 0.15s var(--ease), background 0.15s ease;
+}
+.kt-grip[data-dragging] .kt-grip-lines i {
+  background: var(--white);
+}
+.kt-grip[data-snapped] {
+  box-shadow: 0 2px 0 #c9d0d9, 0 6px 12px rgba(42, 56, 72, 0.15), 0 0 0 5px rgba(212, 174, 0, 0.4);
+}
+.kt-grip-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.kt-ticks {
+  display: flex;
+  justify-content: space-between;
+}
+.kt-tick {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--body);
+  cursor: pointer;
+}
+.kt-tick[aria-pressed="true"] {
+  font-weight: 600;
+  color: var(--ink);
+}
+@media (hover: hover) {
+  .kt-tick:hover {
+    color: var(--ink);
+  }
+}
+
+.kt-figures {
+  display: flex;
+  gap: 16px;
+}
+.kt-figure {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--paper);
+}
+.kt-figure--early {
+  border: 1px solid #e6cc66;
+  background: #fbf4d6;
+}
+.kt-figure-label {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--body);
+}
+.kt-figure--early .kt-figure-label {
+  font-weight: 600;
+  color: #6b5600;
+}
+.kt-figure-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.kt-figure-value {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+}
+.kt-figure-was {
+  font-size: 15px;
+  line-height: 18px;
+  color: #888886;
+}
+.kt-save {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+.kt-slider-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+  line-height: 18px;
+  color: var(--body);
+}
+
+/* Odometer: every digit in its own window */
+.kt-odo {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+.kt-odo-track {
+  display: inline-flex;
+}
+.kt-odo-window {
+  display: inline-block;
+  height: 1lh;
+  overflow: hidden;
+}
+.kt-odo-strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.kt-odo-strip span {
+  height: 1lh;
+}
+
+@media (max-width: 760px) {
+  .kt-slider-card {
+    gap: 24px;
+    padding: 22px;
+  }
+  .kt-slider-size {
+    font-size: 44px;
+    line-height: 48px;
+  }
+  .kt-figures {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .kt-figure {
+    flex: 1 1 calc(50% - 5px);
+    padding: 14px;
+  }
+  .kt-figure-value {
+    font-size: 22px;
+    line-height: 28px;
+  }
+  .kt-slider-foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 12px;
+    text-align: center;
+    font-size: 14px;
+  }
+  .kt-slider-foot .kt-btn {
+    height: 52px;
+  }
+}

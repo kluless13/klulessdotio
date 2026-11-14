@@ -1,0 +1,333 @@
+/* KalibreTrades demo: the navy wash, the pinned nav and the hero card */
+
+.kt-page {
+  position: relative;
+}
+
+.kt-top-wash {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 900px;
+  background: linear-gradient(180deg, #2a3848 0%, #2e3c4d 38%, #9aa6b4 72%, #e8ebf0 88%, #f8f8f6 100%);
+  pointer-events: none;
+}
+
+/* Nav: pinned, a rounded rectangle, a stronger shadow once past the hero */
+.kt-header {
+  position: fixed;
+  z-index: 40;
+  top: 28px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding-inline: 16px;
+  pointer-events: none;
+  transition: top 0.3s var(--ease);
+}
+.kt-header[data-scrolled] {
+  top: 14px;
+}
+
+.kt-nav {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  padding: 8px 8px 8px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 30px rgba(26, 26, 24, 0.18);
+  pointer-events: auto;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+}
+.kt-header[data-scrolled] .kt-nav {
+  background: var(--white);
+  box-shadow: 0 12px 32px rgba(26, 26, 24, 0.22), 0 0 0 1px rgba(42, 56, 72, 0.06);
+}
+
+.kt-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 22px;
+  color: var(--ink);
+}
+.kt-wordmark-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+
+.kt-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.kt-nav-link {
+  display: block;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 18px;
+  color: var(--body);
+  transition: color 0.15s ease, background 0.2s ease;
+}
+@media (hover: hover) {
+  .kt-nav-link:hover {
+    color: var(--ink);
+  }
+}
+.kt-nav-link[aria-current="true"] {
+  background: var(--mist);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.kt-nav-cta {
+  height: 44px;
+  padding-inline: 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 2px 0 var(--navy-base);
+}
+
+.kt-menu-btn {
+  display: none;
+  height: 44px;
+  padding-inline: 14px;
+  border-radius: 10px;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 2px 0 var(--navy-base);
+}
+
+/* Hero: one white card holding the image panel and the form */
+.kt-hero {
+  position: relative;
+  padding: 176px var(--gutter) 180px;
+}
+
+.kt-hero-card {
+  display: flex;
+  padding: 8px;
+  border-radius: 30px;
+  background: var(--white);
+  box-shadow: 0 40px 90px rgba(10, 16, 26, 0.28);
+}
+
+.kt-hero-image {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+  min-height: 600px;
+  padding: 52px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--navy);
+}
+.kt-hero-image > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 30% 40%;
+}
+.kt-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(31, 42, 55, 0.92) 0%, rgba(31, 42, 55, 0.55) 45%, rgba(31, 42, 55, 0.1) 100%);
+}
+
+.kt-hero-copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  color: var(--white);
+}
+.kt-hero-copy h1 {
+  font-size: 76px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 78px;
+}
+.kt-hero-copy > p {
+  max-width: 540px;
+  font-size: 18px;
+  line-height: 29px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.kt-hero-stats {
+  display: flex;
+  gap: 48px;
+  margin: 0;
+  padding-top: 12px;
+}
+.kt-hero-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kt-hero-stats dt {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 48px;
+}
+.kt-hero-stats dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 18px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.kt-hero-form {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  width: 420px;
+  padding: 40px 40px 40px 48px;
+}
+.kt-hero-form-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kt-hero-form-head h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+}
+.kt-hero-form-head p {
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--body);
+}
+
+.kt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (max-width: 1180px) {
+  .kt-nav {
+    gap: 24px;
+  }
+  .kt-nav-link {
+    padding-inline: 8px;
+  }
+  .kt-hero-copy h1 {
+    font-size: 60px;
+    line-height: 62px;
+  }
+}
+
+@media (max-width: 1020px) {
+  .kt-nav-links {
+    display: none;
+  }
+  /* Tablets get the menu sheet too, so every section stays reachable */
+  .kt-menu-btn {
+    display: inline-flex;
+  }
+  .kt-nav {
+    gap: 12px;
+  }
+  .kt-nav .kt-wordmark {
+    margin-right: auto;
+  }
+  .kt-hero-card {
+    flex-direction: column;
+  }
+  .kt-hero-form {
+    width: 100%;
+    padding: 32px;
+  }
+}
+
+@media (max-width: 760px) {
+  .kt-top-wash {
+    height: 760px;
+    background: linear-gradient(180deg, #2a3848 0%, #2a3848 40%, #e8ebf0 85%, #f8f8f6 100%);
+  }
+  .kt-header,
+  .kt-header[data-scrolled] {
+    top: 12px;
+  }
+  .kt-nav {
+    width: 100%;
+    justify-content: space-between;
+    height: 56px;
+    padding: 6px 6px 6px 16px;
+  }
+  .kt-wordmark {
+    font-size: 17px;
+  }
+  .kt-nav-cta {
+    display: none;
+  }
+  .kt-menu-btn {
+    display: inline-flex;
+  }
+  .kt-hero {
+    padding: 88px 16px 72px;
+  }
+  .kt-hero-card {
+    padding: 6px;
+    border-radius: 26px;
+    box-shadow: 0 30px 60px rgba(10, 16, 26, 0.28);
+  }
+  .kt-hero-image {
+    min-height: 440px;
+    padding: 28px 24px;
+    border-radius: 21px;
+  }
+  .kt-hero-image > img {
+    object-position: 26% 50%;
+  }
+  .kt-hero-copy {
+    gap: 16px;
+  }
+  .kt-hero-copy h1 {
+    font-size: 36px;
+    line-height: 39px;
+  }
+  .kt-hero-copy > p {
+    font-size: 16px;
+    line-height: 25px;
+  }
+  .kt-hero-stats {
+    gap: 28px;
+    padding-top: 6px;
+  }
+  .kt-hero-stats dt {
+    font-size: 30px;
+    line-height: 36px;
+  }
+  .kt-hero-stats dd {
+    font-size: 14px;
+  }
+  .kt-hero-form {
+    gap: 16px;
+    padding: 24px 18px 20px;
+  }
+  .kt-hero-form-head h2 {
+    font-size: 24px;
+    line-height: 30px;
+  }
+}
